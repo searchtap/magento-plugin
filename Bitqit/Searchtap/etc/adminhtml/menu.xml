@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Bitqit_Searchtap::searchtap" title="Searchtap" module="Bitqit_Searchtap" sortOrder="51" resource="Bitqit_Searchtap::searchtap"/>        
+        <add id="Bitqit_Searchtap::config" title="Configuration" module="Bitqit_Searchtap" sortOrder="10" action="adminhtml/system_config" resource="Bitqit_Searchtap::config" parent="Bitqit_Searchtap::searchtap"/>
+        <add id="Bitqit_Searchtap::st_dash" title="Dashboard" module="Bitqit_Searchtap" sortOrder="12" parent="Bitqit_Searchtap::searchtap" action="searchtap/dashboard" resource="Bitqit_Searchtap::st_dash"/>
+    </menu>
+</config>
