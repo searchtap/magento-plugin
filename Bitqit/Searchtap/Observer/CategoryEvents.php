@@ -6,127 +6,137 @@ use Bitqit\Searchtap\Observer\Queue;
 
 class CategoryEvents implements \Magento\Framework\Event\ObserverInterface
 {
-    private $queue;
+    protected $queue;
 
-    private $productsInCategory=[];
+    protected $productsInCategory = [];
+    protected $productId=[];
 
+    protected $category;
+    protected $registry;
+    protected $request;
+    protected $isactive;
+    protected $getstoreId;
 
-    private $category = null;
-
+    public function __construct(\Bitqit\Searchtap\Observer\Queue $queue)
+    {
+        $this->queue=$queue;
+    }
     private function getMethodName(\Magento\Framework\Event $event)
     {
         return lcfirst(implode('', array_map('ucfirst', explode('_', $event->getName()))));
     }
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
+
+        $this->category=$observer->getEvent()->getCategory();
+        $this->isactive=$this->category->getIsActive();
+        $this->getstoreId=$this->category->getStoreId();
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/searchtap.log');
+        $this->logger = new \Zend\Log\Logger();
+        $this->logger->addWriter($writer);
+        $this->logger->info("Store Id ".$this->getstoreId);
         $method_name = $this->getMethodName($observer->getEvent());
+
         if (method_exists($this, $method_name)) {
-            $this->{$method_name}($observer->getEvent());
+            $this->{$method_name}($this->category->getId(),$this->isactive,$this->getstoreId);
         }
+        //  $this->catalogCategorySaveBefore($this->category->getId(),$this->isactive,$this->getstoreId);
 
     }
-    
-
-
-    /********************************
-     * Category events
-     ********************************/
-    /*
-     * Category save before event
-     * @ Searchtap
-     * instance : Bitqit/Searchtap/Observer/catBeforeAction (used in adminhtml/events.xml)
-     */
-
-    public function __construct(\Bitqit\Searchtap\Observer\Queue $queue)
+    public function catalogCategorySaveBefore($categoryId,$isActive,$getStoreId)
     {
-       $this->queue=$queue;
-
-    }
-    public function catalogCategorySaveBefore(\Magento\Framework\Event $event)
-    {
-        $categoryBefore = $event->getCategory();
-
-        if ($categoryBefore) {
-
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/searchtap.log');
+        $this->logger = new \Zend\Log\Logger();
+        $this->logger->addWriter($writer);
+        if ($categoryId) {
             // For category
-            $this->queue->addCategory($categoryBefore);
-
-            $products = $categoryBefore->getProductCollection();
-
-            $this->queue->addProducts($products); // save all productid into queue
-
-            // Save all products id to verify with save_After Action
-
-            if ($products) {
-                foreach ($products as $product) {
-                        $this->productsInCategory[]= $product->getId();
-                     }
+            $this->queue->addCategory($categoryId,$isActive,$getStoreId);
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $categoryFactory = $objectManager->get('\Magento\Catalog\Model\CategoryFactory');
+            $categories = $categoryFactory->create()->setStoreId($getStoreId)->load($categoryId); //categories from current store will be fetched
+            $categoryProducts = $categories->getProductCollection()->addAttributeToSelect('*');
+            foreach ($categoryProducts as $product) {
+                $this->productId[]=$product->getId();
             }
+            $this->queue->addProducts($this->productId,$getStoreId);
+
+            /*  if (!empty($this->productId)) {
+                  foreach ($this->productId as $product) {
+                      $this->productsInCategory[]= $product;
+                  }
+              }*/
+            //  Mage::getSingleton('customer/session')->setData( 'productSaveBefore', $this->productsInCategory);
         }
+        unset($this->productId);
         return $this;
+        //   return  $this->productsInCategory;
     }
 
-
-    /*
-     * Category save After event
-     * @ Searchtap
-     * instance : Bitqit/Searchtap/Observer/catAfterAction (used in adminhtml/events.xml)
-     */
-
-    public function catalogCategorySaveAfter(\Magento\Framework\Event $event)
+    public function catalogCategorySaveAfter($categoryAfter,$isactive,$getStoreId)
     {
-        $categoryAfter = $event->getCategory();
+
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/searchtap.log');
+        $this->logger = new \Zend\Log\Logger();
+        $this->logger->addWriter($writer);
+
+        $this->logger->info(" Save After ".$categoryAfter);
+        //  $this->queue->addCategory($categoryAfter,$isactive,$getStoreId);
         if ($categoryAfter) {
 
             // For Category evant failsafe
-            $this->queue->addCategory($categoryAfter);
+            // $this->queue->addCategory($categoryAfter,$isactive,$getStoreId);
 
             // For products from category
-            $products = $categoryAfter->getProductCollection();
 
-            if($products){
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $categoryFactory = $objectManager->get('\Magento\Catalog\Model\CategoryFactory');
+            $categories = $categoryFactory->create()->setStoreId($getStoreId)->load($categoryAfter); //categories from current store will be fetched
+            $categoryProducts = $categories->getProductCollection()->addAttributeToSelect('*');
+            foreach ($categoryProducts as $product) {
+                $this->productId[]=$product->getId();
+            }
+
+            if(!empty($this->productId)){
                 if($this->productsInCategory){
-                    $this->queue->addProducts($products);
+                    //  $this->queue->addProducts($this->productId,$getStoreId);
                 }
                 else{
                     $pids=[];
-                    foreach ($products as $product)
+                    foreach ($this->productId as $product)
                     {
-                       $id=$product->getId();
-
-                       if(($id) && (!in_array($id, $this->productsInCategory)))
-                       {
-                           $pids[]=$id;
-                       }
+//                        if(($product) && (!in_array($product, $this->productsInCategory)))
+//                        {
+//                            $pids[]=$product;
+//                        }
                     }
                 }
-                $this->queue->addProducts($pids);
+                //  $this->queue->addProducts($this->productId,$getStoreId);
 
             }
 
         }
 
         unset($this->productIdsInCategory);
-
+        unset($this->productId);
         return $this;
     }
 
-    /*
-     * Category Move event
-     * @ Searchtap
-     * instance : Bitqit/Searchtap/Observer/catMoveAction (used in adminhtml/events.xml)
-     */
-
-    private function catalogCategoryMoveAfter(\Magento\Framework\Event $event)
+    public function catalogCategoryMoveAfter($categoryId,$isactive,$getStoreId)
     {
-        $category = $event->getCategory();
 
-        if ($category) {
+        if ($categoryId) {
 
-            $products = $category->getProductCollection();
 
-            if ($products) {
-                $this->queue->addProducts($products);
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $categoryFactory = $objectManager->get('\Magento\Catalog\Model\CategoryFactory');
+            $categories = $categoryFactory->create()->setStoreId($getStoreId)->load($categoryId); //categories from current store will be fetched
+            $categoryProducts = $categories->getProductCollection()->addAttributeToSelect('*');
+            foreach ($categoryProducts as $product) {
+                $this->productId[]=$product->getId();
+            }
+
+            if ($this->productId) {
+                $this->queue->addProducts($this->productId,$getStoreId);
             }
         }
 
@@ -134,32 +144,5 @@ class CategoryEvents implements \Magento\Framework\Event\ObserverInterface
     }
 
 
-
-    /*
-      * Delete Category Before event
-      * @ Searchtap
-      * instance : Bitqit/Searchtap/Observer/catMoveAction (used in adminhtml/events.xml)
-      */
-
-
-    private function catalogCategoryDeleteBefore(\Magento\Framework\Event $event)
-    {
-        $category = $event->getCategory();
-
-        if ($category && $category->getId()) {
-            // For category
-            $this->queue->addCategory($category,\Searchanise\SearchAutocomplete\Model\Queue::DEL_CATEGORIES);
-
-            // For products from category
-            $products = $category->getProductCollection();
-            if($products){
-                $this->queue->addProducts($products);
-            }
-        }
-
-        return $this;
-    }
-
-    
 
 }

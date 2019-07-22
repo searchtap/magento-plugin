@@ -1,17 +1,20 @@
 <?php
 
 namespace Bitqit\Searchtap\Controller\Categories;
+use Bitqit\Searchtap\Model\Queue;
 use Bitqit\Searchtap\Helper;
 
 class Index extends \Magento\Framework\App\Action\Action
 {
     private $conf;
     private $stcurl;
+    public $model;
     public function __construct(\Bitqit\Searchtap\Helper\getConfigValue $config,
                                 \Magento\Framework\App\Action\Context $context,
                                 \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig)
     {
         $this->conf=$config;
+     //   $this->model=$queueFactory;
         parent::__construct($context);
     }
 
@@ -31,6 +34,11 @@ class Index extends \Magento\Framework\App\Action\Action
        }
        else
        {
+           $path=19;
+           $data=$this->model->create();
+          // $collection = $data->getCollection()->addFieldToFilter('entity_id', array('in' => $path));
+         //  print_r($collection->getData());
+        //   print_r();
            echo "Please specify Store Id using (sid=1/2/3/..)";
        }
 
@@ -70,6 +78,13 @@ class Index extends \Magento\Framework\App\Action\Action
 
             $path=implode('|||',$pathArray);
             $meta_tags=explode(',',$category->getData('meta_keywords'));
+            // For Active Product Count
+            $products = Mage::getModel('catalog/category')->load($category->getId())
+                ->getProductCollection()
+                ->addAttributeToFilter('status', 1)
+                ->addAttributeToFilter('visibility',array("in" =>[2,3,4]));
+            $productCount=$products->Count();
+
              $categoryArray[] = array(
                 'id' => (int)$category->getId(),
                 'name' => $category->getName(),

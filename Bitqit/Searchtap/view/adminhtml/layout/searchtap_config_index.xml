@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <title>
+            Searchtap Configuration
+        </title>
+    </head>
+    <body>
+        <referenceContainer name="left">
+            <block class="Bitqit\Searchtap\Block\Adminhtml\Config\Tabs" name="attribute_edit_tabs">
+              praveen kumar
+                <container label="Setup" name="api_credentials">
+                  <block class="Bitqit\Searchtap\Block\Adminhtml\Config\Tab\Apicredentials" as="api_credentials"/> 
+                </container>
+                <container label="Image Config" name="sync_settings">
+                  <block class="Bitqit\SearchtapBlock\Adminhtml\Config\Tab\Syncsettings" as="sync_settings"/> 
+                </container>
+                <container label="Category Config" name="sync">
+                  <block class="Bitqit\Searchtap\Block\Adminhtml\Config\Tab\Sync" as="sync"/> 
+                </container>                
+                <container label="Help" name="support">
+                   <block class="Bitqit\Searchtap\Block\Adminhtml\Config\Tab\Support" as="support"/> 
+                </container>
+                <!-- <block class="Magento\Eav\Block\Adminhtml\Attribute\Edit\Options\Labels" as="labels"/>
+                <block class="Magento\Catalog\Block\Adminhtml\Product\Attribute\Edit\Tab\Front" as="front"/> -->
+            </block>
+        </referenceContainer>
+        <referenceContainer name="content">
+Praveen Kumar
+
+          <!--  <block class="Tagalys\Sync\Block\Adminhtml\Configuration\Edit\Form" name="tagalys_edit_configuration_form"/>
+            <block class="Tagalys\Sync\Block\Adminhtml\Configuration\Behaviour" name="tagalys_configuration_behaviour" template="Tagalys_Sync::configuration.phtml" /> -->
+        </referenceContainer>
+    </body>
+</page>

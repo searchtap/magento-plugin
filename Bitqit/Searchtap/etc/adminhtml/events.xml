@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
    <event name="catalog_category_save_before">
-       <observer name="st_category_save_before" instance="Bitqit\Searchtap\Observer\categorySaveBefore" />
+       <observer name="st_category_save_before" instance="Bitqit\Searchtap\Observer\CategoryEvents" />
    </event>
    <event name="catalog_category_save_after">
-       <observer name="st_category_save_after" instance="Bitqit\Searchtap\Observer\categorySaveAfter" />
+       <observer name="st_category_save_after" instance="Bitqit\Searchtap\Observer\CategoryEvents" />
    </event>
     <event name="catalog_category_move_after">
-        <observer name="st_category_move_after" instance="Bitqit\Searchtap\Observer\categoryMoveAfter"/>
+        <observer name="st_category_move_after" instance="Bitqit\Searchtap\Observer\CategoryEvents"/>
     </event>
     <event name="catalog_category_delete_before">
-       <observer name="st_category_delete" instance="Bitqit\Searchtap\Observer\categoryDeleteBefore" />
+       <observer name="st_category_delete" instance="Bitqit\Searchtap\Observer\CategoryEvents" />
     </event>
 </config>
 

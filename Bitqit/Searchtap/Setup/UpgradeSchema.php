@@ -11,14 +11,21 @@ class UpgradeSchema implements UpgradeSchemaInterface
     public function upgrade(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
         $setup->startSetup();
-        if (version_compare($context->getVersion(), '2.3.0', '<=')) {
+        if (version_compare($context->getVersion(), '2.5.1', '<=')) {
             $table = $setup->getConnection()
                 ->newTable($setup->getTable('searchtap_queue'))
+                ->addColumn(
+                    'id',
+                    \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                     null,
+                    ['nullable' => false, 'primary' => true, 'auto_increment' => true, 'unsigned' => true],
+                    'Id'
+                )
                 ->addColumn(
                     'entity_id',
                     \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                      null,
-                    ['nullable' => false, 'primary' => true],
+                    ['nullable' => false],
                     'Entity ID'
                 )
                 ->addColumn(

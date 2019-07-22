@@ -5,12 +5,13 @@ namespace Bitqit\Searchtap\Helper;
 class getConfigValue{
 
     protected $state;
-    protected $objectManager;
+    public $objectManager;
     public $productCount;
     public $storeManager;
-    protected $storeId=1;
+    public $storeId=1;
     public $collectionName;
     public $adminKey;
+    public $categoryFactory;
     public $applicationId;
     public $selectedAttributes;
     protected $logger;
@@ -34,6 +35,7 @@ class getConfigValue{
         $this->cert_path = BP . '/app/code/Bitqit/Searchtap/st_cert/searchtap.io.crt';
         $this->product_visibility_array = array('1' => 'Not Visible Individually', '2' => 'Catalog', '3' => 'Search', '4' => 'Catalog,Search');
         $this->objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $this->categoryFactory=$this->objectManager->create('Magento\Catalog\Model\ResourceModel\Category\CollectionFactory');
    /* Setting */
         $this->imageWidth = $this->objectManager->create('Bitqit\Searchtap\Helper\Data')->getConfigValue('st_configuration/image/st_image_width', $this->storeId);
         $this->imageHeight = $this->objectManager->create('Bitqit\Searchtap\Helper\Data')->getConfigValue('st_configuration/image/st_image_height', $this->storeId);
@@ -49,7 +51,7 @@ class getConfigValue{
         $this->inactiveCategoryOption=$this->objectManager->create('Bitqit\Searchtap\Helper\Data')->getConfigValue('st_category/general/st_inactivecategory', $this->storeId);
         $this->emptycategoryoption=$this->objectManager->create('Bitqit\Searchtap\Helper\Data')->getConfigValue('st_category/general/st_emptycategories', $this->storeId);
         $this->customcategoryAttributeoption=$this->objectManager->create('Bitqit\Searchtap\Helper\Data')->getConfigValue('st_category/general/st_customattribute', $this->storeId);
-        $this->categoryIncludeInMenu=$this->objectManager->create('Bitqit\Searchtap\Helper\Data')->getConfigValue('st_category/general/st_discount_enabled', $this->storeId);
+     //   $this->categoryIncludeInMenu=$this->objectManager->create('Bitqit\Searchtap\Helper\Data')->getConfigValue('st_category/general/st_discount_enabled', $this->storeId);
 
       //  $this->st = new SearchTapAPI($this->applicationId, $this->collectionName, $this->adminKey);
 
@@ -72,7 +74,11 @@ class getConfigValue{
                 $stores[$store->getId()] = $store;
             }
         }
-
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/searchtap.log');
+        $this->logger = new \Zend\Log\Logger();
+        $this->logger->addWriter($writer);
+        //  $categoryBefore=$event->getCategory();
+        $this->logger->info("Value of stores ".$stores);
         return $stores;
     }
 
