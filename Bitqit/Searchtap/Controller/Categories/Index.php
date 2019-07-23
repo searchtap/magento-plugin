@@ -5,13 +5,16 @@ namespace Bitqit\Searchtap\Controller\Categories;
 class Index extends \Magento\Framework\App\Action\Action
 {
     private $categoryHelper;
+    private $searchtapHelper;
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Bitqit\Searchtap\Helper\Categories\CategoryHelper $categoryHelper
+        \Bitqit\Searchtap\Helper\Categories\CategoryHelper $categoryHelper,
+        \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper
     )
     {
         $this->categoryHelper = $categoryHelper;
+        $this->searchtapHelper = $searchtapHelper;
         parent::__construct($context);
     }
 
@@ -23,9 +26,10 @@ class Index extends \Magento\Framework\App\Action\Action
         if ($categoryIds)
             $categoryIds = explode(',', $categoryIds);
 
-        $result = $this->categoryHelper->getCategoriesJSON($storeId, $categoryIds);
+        $response = $this->categoryHelper->getCategoriesJSON($storeId, $categoryIds);
 
         $this->getResponse()->setHeader('content-type', 'application/json');
-        $this->getResponse()->setBody($result);
+        $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
+        $this->getResponse()->setBody($response["output"]);
     }
 }

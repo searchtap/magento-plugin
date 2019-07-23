@@ -9,13 +9,15 @@ class CategoryHelper
     private $storeManager;
     private $categoryRepository;
     private $searchtapHelper;
+    private $logger;
 
     public function __construct(
         \Bitqit\Searchtap\Helper\ConfigHelper $configHelper,
         \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper,
         \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository
+        \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository,
+        \Bitqit\Searchtap\Helper\Logger $logger
     )
     {
         $this->configHelper = $configHelper;
@@ -23,14 +25,18 @@ class CategoryHelper
         $this->storeManager = $storeManager;
         $this->categoryRepository = $categoryRepository;
         $this->searchtapHelper = $searchtapHelper;
+        $this->logger = $logger;
     }
 
     public function getCategoriesJSON($storeId, $categoryIds = null)
     {
+        if (!$this->configHelper->isStoreAvailable($storeId)) {
+            return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
+        }
+
         //check if indexing is enabled for the store
         if (!$this->configHelper->isIndexingEnabled($storeId)) {
-            echo "Indexing is disabled for the store: " . $storeId;
-            return;
+            return $this->searchtapHelper->error("Indexing is not enabled for store ID " . $storeId, 400);
         }
 
         //Start Frontend Emulation
@@ -50,7 +56,7 @@ class CategoryHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return json_encode($data);
+        return $this->searchtapHelper->okResult($data);
     }
 
     public function getRequiredAttributes()
@@ -71,42 +77,58 @@ class CategoryHelper
 
     public function getCategoryCollection($storeId, $categoryIds = null)
     {
-        $requiredAttributes = $this->getRequiredAttributes();
+        try {
+            $requiredAttributes = $this->getRequiredAttributes();
 
-        $rootCategoryId = $this->storeManager->getStore($storeId)->getRootCategoryId();
+            $rootCategoryId = $this->storeManager->getStore($storeId)->getRootCategoryId();
 
-        $collection = $this->categoryCollectionFactory->create();
-        $collection->setStore($storeId);
-        $collection->addAttributeToSelect($requiredAttributes);
-        $collection->addAttributeToFilter('is_active', ['eq' => true]);
-        $collection->addAttributeToFilter('level', ['gt' => 1]);
-        $collection->addAttributeToFilter('path', ['like' => "%/$rootCategoryId/%"]);
+            $collection = $this->categoryCollectionFactory->create();
+            $collection->setStore($storeId);
+            $collection->addAttributeToSelect($requiredAttributes);
+            $collection->addAttributeToFilter('is_active', ['eq' => true]);
+            $collection->addAttributeToFilter('level', ['gt' => 1]);
+            $collection->addAttributeToFilter('path', ['like' => "1/$rootCategoryId/%"]);
 
-        if ($categoryIds)
-            $collection->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
+            if ($categoryIds)
+                $collection->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
 
-        return $collection;
+            return $collection;
+        } catch (error $e) {
+            $this->logger->error($e);
+        }
     }
 
     public function isCategoryPathActive($category, $storeId)
     {
-        $pathIds = $category->getPathIds();
+        try {
+            $pathIds = $category->getPathIds();
 
-        //todo: We can use category repository instead
-        foreach ($pathIds as $pathId) {
-            $collection = $this->categoryCollectionFactory->create();
-            $collection->setStore($storeId);
-            $collection->addAttributeToSelect('*');
-            $collection->addAttributeToFilter('level', ['gt' => 1]);
-            $collection->addAttributeToFilter('entity_id', ['eq' => $pathId]);
+            //todo: We can use category repository instead
+            foreach ($pathIds as $pathId) {
+                $collection = $this->categoryCollectionFactory->create();
+                $collection->setStore($storeId);
+                $collection->addAttributeToSelect('*');
+                $collection->addAttributeToFilter('level', ['gt' => 1]);
+                $collection->addAttributeToFilter('entity_id', ['eq' => $pathId]);
 
-            foreach ($collection as $category) {
-                if ($category && (bool)$category->getIsActive() === false)
-                    return false;
+                foreach ($collection as $category) {
+                    if ($category && (bool)$category->getIsActive() === false)
+                        return false;
+                }
             }
-        }
 
-        return true;
+            return true;
+        } catch (error $e) {
+            $this->logger->error($e);
+        }
+    }
+
+    public function canCategoryBeReindex($category, $storeId)
+    {
+        if ((int)$category->getLevel() > 1 && $this->isCategoryPathActive($category, $storeId))
+            return true;
+
+        return false;
     }
 
     public function getFormattedString($string)
@@ -132,12 +154,38 @@ class CategoryHelper
 
     public function getMetaKeywords($category)
     {
-        //todo: check if comma is available in meta keywords
         $keywords = $category->getMetaKeywords();
 
         if ($keywords)
             return explode(',', $keywords);
         else return [];
+    }
+
+    public function isCategoryLastLevel($category)
+    {
+        if (!$category->hasChildren())
+            return true;
+        else return false;
+    }
+
+    public function getProductCount($category, $storeId)
+    {
+        $productIds = [];
+
+        try {
+            $productCollection = $category->getProductCollection();
+            $productCollection->setStore($storeId);
+            $productCollection->addAttributeToSelect('visibility');
+
+            foreach ($productCollection as $product) {
+                if ($product->getVisibility() != 1)
+                    $productIds[] = $product->getId();
+            }
+        } catch (error $e) {
+            $this->logger->error($e);
+        }
+
+        return count($productIds);
     }
 
     public function getObject($category, $storeId)
@@ -147,10 +195,9 @@ class CategoryHelper
         $data['id'] = (int)$category->getId();
         $data['name'] = $this->getFormattedString($category->getName());
         $data['url'] = $category->getUrl();
-        //todo: check if disabled product is also included in product count
-        $data['product_count'] = $category->getProductCount();
-        $data['is_active'] = (int)$category->getIsActive();
-        $data['include_in_menu'] = (int)$category->getIncludeInMenu();
+        $data['product_count'] = $this->getProductCount($category, $storeId);
+        $data['is_active'] = (bool)$category->getIsActive();
+        $data['include_in_menu'] = (bool)$category->getIncludeInMenu();
         $data['description'] = $this->getFormattedString($category->getDescription());
         $data['meta_title'] = $this->getFormattedString($category->getMetaTitle());
         $data['meta_description'] = $this->getFormattedString($category->getMetaDescription());
@@ -158,10 +205,9 @@ class CategoryHelper
         $data['level'] = (int)$category->getLevel();
         $data['parent_id'] = (int)$category->getParentId();
         $data['path'] = $this->getCategoryPath($category, $storeId);
-        $data['created_at'] = $category->getCreatedAt();
-        $data['last_pushed_to_searchtap'] = "";
-
-        //todo: last level category attribite
+        $data['created_at'] = strtotime($category->getCreatedAt());
+        $data['isLastLevel'] = $this->isCategoryLastLevel($category);
+        $data['last_pushed_to_searchtap'] = $this->searchtapHelper->getCurrentDate();
 
         return $data;
     }

@@ -34,4 +34,36 @@ class SearchtapHelper
             $this->storeEmulation = false;
         }
     }
+
+    public function getCurrentDate()
+    {
+        date_default_timezone_set('asia/kolkata');
+        return date('Y-m-d H:i:s');
+    }
+
+    public function okResult($data, $statusCode = 200)
+    {
+        return [
+            "output" => json_encode(array("data" => $data, "count" => count($data))),
+            "statusCode" => $statusCode
+        ];
+    }
+
+    public function error($errMsg, $statusCode)
+    {
+        return [
+            "output" => json_encode(array("data" => $errMsg)),
+            "statusCode" => $statusCode
+        ];
+    }
+
+    public function getStatusCodeList()
+    {
+        return [
+            404 => \Magento\Framework\App\Response\Http::STATUS_CODE_404,
+            200 => \Magento\Framework\App\Response\Http::STATUS_CODE_200,
+            400 => \Magento\Framework\App\Response\Http::STATUS_CODE_400,
+            403 => \Magento\Framework\App\Response\Http::STATUS_CODE_403,
+        ];
+    }
 }
