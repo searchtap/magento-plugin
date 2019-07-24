@@ -17,4 +17,5 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     {
         $this->_init('Bitqit\Searchtap\Model\Queue', 'Bitqit\Searchtap\Model\ResourceModel\Queue');
     }
+
 }
