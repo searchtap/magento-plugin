@@ -28,23 +28,23 @@ class ImageHelper
         $this->_productRepository=$productRepository;
     }
 
-     // Function to get Image base on type
+    // Function to get Image base on type
 
     public function generateImage($product, $type = self::IMAGE_TYPE_BASE, $width = self::IMAGE_SIZE, $height =  self::IMAGE_SIZE)
     {
         $image = null;
 
         $productImage = $product->getData('small_image');
-       //print_r($productImage);
+        //print_r($productImage);
         if (!empty($productImage) && $productImage != 'no_selection') {
             try {
                 $image = $this->catalogImageFactory
                     ->init($product,'product_base_image')
                     ->resize($width, $height)->getUrl();
-                    //->setImageFile($product->getImage());
+                //->setImageFile($product->getImage());
 
 
-              } catch (\Exception $e) {
+            } catch (\Exception $e) {
                 // image not exists
                 $image = null;
             }
@@ -58,7 +58,7 @@ class ImageHelper
     public function getMediaGallary($product)
     {
 
-       return $product->getResource()->getAttribute('media_gallery');
+        return $product->getResource()->getAttribute('media_gallery');
     }
 
 

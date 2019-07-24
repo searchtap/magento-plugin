@@ -22,8 +22,13 @@ class InstallSchema implements InstallSchemaInterface
                     'id',
                     \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                     null,
-                    ['nullable' => false, 'primary' => true],
-                    'Entity ID'
+                    [
+                        'identity' => true,
+                        'unsigned' => true,
+                        'nullable' => false,
+                        'primary' => true
+                    ],
+                    'ID'
                 )
                 ->addColumn(
                     'entity_id',
@@ -32,7 +37,7 @@ class InstallSchema implements InstallSchemaInterface
                     [
                         'nullable' => false
                     ],
-                    'Action'
+                    'Entity ID'
                 )
                 ->addColumn(
                     'action',
@@ -60,6 +65,15 @@ class InstallSchema implements InstallSchemaInterface
                         'nullable' => false
                     ],
                     'Type'
+                )
+                ->addColumn(
+                    'store',
+                    \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                    100,
+                    [
+                        'nullable' => true
+                    ],
+                    'Store IDs'
                 )->setComment("SearchTap Queue Table");
 
             $setup->getConnection()->createTable($table);
