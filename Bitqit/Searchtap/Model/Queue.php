@@ -2,6 +2,7 @@
 
 namespace Bitqit\Searchtap\Model;
 
+use Bitqit\Searchtap\Helper\Logger;
 use \Magento\Framework\Model\AbstractModel;
 use phpDocumentor\Reflection\Types\This;
 
@@ -21,17 +22,23 @@ class Queue extends \Magento\Framework\Model\AbstractModel
     const STORE = 'store';
 
     private $queueFactory;
+    private $searchtapHelper;
+    private $logger;
 
     public function __construct(
         \Magento\Framework\Model\Context $context,
         \Magento\Framework\Registry $registry,
         \Bitqit\Searchtap\Model\QueueFactory $queueFactory,
+        \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper,
+        \Bitqit\Searchtap\Helper\Logger $logger,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
     )
     {
         $this->queueFactory = $queueFactory;
+        $this->searchtapHelper = $searchtapHelper;
+        $this->logger = $logger;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -107,5 +114,39 @@ class Queue extends \Magento\Framework\Model\AbstractModel
                 return $entity;
 
         return 0;
+    }
+
+    public function getQueueData($count, $page, $type, $action, $storeId)
+    {
+        $entity = [];
+
+        $collection = $this->queueFactory->create()
+            ->getCollection()
+            ->addFieldToSelect('*')
+            ->setPageSize($count)
+            ->setCurPage($page);
+
+        if ($type)
+            $collection->addFilter('type', $type);
+        if ($action)
+            $collection->addFilter('action', $action);
+        if ($storeId)
+            $collection->addFilter('store', $storeId);
+
+        $collection->load();
+        $count = $collection->getSize();
+
+        foreach ($collection as $item) {
+            $entity[] = array(
+                "id" => $item->getId(),
+                "entity_id" => $item->getEntityId(),
+                "type" => $item->getType(),
+                "action" => $item->getAction(),
+                "store" => $item->getStore(),
+                "status" => $item->getStatus()
+            );
+        }
+
+        return $this->searchtapHelper->okResult($entity, $count);
     }
 }

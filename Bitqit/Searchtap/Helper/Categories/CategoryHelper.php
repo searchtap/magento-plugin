@@ -56,7 +56,7 @@ class CategoryHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return $this->searchtapHelper->okResult($data);
+        return $this->searchtapHelper->okResult($data, count($data));
     }
 
     public function getRequiredAttributes()

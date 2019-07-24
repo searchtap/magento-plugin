@@ -41,10 +41,10 @@ class SearchtapHelper
         return date('Y-m-d H:i:s');
     }
 
-    public function okResult($data, $statusCode = 200)
+    public function okResult($data, $count, $statusCode = 200)
     {
         return [
-            "output" => json_encode(array("data" => $data, "count" => count($data))),
+            "output" => json_encode(array("data" => $data, "count" => $count)),
             "statusCode" => $statusCode
         ];
     }
