@@ -1,7 +1,9 @@
 <?php
 
-class Logger {
+namespace Bitqit\Searchtap\Helper;
 
+class Logger
+{
     private $logFileName = "/var/log/searchtap.log";
     private $logger;
 
@@ -12,8 +14,13 @@ class Logger {
         $this->logger->addWriter($writer);
     }
 
-    public function addLog($msg)
+    public function add($msg)
     {
         $this->logger->info($msg);
+    }
+
+    public function error($error)
+    {
+        $this->logger->err($error);
     }
 }

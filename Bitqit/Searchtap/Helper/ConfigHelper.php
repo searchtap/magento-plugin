@@ -11,16 +11,17 @@ class ConfigHelper
     const READ_TOKEN = 'searchtap_credentials/credentials/read_token';
     const ENABLE_INDEXING = 'searchtap_credentials/credentials/enable_indexing';
     const ENABLE_SEARCH = 'searchtap_credentials/credentials/enable_search';
-    const IMAGE_WIDTH='searchtap_credentials/image_config/image_width';
-    const IMAGE_HEIGHT='searchtap_credentials/image_config/image_height';
 
     private $configInterface;
+    private $storeManager;
 
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $configInterface
+        \Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
+        \Magento\Store\Model\StoreManagerInterface $storeManager
     )
     {
         $this->configInterface = $configInterface;
+        $this->storeManager = $storeManager;
     }
 
     public function getApplicationID($storeId) {
@@ -39,28 +40,50 @@ class ConfigHelper
         return $this->configInterface->getValue(self::ENABLE_INDEXING, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function isSearchEnabled($storeId) {
+    public function isSearchEnabled($storeId)
+    {
         return $this->configInterface->getValue(self::ENABLE_SEARCH, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getImageWidth($storeId){
-        return $this->configInterface->getValue(self::IMAGE_WIDTH, ScopeInterface::SCOPE_STORE, $storeId);
+    public function getAllStoreIds()
+    {
+        $storeIds = [];
+
+        $storeCollection = $this->storeManager->getStores();
+
+        foreach ($storeCollection as $store)
+        {
+            $storeIds[] = $store->getId();
+        }
+
+        return $storeIds;
     }
 
-    public function getImageHeight($storeId){
-        return $this->configInterface->getValue(self::IMAGE_HEIGHT, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-    public function checkStoreAvailibity($storeId)
+    public function isStoreAvailable($storeId)
     {
-        $objectManager =  \Magento\Framework\App\ObjectManager::getInstance();
-        $storeManager = $objectManager->create("\Magento\Store\Model\StoreManagerInterface");
-        $stores = $storeManager->getStores(true, false);
+        $stores = $this->storeManager->getStores();
+
         foreach ($stores as $store)
-        {
-            if($storeId===$store->getId()){
+            if ($store->getId() == $storeId)
                 return true;
-            }
-        }
+
         return false;
+    }
+
+    public function getEnabledStoresForIndexing($storeId = 0)
+    {
+        $enabledStoreIds = [];
+
+       if (!$storeId)
+       {
+           $stores = $this->getAllStoreIds();
+           foreach ($stores as $store)
+               if ($this->isIndexingEnabled($store))
+                   $enabledStoreIds[] = $store;
+       }
+       else if ($this->isIndexingEnabled($storeId))
+           $enabledStoreIds[] = $storeId;
+
+       return $enabledStoreIds;
     }
 }
