@@ -14,9 +14,16 @@ class SearchtapHelper
         $this->emulator = $emulator;
     }
 
-    public function getFormattedString($string)
+    public function getFormattedString($value)
     {
-        return trim(htmlspecialchars_decode(strip_tags($string)));
+        if (is_array($value))
+            return array_map('trim', array_map("htmlspecialchars_decode", $value));
+        else return trim(htmlspecialchars_decode(strip_tags($value)));
+    }
+
+    public function getFormattedPrice($price)
+    {
+        return round($price, 2);
     }
 
     public function startEmulation($storeId)
