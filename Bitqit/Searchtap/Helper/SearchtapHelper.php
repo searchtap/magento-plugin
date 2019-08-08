@@ -27,6 +27,11 @@ class SearchtapHelper
         }
     }
 
+    public function getFormattedPrice($price)
+    {
+        return round($price, 2);
+    }
+
     public function stopEmulation()
     {
         if ($this->storeEmulation) {

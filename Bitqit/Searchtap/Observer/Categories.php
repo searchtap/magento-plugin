@@ -52,6 +52,7 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
     {
         try {
             $this->associatedProductIds = $category->getProductCollection()->getColumnValues('entity_id');
+      //      $this->logger->add($category);
         } catch (error $e) {
             $this->logger->error($e);
         }

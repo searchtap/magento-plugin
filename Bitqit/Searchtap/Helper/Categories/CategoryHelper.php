@@ -138,6 +138,7 @@ class CategoryHelper
 
     public function getCategoryPath($category, $storeId)
     {
+
         $pathIds = $category->getPathIds();
 
         $path = "";
@@ -210,5 +211,26 @@ class CategoryHelper
         $data['last_pushed_to_searchtap'] = $this->searchtapHelper->getCurrentDate();
 
         return $data;
+    }
+
+    public function getCategoryByPath($pathIds,$storeId){
+        $paths="";
+        $path[]=explode("/",$pathIds);
+        try{
+            foreach ($path as $pathId) {
+                foreach ($pathId as $pat){
+                    $category = $this->categoryRepository->get($pat,$storeId);
+                    if ((int)$category->getLevel() > 1) {
+                        if ($paths) $paths .= "///" . $this->getFormattedString($category->getName());
+                        else $paths = $this->getFormattedString($category->getName());
+                    }
+
+                }
+
+           }
+        }catch (\Exception $e){
+           print_r($e);
+        }
+        return $paths;
     }
 }
