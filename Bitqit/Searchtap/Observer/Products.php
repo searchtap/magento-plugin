@@ -1,4 +1,5 @@
 <?php
+
 namespace Bitqit\Searchtap\Observer;
 
 use Magento\Framework\Event\Observer;
@@ -48,47 +49,47 @@ class Products implements \Magento\Framework\Event\ObserverInterface
             }
         }
     }
-            /*
-             * @searchtap
-             * Product Trigger Before Save
-             * */
 
-    private function catalogProductSaveBefore($product,$storeId)
+    /*
+     * @searchtap
+     * Product Trigger Before Save
+     * */
+
+    private function catalogProductSaveBefore($product, $storeId)
     {
-      try{
-            $this->beforeAssociatedStoreIds=$product->getStoreIds();
-           $this->logger->add($this->beforeAssociatedStoreIds);
-         }catch(error $e){
+        try {
+            $this->beforeAssociatedStoreIds = $product->getStoreIds();
+            $this->logger->add($this->beforeAssociatedStoreIds);
+        } catch (error $e) {
             $this->logger->error($e);
-         }
+        }
 
     }
-        /*
-         * @searchtap
-         * Product Trigger After Save
-         * */
 
-    private function catalogProductSaveAfter($product,$storeId)
+    /*
+     * @searchtap
+     * Product Trigger After Save
+     * */
+
+    private function catalogProductSaveAfter($product, $storeId)
     {
-         try{
-             $getUpdatedStoreIds=$product->getStoreIds();
-             if(!empty($getUpdatedStoreIds))
-             {
-                 $action="add";
-                 if($this->beforeAssociatedStoreIds){
-                    foreach($this->beforeAssociatedStoreIds as $stores) {
+        try {
+            $getUpdatedStoreIds = $product->getStoreIds();
+            if (!empty($getUpdatedStoreIds)) {
+                $action = "add";
+                if ($this->beforeAssociatedStoreIds) {
+                    foreach ($this->beforeAssociatedStoreIds as $stores) {
                         if (!in_array($stores, $getUpdatedStoreIds)) {
-                            $action="delete";
+                            $action = "delete";
                             $this->queueFactory->create()->addToQueue($product->getId(), $action, 'pending', 'product', $this->beforeAssociatedStoreIds);
                         }
                     }
-                 }
-                 $this->queueFactory->create()->addToQueue($product->getId(), $action, 'pending', 'product', $storeId);
-             }
-         }
-       catch(error $e){
-          $this->logger->error($e);
-       }
+                }
+                $this->queueFactory->create()->addToQueue($product->getId(), $action, 'pending', 'product', $storeId);
+            }
+        } catch (error $e) {
+            $this->logger->error($e);
+        }
 
     }
 
@@ -97,26 +98,23 @@ class Products implements \Magento\Framework\Event\ObserverInterface
      * Product Trigger Delete Before
      * */
 
-    private function catalogProductDeleteBefore($product,$storeId)
+    private function catalogProductDeleteBefore($product, $storeId)
     {
-     $getProductStores=$product->getStoreIds();
-     try{
-         foreach ($getProductStores as $storeid)
-           $this->queueFactory->create()->addToQueue($product->getId(), 'delete', 'pending', 'product', $storeid);
-     }
-     catch(error $e)
-     {
-         $this->logger->error($e);
-     }
+        $getProductStores = $product->getStoreIds();
+        try {
+            foreach ($getProductStores as $storeid)
+                $this->queueFactory->create()->addToQueue($product->getId(), 'delete', 'pending', 'product', $storeid);
+        } catch (error $e) {
+            $this->logger->error($e);
+        }
 
     }
 
 
-        /*
-         * @searchtap
-         * Product Trigger Import
-         * */
-
+    /*
+     * @searchtap
+     * Product Trigger Import
+     * */
 
 
 }

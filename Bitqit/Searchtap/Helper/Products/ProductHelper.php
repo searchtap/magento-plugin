@@ -2,7 +2,8 @@
 
 namespace Bitqit\Searchtap\Helper\Products;
 
-class ProductHelper{
+class ProductHelper
+{
 
     private $requiredAttributes;
     private $configHelper;
@@ -17,6 +18,7 @@ class ProductHelper{
     private $productRepositry;
     private $storeManager;
 
+    //todo: import all required repositories
     public function __construct(\Bitqit\Searchtap\Helper\ConfigHelper $configHelper,
                                 \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper,
                                 \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productFactory,
@@ -31,26 +33,27 @@ class ProductHelper{
 
     )
     {
-        $this->imageHelper=$imageHelper;
-        $this->searchtapHelper=$searchtapHelper;
-        $this->configHelper=$configHelper;
-        $this->productCollectionFactory=$productFactory;
-        $this->objectManager=$categoryManager;
-        $this->categoryHelper=$categoryHelper;
-        $this->productImageHelper=$productImageHelper;
-        $this->categoryRepository=$categoryRepository;
-        $this->productRepositry=$productRepository;
-        $this->storeManager=$storeManager;
-        $this->currencyFactory=$currencyFactory;
+        $this->imageHelper = $imageHelper;
+        $this->searchtapHelper = $searchtapHelper;
+        $this->configHelper = $configHelper;
+        $this->productCollectionFactory = $productFactory;
+        $this->objectManager = $categoryManager;
+        $this->categoryHelper = $categoryHelper;
+        $this->productImageHelper = $productImageHelper;
+        $this->categoryRepository = $categoryRepository;
+        $this->productRepositry = $productRepository;
+        $this->storeManager = $storeManager;
+        $this->currencyFactory = $currencyFactory;
     }
 
-    public function getProductCollection($storeId,$productIds=null,$offset=null,$count=null){
+    public function getProductCollection($storeId, $productIds = null, $offset = null, $count = null)
+    {
 
         $collection = $this->productCollectionFactory->create();
         $collection->setStore($storeId);
         $collection->addAttributeToSelect('*');
         $collection->addAttributeToFilter('status', ['eq' => 1]);
-        $collection->addAttributeToFilter('visibility',['neq'=>1]);
+        $collection->addAttributeToFilter('visibility', ['neq' => 1]);
         $collection->setPageSize($offset);
         $collection->setCurPage($count);
 
@@ -60,7 +63,9 @@ class ProductHelper{
         return $collection;
     }
 
-    public function getProductsJSON($storeId,$productIds=null,$offset=null,$count=null){
+    public function getProductsJSON($storeId, $productIds = null, $offset = null, $count = null)
+    {
+        //todo: remove the indexing enable check
         if (!$this->configHelper->isIndexingEnabled($storeId)) {
             echo "Indexing is disabled for the store: " . $storeId;
             return;
@@ -74,44 +79,46 @@ class ProductHelper{
 
         foreach ($productCollection as $product) {
             //   $this->isIndexableProduct($product->getId());
-            $data[] = $this->getProductObject($product,$storeId);
+            $data[] = $this->getProductObject($product, $storeId);
         }
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return json_encode($data);
+        return json_encode($data); //todo: use searchtapHelper methods instead (pl refer to categoryHelper)
     }
 
     public function getFormattedString($string)
     {
         return $this->searchtapHelper->getFormattedString($string);
     }
-    public function getProductObject($product,$storeId)
-    {
-        $data=[];
-        $child_attribute=[];
-        $data['id']=$product->getId();
-        $data['name']=$this->getFormattedString($product->getName());
-        $data['URL']=$product->getProductUrl();
-        $data['status']=$product->getStatus();
-        $data['visibility']=$product->getVisibility();// need todo
-        $data['type']=$product->getTypeId();
-        $data['price']=$this->getPrices($product,$storeId);
-        $data['currency_symbol']=$this->getCurrencySymbol($storeId);
-        $data['description']=$this->getFormattedString(str_replace("\r\n","",$product->getDescription()));
-        $data['base_image']=$this->getFormattedString($this->imageHelper->generateImage($product,'image'));
-        $data['thumbnail_image']=$this->getFormattedString($this->imageHelper->generateImage($product,'thumbnail'));
-        $data['created_at']=$product->getCreatedAt();
-        $data['SKU']=$this->getProductsSku($product);
-        $data['category']=$this->getProductCategory($product,'category');
-        $data['categoryIds']=$this->getProductCategory($product,'category_Ids');
 
-        if($product->getTypeId()==="configurable"){
-            $child_attribute[]=$this->getChildAttribute($product);
+    public function getProductObject($product, $storeId)
+    {
+        $data = [];
+        $child_attribute = [];
+        $data['id'] = $product->getId();
+        $data['name'] = $this->getFormattedString($product->getName());
+        $data['URL'] = $product->getProductUrl(); //todo: need to check whether we are getting the store frontend url
+        $data['status'] = $product->getStatus();
+        $data['visibility'] = $product->getVisibility();
+        $data['type'] = $product->getTypeId();
+        $data['price'] = $this->getPrices($product, $storeId);
+        $data['currency_symbol'] = $this->getCurrencySymbol($storeId); //todo: check if we need this
+        $data['description'] = $this->getFormattedString(str_replace("\r\n", "", $product->getDescription()));
+        //todo: short description
+        $data['base_image'] = $this->imageHelper->generateImage($product, 'image');
+        $data['thumbnail_image'] = $this->imageHelper->generateImage($product, 'thumbnail');
+        $data['created_at'] = $product->getCreatedAt(); //todo: timestamp
+        $data['sku'] = $this->getProductsSku($product);
+        $data['category'] = $this->getProductCategory($product, 'category');
+        $data['category_ids'] = $product->getCategoryIds();
+
+        //todo: array of last mapped category names
+        if ($product->getTypeId() === "configurable") {
+            $child_attribute[] = $this->getChildAttribute($product);
         }
-        foreach($child_attribute as $child)
-        {
-            $data=array_merge($data,$child);
+        foreach ($child_attribute as $child) {
+            $data = array_merge($data, $child);
         }
 
         return $data;
@@ -121,9 +128,11 @@ class ProductHelper{
     {
         //todo: Index the prices based on customer group in Phase 3
         //todo: Index the tier prices in Phase 4
+
+        //todo: check the fixed or dynamic price concept for bundle products
         $regularPrice = $this->searchtapHelper->getFormattedPrice($product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue());
         $specialPrice = $this->searchtapHelper->getFormattedPrice($product->getFinalPrice());
-        $bundleObj=$product->getPriceInfo()->getPrice('final_price');
+        $bundleObj = $product->getPriceInfo()->getPrice('final_price');
         $priceMin = $bundleObj->getMinimalPrice();
         $priceMax = $bundleObj->getMaximalPrice();
         $specialFromDate = $product->getSpecialFromDate();
@@ -146,7 +155,7 @@ class ProductHelper{
             $data['price'] = $formattedPrice['price_range'];
         }
 
-      //  var_dump(json_encode($data,JSON_UNESCAPED_UNICODE));
+        //  var_dump(json_encode($data,JSON_UNESCAPED_UNICODE));
         return $data;
     }
 
@@ -161,7 +170,7 @@ class ProductHelper{
 
     public function getCurrencySymbol($storeId)
     {
-        $currencyCode =  $this->storeManager->getStore($storeId)->getCurrentCurrencyCode();
+        $currencyCode = $this->storeManager->getStore($storeId)->getCurrentCurrencyCode();
         $currency = $this->currencyFactory->load($currencyCode);
         return $currency->getCurrencySymbol();
 
@@ -180,27 +189,27 @@ class ProductHelper{
         return $data;
     }
 
-    public function getAllImage($product){
-        $image=[];
-        $image['base_image']=$this->imageHelper->generateImage($product,'image');
-        $image['thumbnail_image']=$this->imageHelper->generateImage($product,'thumbnail');
+    public function getAllImage($product)
+    {
+        $image = [];
+        $image['base_image'] = $this->imageHelper->generateImage($product, 'image');
+        $image['thumbnail_image'] = $this->imageHelper->generateImage($product, 'thumbnail');
         return $image;
     }
 
-    public function getProductCategory($product,$value='category'){
-
-       $getCategories=$product->getCategoryIds();
-       foreach ($getCategories as $categoryId)
-        {
-                $category=$this->objectManager->load($categoryId);
-                $getPaths=$category->getPath();
-                $categoryLevel = $category->getLevel();
-                $level=(int)$categoryLevel-1;
-                if($category->getIsActive()==1 && $category->getLevel()>=2)
-                       $mapedCategory['Level_'.$level][]=$category->getName(); // Get all maped Category Information
+    public function getProductCategory($product, $value = 'category')
+    {
+        $getCategories = $product->getCategoryIds();
+        foreach ($getCategories as $categoryId) {
+            $category = $this->objectManager->load($categoryId);
+            $getPaths = $category->getPath();
+            $categoryLevel = $category->getLevel();
+            $level = (int)$categoryLevel - 1;
+            if ($category->getIsActive() == 1 && $category->getLevel() >= 2)
+                $mapedCategory['Level_' . $level][] = $category->getName(); // Get all maped Category Information
 
         }
-        switch ($value){
+        switch ($value) {
             case "category":
                 return $mapedCategory;
                 unset($mapedCategory);
@@ -211,80 +220,76 @@ class ProductHelper{
                 break;
 
         }
-      return false;
+        return false;
     }
-
 
 
     public function getProductsSku($product)
     {
-        $productSKU=[];
+        $productSKU = [];
 
-        switch($product->getTypeId()){
+        //todo: need only enabled child sku
+        switch ($product->getTypeId()) {
             case 'downloadable':
             case 'bundle':
             case 'virtual':
             case 'simple':
-                    return $product->getSKU();
-                    break;
-            case 'configurable':
-                   $i=0;
-                   $productSKU[]=$product->getSKU();
-                   $variationProduct= $product->getTypeInstance()->getUsedProducts($product);
-                   foreach ($variationProduct as $child){
-                      $productSKU[]=$child->getSku();
-                   }
-                   return $productSKU;
-                   break;
-
-            case 'grouped':
-
-                $groupedProductSKU[]=$product->getSKU();
-
-                $groupedProducts=$product->getTypeInstance(true)->getAssociatedProducts($product);
-                foreach ($groupedProducts as $child)
-                {
-                    $groupedProductSKU[]=$child->getSKU();
-                }
-                return $groupedProductSKU;
+                $productSKU[] = $product->getSKU();
                 break;
+            case 'configurable':
+                $productSKU[] = $product->getSKU();
+                $variationProduct = $product->getTypeInstance()->getUsedProducts($product);
+                foreach ($variationProduct as $child) {
+                    $productSKU[] = $child->getSku();
+                }
+                break;
+            case 'grouped':
+                $productSKU[] = $product->getSKU();
+                $groupedProducts = $product->getTypeInstance(true)->getAssociatedProducts($product);
+                foreach ($groupedProducts as $child) {
+                    $productSKU[] = $child->getSKU();
+                }
+                break;
+            default:
+                $productSKU = [];
         }
 
-        return false;
+        return $productSKU;
     }
 
     public function getChildAttribute($product)
     {
-        $childAttribute=[];
+        $childAttribute = [];
         $data = $product->getTypeInstance()->getConfigurableOptions($product);
 
         $options = array();
         $attributes = [];
-        foreach($data as $attr){
-            foreach($attr as $p) {
+        foreach ($data as $attr) {
+            foreach ($attr as $p) {
                 $options[$p['sku']][$p['attribute_code']] = $p['option_title'];
                 $configurableAttributes[$p['attribute_code']][] = $p['option_title'];
 
             }
         }
-        foreach($options as $sku =>$d){
+        foreach ($options as $sku => $d) {
 
             $pr = $this->productRepositry->get($sku);
-            foreach($d as $k => $v)
-                 if($k=="color"){
-                     $childColorAtrribute[$v]=$this->productImageHelper->init($product,'product_base_image')->setImageFile($pr->getImage())->resize(300, 300)->getUrl();
-                 }
+            foreach ($d as $k => $v)
+                if ($k == "color") {
+                    //todo: image size need to fetch from query parameter
+                    $childColorAtrribute[$v] = $this->productImageHelper->init($product, 'product_base_image')->setImageFile($pr->getImage())->resize(300, 300)->getUrl();
+                }
         }
-        foreach ($configurableAttributes as $key=>$value){
-            $childAttribute[$key]=array_values(array_filter(array_unique($value)));
+        foreach ($configurableAttributes as $key => $value) {
+            $childAttribute[$key] = array_values(array_filter(array_unique($value)));
 
         }
-        if(!empty($childColorAtrribute)) {
+        if (!empty($childColorAtrribute)) { //todo: typo
             $childAttribute['media_images'] = $childColorAtrribute;
             return array_merge($configurableAttributes, $childAttribute);
         }
 
-     return $childAttribute;
+        return $childAttribute;
     }
 
 

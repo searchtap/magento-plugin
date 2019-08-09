@@ -34,6 +34,7 @@ class ImageHelper
     {
         $image = null;
 
+        //todo: need to index the required image with defined width and height
         $productImage = $product->getData('small_image');
         //print_r($productImage);
         if (!empty($productImage) && $productImage != 'no_selection') {
@@ -53,6 +54,7 @@ class ImageHelper
 
     // Function to get Media gallary image
 
+    //todo: no need
     public function getMediaGallary($product)
     {
 

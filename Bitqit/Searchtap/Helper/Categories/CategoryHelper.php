@@ -213,6 +213,7 @@ class CategoryHelper
         return $data;
     }
 
+    //todo: check this function is required or not
     public function getCategoryByPath($pathIds,$storeId){
         $paths="";
         $path[]=explode("/",$pathIds);
