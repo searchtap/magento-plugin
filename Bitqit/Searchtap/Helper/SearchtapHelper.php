@@ -19,6 +19,14 @@ class SearchtapHelper
         return trim(htmlspecialchars_decode(strip_tags($string)));
     }
 
+    public function getFormattedArray($value){
+        foreach ($value as $val){
+            $formatedValue[]=trim(htmlspecialchars_decode(strip_tags($val)));
+        }
+        return $formatedValue;
+    }
+
+
     public function startEmulation($storeId)
     {
         if (!$this->storeEmulation) {

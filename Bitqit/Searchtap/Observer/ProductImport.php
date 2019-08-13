@@ -2,25 +2,25 @@
 namespace Bitqit\Searchtap\Observer;
 
 use Magento\Framework\Event\Observer;
+use \Bitqit\Searchtap\Helper\Products\ProductHelper ;
+use \Bitqit\Searchtap\Helper\ConfigHelper ;
+use \Bitqit\Searchtap\Helper\Logger ;
+use \Magento\Catalog\Model\Product ;
 
 class ProductImport implements \Magento\Framework\Event\ObserverInterface
 {
-
-    private $queueFactory;
     private $productHelper;
     private $configHelper;
     private $logger;
     private $product;
 
     public function __construct(
-        \Bitqit\Searchtap\Model\QueueFactory $queueFactory,
-        \Bitqit\Searchtap\Helper\Products\ProductHelper $productHelper,
-        \Bitqit\Searchtap\Helper\ConfigHelper $configHelper,
-        \Bitqit\Searchtap\Helper\Logger $logger,
-        \Magento\Catalog\Model\Product $product
+        ProductHelper $productHelper,
+        ConfigHelper $configHelper,
+        Logger $logger,
+        Product $product
     )
     {
-        $this->queueFactory = $queueFactory;
         $this->productHelper = $productHelper;
         $this->configHelper = $configHelper;
         $this->logger = $logger;

@@ -2,7 +2,9 @@
 
 namespace Bitqit\Searchtap\Helper;
 
-use  \Magento\Store\Model\ScopeInterface;
+use \Magento\Store\Model\ScopeInterface;
+use \Magento\Framework\App\Config\ScopeConfigInterface ;
+use \Magento\Store\Model\StoreManagerInterface ;
 
 class ConfigHelper
 {
@@ -16,8 +18,8 @@ class ConfigHelper
     private $storeManager;
 
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
+        ScopeConfigInterface $configInterface,
+        StoreManagerInterface $storeManager
     )
     {
         $this->configInterface = $configInterface;

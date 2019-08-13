@@ -2,10 +2,22 @@
 
 namespace Bitqit\Searchtap\Helper\Products;
 
+use \Bitqit\Searchtap\Helper\ConfigHelper;
+use \Bitqit\Searchtap\Helper\SearchtapHelper;
+use \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use \Bitqit\Searchtap\Helper\Products\ImageHelper;
+use \Magento\Catalog\Model\Category;
+use \Bitqit\Searchtap\Helper\Categories\CategoryHelper;
+use \Magento\Catalog\Api\CategoryRepositoryInterface;
+use \Magento\Catalog\Model\ProductRepository;
+use \Magento\Catalog\Helper\Image;
+use \Magento\Store\Model\StoreManagerInterface;
+use \Magento\Directory\Model\Currency;
+use \Bitqit\Searchtap\Helper\Products\AttributeHelper;
+
 class ProductHelper
 {
-
-    private $requiredAttributes;
+    private $attributeHelper;
     private $configHelper;
     private $imageHelper;
     private $searchtapHelper;
@@ -17,19 +29,22 @@ class ProductHelper
     private $categoryRepository;
     private $productRepositry;
     private $storeManager;
+    private $imageWidth;
+    private $imageHeight;
 
     //todo: import all required repositories
-    public function __construct(\Bitqit\Searchtap\Helper\ConfigHelper $configHelper,
-                                \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper,
-                                \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productFactory,
-                                \Bitqit\Searchtap\Helper\Products\ImageHelper $imageHelper,
-                                \Magento\Catalog\Model\Category $categoryManager,
-                                \Bitqit\Searchtap\Helper\Categories\CategoryHelper $categoryHelper,
-                                \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository,
-                                \Magento\Catalog\Model\ProductRepository $productRepository,
-                                \Magento\Catalog\Helper\Image $productImageHelper,
-                                \Magento\Store\Model\StoreManagerInterface $storeManager,
-                                \Magento\Directory\Model\Currency $currencyFactory
+    public function __construct(ConfigHelper $configHelper,
+                                SearchtapHelper $searchtapHelper,
+                                CollectionFactory $productFactory,
+                                ImageHelper $imageHelper,
+                                Category $categoryManager,
+                                CategoryHelper $categoryHelper,
+                                CategoryRepositoryInterface $categoryRepository,
+                                ProductRepository $productRepository,
+                                Image $productImageHelper,
+                                StoreManagerInterface $storeManager,
+                                Currency $currencyFactory,
+                                AttributeHelper $attributeHelper
 
     )
     {
@@ -44,6 +59,7 @@ class ProductHelper
         $this->productRepositry = $productRepository;
         $this->storeManager = $storeManager;
         $this->currencyFactory = $currencyFactory;
+        $this->attributeHelper=$attributeHelper;
     }
 
     public function getProductCollection($storeId, $productIds = null, $offset = null, $count = null)
@@ -63,15 +79,14 @@ class ProductHelper
         return $collection;
     }
 
-    public function getProductsJSON($storeId, $productIds = null, $offset = null, $count = null)
+    public function getProductsJSON($storeId, $productIds = null, $offset = null, $count = null, $imageWidth = 300, $imageHeight = 300)
     {
-        //todo: remove the indexing enable check
-        if (!$this->configHelper->isIndexingEnabled($storeId)) {
-            echo "Indexing is disabled for the store: " . $storeId;
-            return;
-        }
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
+
+        $this->imageWidth = $imageWidth;
+
+        $this->imageHeight = $imageHeight;
 
         $productCollection = $this->getProductCollection($storeId, $productIds);
 
@@ -84,12 +99,12 @@ class ProductHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return json_encode($data); //todo: use searchtapHelper methods instead (pl refer to categoryHelper)
+        return $this->searchtapHelper->okResult($data, count($data));
     }
 
     public function getFormattedString($string)
     {
-        return $this->searchtapHelper->getFormattedString($string);
+        return $this->searchtapHelper->getFormattedString(str_replace("\r\n", "", $string));
     }
 
     public function getProductObject($product, $storeId)
@@ -97,23 +112,27 @@ class ProductHelper
         $data = [];
         $child_attribute = [];
         $data['id'] = $product->getId();
+        $data['store_id'] = $product->getStoreId();
         $data['name'] = $this->getFormattedString($product->getName());
-        $data['URL'] = $product->getProductUrl(); //todo: need to check whether we are getting the store frontend url
+        $data['URL'] = $product->getProductUrl();
         $data['status'] = $product->getStatus();
         $data['visibility'] = $product->getVisibility();
         $data['type'] = $product->getTypeId();
         $data['price'] = $this->getPrices($product, $storeId);
-        $data['currency_symbol'] = $this->getCurrencySymbol($storeId); //todo: check if we need this
-        $data['description'] = $this->getFormattedString(str_replace("\r\n", "", $product->getDescription()));
-        //todo: short description
-        $data['base_image'] = $this->imageHelper->generateImage($product, 'image');
+        $data['description'] = $this->getFormattedString($product->getDescription());
+        $data['short_description'] = $this->getFormattedString($product->getShortDescription());
+        $data['base_image'] = $this->imageHelper->generateImage($product, 'image', $this->imageWidth, $this->imageHeight);
         $data['thumbnail_image'] = $this->imageHelper->generateImage($product, 'thumbnail');
-        $data['created_at'] = $product->getCreatedAt(); //todo: timestamp
+        $data['created_at'] = strtotime($product->getCreatedAt());
         $data['sku'] = $this->getProductsSku($product);
         $data['category'] = $this->getProductCategory($product, 'category');
         $data['category_ids'] = $product->getCategoryIds();
+        $data['category_array'] = $this->getProductCategory($product, 'category_array');
+        $additionalAttribute[]=$this->attributeHelper->getAdditionalAttributes($product);
 
-        //todo: array of last mapped category names
+        foreach ($additionalAttribute as $attr){
+            $data = array_merge($data, $attr);
+        }
         if ($product->getTypeId() === "configurable") {
             $child_attribute[] = $this->getChildAttribute($product);
         }
@@ -145,7 +164,7 @@ class ProductHelper
             'discount' => $this->getDiscountPercentage($regularPrice, $specialPrice)
         ];
         $productType = $product->getTypeId();
-        if ($productType === "simple" || $productType === "configurable") {
+        if ($productType === "simple" || $productType === "configurable" || $productType === "downloadable") {
             $data['price'] = $formattedPrice['regular_price'];
             if ($specialPrice && $specialPrice !== $regularPrice) {
                 $data['price'] = $formattedPrice['special_price'];
@@ -178,6 +197,7 @@ class ProductHelper
 
     public function getFormattedPrice($regularPrice, $specialPrice, $currencySymbol, $priceMin, $priceMax)
     {
+
         $data = [];
         if ($regularPrice)
             $data['regular_price'] = $currencySymbol . $regularPrice;
@@ -207,6 +227,7 @@ class ProductHelper
             $level = (int)$categoryLevel - 1;
             if ($category->getIsActive() == 1 && $category->getLevel() >= 2)
                 $mapedCategory['Level_' . $level][] = $category->getName(); // Get all maped Category Information
+            $categoryArray[] = $category->getName();// Get Last Mapped Category Array
 
         }
         switch ($value) {
@@ -214,9 +235,9 @@ class ProductHelper
                 return $mapedCategory;
                 unset($mapedCategory);
                 break;
-            case "category_Ids":
-                return $getCategories;
-                unset($getCategories);
+            case "category_array":
+                return $categoryArray;
+                unset($categoryArray);
                 break;
 
         }
@@ -227,8 +248,6 @@ class ProductHelper
     public function getProductsSku($product)
     {
         $productSKU = [];
-
-        //todo: need only enabled child sku
         switch ($product->getTypeId()) {
             case 'downloadable':
             case 'bundle':
@@ -240,14 +259,16 @@ class ProductHelper
                 $productSKU[] = $product->getSKU();
                 $variationProduct = $product->getTypeInstance()->getUsedProducts($product);
                 foreach ($variationProduct as $child) {
-                    $productSKU[] = $child->getSku();
+                    if ($child->getStatus() == 1)
+                        $productSKU[] = $child->getSku();
                 }
                 break;
             case 'grouped':
                 $productSKU[] = $product->getSKU();
                 $groupedProducts = $product->getTypeInstance(true)->getAssociatedProducts($product);
                 foreach ($groupedProducts as $child) {
-                    $productSKU[] = $child->getSKU();
+                    if ($child->getStatus() == 1)
+                        $productSKU[] = $child->getSku();
                 }
                 break;
             default:
@@ -276,8 +297,7 @@ class ProductHelper
             $pr = $this->productRepositry->get($sku);
             foreach ($d as $k => $v)
                 if ($k == "color") {
-                    //todo: image size need to fetch from query parameter
-                    $childColorAtrribute[$v] = $this->productImageHelper->init($product, 'product_base_image')->setImageFile($pr->getImage())->resize(300, 300)->getUrl();
+                    $childColorAtrribute[$v] = $this->productImageHelper->init($product, 'product_base_image')->setImageFile($pr->getImage())->resize($this->imageWidth, $this->imageHeight)->getUrl();
                 }
         }
         foreach ($configurableAttributes as $key => $value) {

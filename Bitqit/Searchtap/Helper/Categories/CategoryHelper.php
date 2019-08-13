@@ -2,6 +2,14 @@
 
 namespace Bitqit\Searchtap\Helper\Categories;
 
+use \Bitqit\Searchtap\Helper\ConfigHelper ;
+use \Bitqit\Searchtap\Helper\SearchtapHelper ;
+use \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
+use \Magento\Store\Model\StoreManagerInterface ;
+use \Magento\Catalog\Api\CategoryRepositoryInterface ;
+use \Bitqit\Searchtap\Helper\Logger ;
+
+
 class CategoryHelper
 {
     private $configHelper;
@@ -12,12 +20,12 @@ class CategoryHelper
     private $logger;
 
     public function __construct(
-        \Bitqit\Searchtap\Helper\ConfigHelper $configHelper,
-        \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper,
-        \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository,
-        \Bitqit\Searchtap\Helper\Logger $logger
+        ConfigHelper $configHelper,
+        SearchtapHelper $searchtapHelper,
+        CollectionFactory $categoryCollectionFactory,
+        StoreManagerInterface $storeManager,
+        CategoryRepositoryInterface $categoryRepository,
+        Logger $logger
     )
     {
         $this->configHelper = $configHelper;

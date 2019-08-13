@@ -3,6 +3,10 @@
 namespace Bitqit\Searchtap\Observer;
 
 use Magento\Framework\Event\Observer;
+use \Bitqit\Searchtap\Model\QueueFactory ;
+use \Bitqit\Searchtap\Helper\Categories\CategoryHelper ;
+use \Bitqit\Searchtap\Helper\ConfigHelper ;
+use \Bitqit\Searchtap\Helper\Logger ;
 
 class Categories implements \Magento\Framework\Event\ObserverInterface
 {
@@ -13,10 +17,10 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
     private $logger;
 
     public function __construct(
-        \Bitqit\Searchtap\Model\QueueFactory $queueFactory,
-        \Bitqit\Searchtap\Helper\Categories\CategoryHelper $categoryHelper,
-        \Bitqit\Searchtap\Helper\ConfigHelper $configHelper,
-        \Bitqit\Searchtap\Helper\Logger $logger
+        QueueFactory $queueFactory,
+        CategoryHelper $categoryHelper,
+        ConfigHelper $configHelper,
+        Logger $logger
     )
     {
         $this->queueFactory = $queueFactory;
