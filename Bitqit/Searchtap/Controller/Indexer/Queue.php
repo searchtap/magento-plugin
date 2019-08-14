@@ -20,7 +20,7 @@ class Queue extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
-        $count = $this->getRequest()->getParam('count', 10);
+        $count = $this->getRequest()->getParam('count', 100);
         $page = $this->getRequest()->getParam('page', 1);
         $type = $this->getRequest()->getParam('type');
         $action = $this->getRequest()->getParam('action');

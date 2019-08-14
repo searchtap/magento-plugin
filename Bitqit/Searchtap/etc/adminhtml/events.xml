@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    /*
-    Category tigger @searchtap
-    */
+
+    <!-- Category Events -->
+
     <event name="catalog_category_save_before">
         <observer name="st_category_save_before" instance="Bitqit\Searchtap\Observer\Categories" />
     </event>
@@ -16,9 +16,7 @@
         <observer name="st_category_delete" instance="Bitqit\Searchtap\Observer\Categories" />
     </event>
 
-    /*
-       Product trigger @searchtap
-    */
+    <!-- Product Trigger -->
 
     <event name="catalog_product_save_before">
         <observer name="st_product_save_before" instance="Bitqit\Searchtap\Observer\Products" />
@@ -32,9 +30,7 @@
         <observer name="st_product_save_before" instance="Bitqit\Searchtap\Observer\Products" />
     </event>
 
-    /*
-    Product Import trigger @searchtap
-    */
+    <!-- Product Import Trigger -->
 
     <event name="catalog_product_import_bunch_save_after">
        <observer name="st_product_import_bunch_save_after" instance="Bitqit\Searchtap\Observer\ProductImport" />
@@ -42,6 +38,14 @@
 
     <event name="catalog_product_import_bunch_delete_commit_before">
         <observer name="st_product_import_bunch_delete_commit_before" instance="Bitqit\Searchtap\Observer\ProductImport" />
+    </event>
+
+    <!-- Attribute Events -->
+    <event name="catalog_entity_attribute_save_after">
+        <observer name="st_entity_attribute_save_after" instance="Bitqit\Searchtap\Observer\Attributes" />
+    </event>
+    <event name="catalog_entity_attribute_delete_after">
+        <observer name="st_entity_attribute_delete_after" instance="Bitqit\Searchtap\Observer\Attributes" />
     </event>
 
 </config>
