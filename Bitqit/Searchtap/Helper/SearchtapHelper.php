@@ -26,6 +26,14 @@ class SearchtapHelper
         return round($price, 2);
     }
 
+    public function getFormattedArray($value){
+        foreach ($value as $val){
+            $formatedValue[]=trim(htmlspecialchars_decode(strip_tags($val)));
+        }
+        return $formatedValue;
+    }
+
+
     public function startEmulation($storeId)
     {
         if (!$this->storeEmulation) {
@@ -56,10 +64,10 @@ class SearchtapHelper
         ];
     }
 
-    public function error($errMsg, $statusCode)
+    public function error($message, $statusCode)
     {
         return [
-            "output" => json_encode(array("data" => $errMsg)),
+            "output" => json_encode(array("data" => $message)),
             "statusCode" => $statusCode
         ];
     }

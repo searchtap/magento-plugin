@@ -2,64 +2,77 @@
 
 namespace Bitqit\Searchtap\Helper\Products;
 
+use \Magento\Backend\Block\Template\Context as Context;
+use \Magento\Catalog\Helper\Image as ImageFactory;
+
 class ImageHelper
 {
+    const THUMBNAIL_SIZE = 75;
 
-    const  IMAGE_TYPE_BASE = 'base_image';
-    const IMAGE_TYPE_SMALL='small_image';
-    const  IMAGE_TYPE_THUMBNAIL = 'thumbnail_image';
-    const  IMAGE_SIZE = 300;
-    const  THUMBNAIL_SIZE = 75;
-    private $catalogImageFactory;
-    private $_productRepository;
-    public static $actionTypes = [
-        self::IMAGE_TYPE_BASE,
-        self::IMAGE_TYPE_THUMBNAIL,
-        self::IMAGE_SIZE,
-        self::THUMBNAIL_SIZE,
-    ];
+    private $imageFactory;
 
-    public function __construct( \Magento\Backend\Block\Template\Context $context,
-                                 \Magento\Catalog\Model\ProductRepository $productRepository,
-                                 \Magento\Catalog\Helper\Image $productImageHelper,
-                                 array $data = [])
+    public function __construct(
+        Context $context,
+        ImageFactory $productImageHelper,
+        array $data = []
+    )
     {
-        $this->catalogImageFactory=$productImageHelper;
-        $this->_productRepository=$productRepository;
+        $this->imageFactory = $productImageHelper;
     }
 
-    // Function to get Image base on type
-
-    public function generateImage($product, $type = self::IMAGE_TYPE_BASE, $width = self::IMAGE_SIZE, $height =  self::IMAGE_SIZE)
+    public function getImages($config, $product)
     {
-        $image = null;
+        $images = [];
+        $width = $config["image_width"];
+        $height = $config["image_height"];
+        $imageType = $config["image_type"];
+        $onHoverImageType = $config["on_hover_image_type"];
 
-        $productImage = $product->getData('small_image');
-        //print_r($productImage);
-        if (!empty($productImage) && $productImage != 'no_selection') {
-            try {
-                $image = $this->catalogImageFactory
-                    ->init($product,'product_base_image')
-                    ->resize($width, $height)->getUrl();
-                //->setImageFile($product->getImage());
+        if ($config["is_cache_image"]) {
+            $images["image_url"] = $this->getResizedImageUrl($product, "product_" . $imageType, $width, $height);
 
+            if ($onHoverImageType)
+                $images["on_hover_image"] = $this->getResizedImageUrl($product, "product_" . $onHoverImageType, $width, $height);
 
-            } catch (\Exception $e) {
-                // image not exists
-                $image = null;
-            }
+        } else {
+            $images["image_url"] = $product->getData($this->getImageType($imageType));
+            $images["on_hover_image"] = $product->getData($this->getImageType($onHoverImageType));
         }
-        //echo $image;
-        return $image;
+
+        try {
+            $images["thumbnail_url"] = $this->getResizedImageUrl(
+                $product,
+                "product_base_image",
+                self::THUMBNAIL_SIZE,
+                self::THUMBNAIL_SIZE);
+
+        } catch (error $e) {
+            $images["thumbnail_url"] = $this->imageFactory->getDefaultPlaceholderUrl("image");
+        }
+
+        return $images;
     }
 
-    // Function to get Media gallary image
-
-    public function getMediaGallary($product)
+    public function getImageType ($type)
     {
+        if ($type === "base_image") return "image";
+        else if ($type === "thumbnail_image") return "thumbnail";
 
-        return $product->getResource()->getAttribute('media_gallery');
+        return $type;
     }
 
+    public function getResizedImageUrl($product, $imageType, $width, $height)
+    {
+        try {
+            $imageUrl = $this->imageFactory
+                ->init($product, $imageType)
+                ->resize($width, $height)
+                ->getUrl();
 
+        } catch (error $e) {
+            $imageUrl = $this->imageFactory->getDefaultPlaceholderUrl($this->getImageType($imageType));
+        }
+
+        return $imageUrl;
+    }
 }

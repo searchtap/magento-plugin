@@ -2,6 +2,14 @@
 
 namespace Bitqit\Searchtap\Helper\Categories;
 
+use \Bitqit\Searchtap\Helper\ConfigHelper;
+use \Bitqit\Searchtap\Helper\SearchtapHelper;
+use \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
+use \Magento\Store\Model\StoreManagerInterface;
+use \Magento\Catalog\Api\CategoryRepositoryInterface;
+use \Bitqit\Searchtap\Helper\Logger;
+
+
 class CategoryHelper
 {
     private $configHelper;
@@ -12,12 +20,12 @@ class CategoryHelper
     private $logger;
 
     public function __construct(
-        \Bitqit\Searchtap\Helper\ConfigHelper $configHelper,
-        \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper,
-        \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepository,
-        \Bitqit\Searchtap\Helper\Logger $logger
+        ConfigHelper $configHelper,
+        SearchtapHelper $searchtapHelper,
+        CollectionFactory $categoryCollectionFactory,
+        StoreManagerInterface $storeManager,
+        CategoryRepositoryInterface $categoryRepository,
+        Logger $logger
     )
     {
         $this->configHelper = $configHelper;
@@ -34,10 +42,10 @@ class CategoryHelper
             return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
         }
 
-        //check if indexing is enabled for the store
-        if (!$this->configHelper->isIndexingEnabled($storeId)) {
-            return $this->searchtapHelper->error("Indexing is not enabled for store ID " . $storeId, 400);
-        }
+//        //check if indexing is enabled for the store
+//        if (!$this->configHelper->isIndexingEnabled($storeId)) {
+//            return $this->searchtapHelper->error("Indexing is not enabled for store ID " . $storeId, 400);
+//        }
 
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
@@ -95,6 +103,7 @@ class CategoryHelper
             return $collection;
         } catch (error $e) {
             $this->logger->error($e);
+            return [];
         }
     }
 
@@ -107,7 +116,7 @@ class CategoryHelper
             foreach ($pathIds as $pathId) {
                 $collection = $this->categoryCollectionFactory->create();
                 $collection->setStore($storeId);
-                $collection->addAttributeToSelect('*');
+                $collection->addAttributeToSelect(["level", "is_active"]);
                 $collection->addAttributeToFilter('level', ['gt' => 1]);
                 $collection->addAttributeToFilter('entity_id', ['eq' => $pathId]);
 
@@ -116,10 +125,10 @@ class CategoryHelper
                         return false;
                 }
             }
-
             return true;
         } catch (error $e) {
             $this->logger->error($e);
+            return false;
         }
     }
 
@@ -150,22 +159,6 @@ class CategoryHelper
         }
 
         return $path;
-    }
-
-    public function getMetaKeywords($category)
-    {
-        $keywords = $category->getMetaKeywords();
-
-        if ($keywords)
-            return explode(',', $keywords);
-        else return [];
-    }
-
-    public function isCategoryLastLevel($category)
-    {
-        if (!$category->hasChildren())
-            return true;
-        else return false;
     }
 
     public function getProductCount($category, $storeId)
@@ -201,14 +194,56 @@ class CategoryHelper
         $data['description'] = $this->getFormattedString($category->getDescription());
         $data['meta_title'] = $this->getFormattedString($category->getMetaTitle());
         $data['meta_description'] = $this->getFormattedString($category->getMetaDescription());
-        $data['meta_keywords'] = $this->getMetaKeywords($category);
+        $data['meta_keywords'] = $category->getMetaKeywords() ? explode(",", $category->getMetaKeywords()) : [];
         $data['level'] = (int)$category->getLevel();
         $data['parent_id'] = (int)$category->getParentId();
         $data['path'] = $this->getCategoryPath($category, $storeId);
         $data['created_at'] = strtotime($category->getCreatedAt());
-        $data['isLastLevel'] = $this->isCategoryLastLevel($category);
+        $data['isLastLevel'] = $category->hasChildren() ? false : true;
         $data['last_pushed_to_searchtap'] = $this->searchtapHelper->getCurrentDate();
 
         return $data;
+    }
+
+    public function getProductCategories($product, $storeId)
+    {
+        $categoriesData = [
+            "_categories" => [],
+            "categories_path" => [],
+            "category_level" => []
+        ];
+
+        $categoryIds = $product->getCategoryIds();
+
+        if (!empty($categoryIds)) {
+            foreach ($categoryIds as $categoryId) {
+                $productCategory = $this->categoryRepository->get($categoryId, $storeId);
+                if (!$productCategory || !$this->canCategoryBeReindex($productCategory, $storeId))
+                    continue;
+
+                $categoriesData["_categories"][] = $this->getFormattedString($productCategory->getName());
+                $categoriesData["categories_path"][] = $this->getCategoryPath($productCategory, $storeId);
+
+                $pathIds = $productCategory->getPathIds();
+
+                foreach ($pathIds as $pathId) {
+                    $category = $this->categoryRepository->get($pathId, $storeId);
+                    if ($category && (int)$category->getLevel() > 1) {
+                        $level = $category->getLevel() - 1; //level starts from 2 but we need to level to be started from 1
+                        $categoryName = $this->getFormattedString($category->getName());
+
+                        //Check if category already exists or not
+                        if (!array_key_exists("category_level_" . $level, $categoriesData["category_level"])
+                            || !in_array($categoryName, $categoriesData["category_level"]["category_level_" . $level])) {
+                            $categoriesData["category_level"]["category_level_" . $level][] = $this->getFormattedString($category->getName());
+                        }
+                    }
+                }
+            }
+        }
+
+        $categoriesData["_categories"] = array_unique($categoriesData["_categories"]);
+
+        return $categoriesData;
     }
 }
