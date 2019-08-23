@@ -20,7 +20,8 @@ class Attributes extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
-        $response = $this->attributeHelper->getFilterableAttributesCollection();
+        $token = $this->getRequest()->getParam("token");
+        $response = $this->attributeHelper->getFilterableAttributesCollection($token);
 
         $this->getResponse()->setHeader('content-type', 'application/json');
         $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);

@@ -24,6 +24,7 @@ class Queue extends \Magento\Framework\Model\AbstractModel
     private $queueFactory;
     private $searchtapHelper;
     private $logger;
+    private $dataHelper;
 
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -31,6 +32,7 @@ class Queue extends \Magento\Framework\Model\AbstractModel
         \Bitqit\Searchtap\Model\QueueFactory $queueFactory,
         \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper,
         \Bitqit\Searchtap\Helper\Logger $logger,
+        \Bitqit\Searchtap\Helper\Data $dataHelper,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
@@ -39,6 +41,7 @@ class Queue extends \Magento\Framework\Model\AbstractModel
         $this->queueFactory = $queueFactory;
         $this->searchtapHelper = $searchtapHelper;
         $this->logger = $logger;
+        $this->dataHelper = $dataHelper;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -84,20 +87,20 @@ class Queue extends \Magento\Framework\Model\AbstractModel
 
     public function addToQueue($entityId, $action, $status, $type, $storeId)
     {
-            $data = $this->queueFactory->create()
-                ->setAction($action)
-                ->setStatus($status);
+        $data = $this->queueFactory->create()
+            ->setAction($action)
+            ->setStatus($status);
 
-            $entity = $this->isDataExists($entityId, $type, $storeId);
+        $entity = $this->isDataExists($entityId, $type, $storeId);
 
-            if ($entity)
-                $data->setId($entity->getId());
+        if ($entity)
+            $data->setId($entity->getId());
 
-            else $data->setEntityId($entityId)
-                ->setType($type)
-                ->setStore($storeId);
+        else $data->setEntityId($entityId)
+            ->setType($type)
+            ->setStore($storeId);
 
-            $data->save();
+        $data->save();
     }
 
     public function isDataExists($entityId, $type, $storeId)
@@ -147,6 +150,20 @@ class Queue extends \Magento\Framework\Model\AbstractModel
             );
         }
 
-        return $this->searchtapHelper->okResult($entity, $count);
+        return [
+            "data" => $entity,
+            "count" => $count
+        ];
+    }
+
+    public function deleteQueueData($entityIds)
+    {
+        foreach ($entityIds as $entityId) {
+            $entity = $this->queueFactory->create()
+                ->load($entityId);
+            $entity->delete();
+        }
+
+        return "OK";
     }
 }

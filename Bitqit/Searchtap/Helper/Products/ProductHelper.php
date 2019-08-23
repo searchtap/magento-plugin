@@ -4,6 +4,7 @@ namespace Bitqit\Searchtap\Helper\Products;
 
 use \Bitqit\Searchtap\Helper\ConfigHelper;
 use \Bitqit\Searchtap\Helper\SearchtapHelper;
+use \Bitqit\Searchtap\Helper\Data;
 use \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use \Bitqit\Searchtap\Helper\Products\ImageHelper;
 use \Bitqit\Searchtap\Helper\Categories\CategoryHelper;
@@ -27,6 +28,7 @@ class ProductHelper
     private $productRepository;
     private $storeManager;
     private $stockRepository;
+    private $dataHelper;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -39,7 +41,8 @@ class ProductHelper
         StoreManagerInterface $storeManager,
         Currency $currencyFactory,
         AttributeHelper $attributeHelper,
-        StockRegistryInterface $stockRepository
+        StockRegistryInterface $stockRepository,
+        Data $dataHelper
     )
     {
         $this->imageHelper = $imageHelper;
@@ -53,6 +56,7 @@ class ProductHelper
         $this->currencyFactory = $currencyFactory;
         $this->attributeHelper = $attributeHelper;
         $this->stockRepository = $stockRepository;
+        $this->dataHelper = $dataHelper;
     }
 
     public function getProductCollection($storeId, $offset, $count, $productIds)
@@ -73,8 +77,12 @@ class ProductHelper
         return $collection;
     }
 
-    public function getProductsJSON($storeId, $count, $offset, $imageConfig, $productIds)
+    public function getProductsJSON($token, $storeId, $count, $offset, $imageConfig, $productIds)
     {
+        if (!$this->dataHelper->checkPrivateKey($token)) {
+            return $this->searchtapHelper->error("Invalid token");
+        }
+
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
 

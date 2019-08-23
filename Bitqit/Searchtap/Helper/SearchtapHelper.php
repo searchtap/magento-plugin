@@ -4,6 +4,8 @@ namespace Bitqit\Searchtap\Helper;
 
 class SearchtapHelper
 {
+
+
     private $emulator;
     private $storeEmulation;
 
@@ -26,9 +28,10 @@ class SearchtapHelper
         return round($price, 2);
     }
 
-    public function getFormattedArray($value){
-        foreach ($value as $val){
-            $formatedValue[]=trim(htmlspecialchars_decode(strip_tags($val)));
+    public function getFormattedArray($value)
+    {
+        foreach ($value as $val) {
+            $formatedValue[] = trim(htmlspecialchars_decode(strip_tags($val)));
         }
         return $formatedValue;
     }
@@ -56,15 +59,22 @@ class SearchtapHelper
         return date('Y-m-d H:i:s');
     }
 
-    public function okResult($data, $count, $statusCode = 200)
+    public function okResult($data, $count = 0, $statusCode = 200)
     {
+        $data = [
+            "data" => $data
+        ];
+
+        if ($count)
+            $data["count"] = $count;
+
         return [
-            "output" => json_encode(array("data" => $data, "count" => $count)),
+            "output" => json_encode($data),
             "statusCode" => $statusCode
         ];
     }
 
-    public function error($message, $statusCode)
+    public function error($message, $statusCode = 400)
     {
         return [
             "output" => json_encode(array("data" => $message)),

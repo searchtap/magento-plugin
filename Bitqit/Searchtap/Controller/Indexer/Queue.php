@@ -4,16 +4,16 @@ namespace Bitqit\Searchtap\Controller\Indexer;
 
 class Queue extends \Magento\Framework\App\Action\Action
 {
-    private $queueFactory;
+    private $dataHelper;
     private $searchtapHelper;
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Bitqit\Searchtap\Model\QueueFactory $queueFactory,
+        \Bitqit\Searchtap\Helper\Data $dataHelper,
         \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper
     )
     {
-        $this->queueFactory = $queueFactory;
+        $this->dataHelper = $dataHelper;
         $this->searchtapHelper = $searchtapHelper;
         parent::__construct($context);
     }
@@ -25,8 +25,9 @@ class Queue extends \Magento\Framework\App\Action\Action
         $type = $this->getRequest()->getParam('type');
         $action = $this->getRequest()->getParam('action');
         $storeId = $this->getRequest()->getParam('store');
+        $token = $this->getRequest()->getParam('token');
 
-        $response = $this->queueFactory->create()->getQueueData($count, $page, $type, $action, $storeId);
+        $response = $this->dataHelper->getQueueData($token, $count, $page, $type, $action, $storeId);
 
         $this->getResponse()->setHeader('content-type', 'application/json');
         $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);

@@ -1,7 +1,10 @@
 <?php
+
 namespace Bitqit\Searchtap\Helper\Products;
+
 use Magento\Catalog\Helper\Image as ImageHelper;
 use Bitqit\Searchtap\Helper\SearchtapHelper as SearchtapHelper;
+use Bitqit\Searchtap\Helper\Data as DataHelper;
 use Bitqit\Searchtap\Helper\Logger as Logger;
 use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as ProductAttributeCollectionFactory;
 
@@ -11,6 +14,7 @@ class AttributeHelper
     private $searchtapHelper;
     private $imageHelper;
     private $logger;
+    private $dataHelper;
 
     const INPUT_TYPE = [
         'select',
@@ -22,17 +26,23 @@ class AttributeHelper
         ProductAttributeCollectionFactory $productAttributeCollectionFactory,
         SearchtapHelper $searchtapHelper,
         ImageHelper $imageHelper,
-        Logger $logger
+        Logger $logger,
+        DataHelper $dataHelper
     )
     {
         $this->productAttributeCollectionFactory = $productAttributeCollectionFactory;
         $this->searchtapHelper = $searchtapHelper;
         $this->imageHelper = $imageHelper;
         $this->logger = $logger;
+        $this->dataHelper = $dataHelper;
     }
 
-    public function getFilterableAttributesCollection()
+    public function getFilterableAttributesCollection($token)
     {
+        if (!$this->dataHelper->checkPrivateKey($token)) {
+            return $this->searchtapHelper->error("Invalid token");
+        }
+
         $data = [];
         try {
             $collection = $this->productAttributeCollectionFactory->create()
@@ -91,8 +101,6 @@ class AttributeHelper
                         $data[$attribute] = (bool)$product->getData($attribute);
                         break;
                     case "text":
-                        $data[$attribute] = $this->searchtapHelper->getFormattedString($product->getData());
-                        break;
                     case "textarea":
                         $data[$attribute] = $this->searchtapHelper->getFormattedString($product->getData());
                         break;

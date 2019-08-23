@@ -8,7 +8,7 @@ use \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use \Magento\Store\Model\StoreManagerInterface;
 use \Magento\Catalog\Api\CategoryRepositoryInterface;
 use \Bitqit\Searchtap\Helper\Logger;
-
+use \Bitqit\Searchtap\Helper\Data;
 
 class CategoryHelper
 {
@@ -18,6 +18,7 @@ class CategoryHelper
     private $categoryRepository;
     private $searchtapHelper;
     private $logger;
+    private $dataHelper;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -25,7 +26,8 @@ class CategoryHelper
         CollectionFactory $categoryCollectionFactory,
         StoreManagerInterface $storeManager,
         CategoryRepositoryInterface $categoryRepository,
-        Logger $logger
+        Logger $logger,
+        Data $dataHelper
     )
     {
         $this->configHelper = $configHelper;
@@ -34,18 +36,18 @@ class CategoryHelper
         $this->categoryRepository = $categoryRepository;
         $this->searchtapHelper = $searchtapHelper;
         $this->logger = $logger;
+        $this->dataHelper = $dataHelper;
     }
 
-    public function getCategoriesJSON($storeId, $categoryIds = null)
+    public function getCategoriesJSON($token, $storeId, $categoryIds = null)
     {
+        if (!$this->dataHelper->checkPrivateKey($token)) {
+            return $this->searchtapHelper->error("Invalid token");
+        }
+
         if (!$this->configHelper->isStoreAvailable($storeId)) {
             return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
         }
-
-//        //check if indexing is enabled for the store
-//        if (!$this->configHelper->isIndexingEnabled($storeId)) {
-//            return $this->searchtapHelper->error("Indexing is not enabled for store ID " . $storeId, 400);
-//        }
 
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);

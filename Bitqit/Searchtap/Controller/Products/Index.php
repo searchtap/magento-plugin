@@ -30,6 +30,7 @@ class Index extends \Magento\Framework\App\Action\Action
         $imageWidth = $this->getRequest()->getParam('image_width', 300);
         $imageHeight = $this->getRequest()->getParam('image_height', 300);
         $onHoveImageType = $this->getRequest()->getParam('on_hover_image_type');
+        $token = $this->getRequest()->getParam('token');
 
         $imageConfig = array(
             "is_cache_image" => $isCacheImage,
@@ -42,7 +43,7 @@ class Index extends \Magento\Framework\App\Action\Action
         if ($productIds)
             $productIds = explode(',', $productIds);
 
-        $response = $this->productHelper->getProductsJSON($storeId, $count, $offset, $imageConfig, $productIds);
+        $response = $this->productHelper->getProductsJSON($token, $storeId, $count, $offset, $imageConfig, $productIds);
 
         $this->getResponse()->setHeader('content-type', 'application/json');
         $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);

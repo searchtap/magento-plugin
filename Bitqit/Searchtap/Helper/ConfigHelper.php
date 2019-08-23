@@ -3,8 +3,9 @@
 namespace Bitqit\Searchtap\Helper;
 
 use \Magento\Store\Model\ScopeInterface;
-use \Magento\Framework\App\Config\ScopeConfigInterface ;
-use \Magento\Store\Model\StoreManagerInterface ;
+use \Magento\Framework\App\Config\ScopeConfigInterface;
+use \Magento\Store\Model\StoreManagerInterface;
+use \Bitqit\Searchtap\Helper\SearchtapHelper;
 
 class ConfigHelper
 {
@@ -12,19 +13,24 @@ class ConfigHelper
 
     private $configInterface;
     private $storeManager;
+    private $searchtapHelper;
 
     public function __construct(
         ScopeConfigInterface $configInterface,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        SearchtapHelper $searchtapHelper
     )
     {
         $this->configInterface = $configInterface;
         $this->storeManager = $storeManager;
+        $this->searchtapHelper = $searchtapHelper;
     }
 
-    public function getPrivateToken($storeId) {
-        return $this->configInterface->getValue(self::PRIVATE_TOKEN, ScopeInterface::SCOPE_STORE, $storeId);
+    public function getPrivateToken()
+    {
+        return $this->configInterface->getValue(self::PRIVATE_TOKEN);
     }
+
 
     public function getAllStoreIds()
     {
@@ -32,8 +38,7 @@ class ConfigHelper
 
         $storeCollection = $this->storeManager->getStores();
 
-        foreach ($storeCollection as $store)
-        {
+        foreach ($storeCollection as $store) {
             $storeIds[] = $store->getId();
         }
 
@@ -65,6 +70,6 @@ class ConfigHelper
 //       else if ($this->isIndexingEnabled($storeId))
 //           $enabledStoreIds[] = $storeId;
 
-       return $enabledStoreIds;
+        return $enabledStoreIds;
     }
 }
