@@ -2,48 +2,35 @@
 
 namespace Bitqit\Searchtap\Helper;
 
-use  \Magento\Store\Model\ScopeInterface;
+use \Magento\Store\Model\ScopeInterface;
+use \Magento\Framework\App\Config\ScopeConfigInterface;
+use \Magento\Store\Model\StoreManagerInterface;
+use \Bitqit\Searchtap\Helper\SearchtapHelper;
 
 class ConfigHelper
 {
-    const APPLICATION_ID = 'searchtap_credentials/credentials/application_id';
-    const WRITE_TOKEN = 'searchtap_credentials/credentials/write_token';
-    const READ_TOKEN = 'searchtap_credentials/credentials/read_token';
-    const ENABLE_INDEXING = 'searchtap_credentials/credentials/enable_indexing';
-    const ENABLE_SEARCH = 'searchtap_credentials/credentials/enable_search';
+    const PRIVATE_TOKEN = 'searchtap_credentials/credentials/private_token';
 
     private $configInterface;
     private $storeManager;
+    private $searchtapHelper;
 
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $configInterface,
-        \Magento\Store\Model\StoreManagerInterface $storeManager
+        ScopeConfigInterface $configInterface,
+        StoreManagerInterface $storeManager,
+        SearchtapHelper $searchtapHelper
     )
     {
         $this->configInterface = $configInterface;
         $this->storeManager = $storeManager;
+        $this->searchtapHelper = $searchtapHelper;
     }
 
-    public function getApplicationID($storeId) {
-        return $this->configInterface->getValue(self::APPLICATION_ID, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function getWriteToken($storeId) {
-        return $this->configInterface->getValue(self::WRITE_TOKEN, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function getReadToken($storeId) {
-        return $this->configInterface->getValue(self::READ_TOKEN, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function isIndexingEnabled($storeId) {
-        return $this->configInterface->getValue(self::ENABLE_INDEXING, ScopeInterface::SCOPE_STORE, $storeId);
-    }
-
-    public function isSearchEnabled($storeId)
+    public function getPrivateToken()
     {
-        return $this->configInterface->getValue(self::ENABLE_SEARCH, ScopeInterface::SCOPE_STORE, $storeId);
+        return $this->configInterface->getValue(self::PRIVATE_TOKEN);
     }
+
 
     public function getAllStoreIds()
     {
@@ -51,8 +38,7 @@ class ConfigHelper
 
         $storeCollection = $this->storeManager->getStores();
 
-        foreach ($storeCollection as $store)
-        {
+        foreach ($storeCollection as $store) {
             $storeIds[] = $store->getId();
         }
 
@@ -74,16 +60,16 @@ class ConfigHelper
     {
         $enabledStoreIds = [];
 
-       if (!$storeId)
-       {
-           $stores = $this->getAllStoreIds();
-           foreach ($stores as $store)
-               if ($this->isIndexingEnabled($store))
-                   $enabledStoreIds[] = $store;
-       }
-       else if ($this->isIndexingEnabled($storeId))
-           $enabledStoreIds[] = $storeId;
+//       if (!$storeId)
+//       {
+//           $stores = $this->getAllStoreIds();
+//           foreach ($stores as $store)
+//               if ($this->isIndexingEnabled($store))
+//                   $enabledStoreIds[] = $store;
+//       }
+//       else if ($this->isIndexingEnabled($storeId))
+//           $enabledStoreIds[] = $storeId;
 
-       return $enabledStoreIds;
+        return $enabledStoreIds;
     }
 }

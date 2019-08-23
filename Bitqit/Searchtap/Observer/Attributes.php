@@ -28,13 +28,20 @@ class Attributes implements \Magento\Framework\Event\ObserverInterface
     {
         $attribute = $observer->getAttribute();
         $eventName = $observer->getEvent()->getName();
-
-        if ($attribute) {
-            if ($eventName === "catalog_entity_attribute_save_after")
+        switch($eventName){
+            case "catalog_entity_attribute_save_after":
                 $this->catalogEntityAttributeSaveAfter($attribute);
-            else if ($eventName === "catalog_entity_attribute_delete_after")
+                break;
+
+            case "catalog_entity_attribute_delete_after":
                 $this->catalogEntityAttributeDeleteAfter($attribute);
+                 break;
+
+            default:
+                break;
+
         }
+
     }
 
     public function catalogEntityAttributeSaveAfter($attribute)

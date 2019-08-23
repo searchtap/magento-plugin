@@ -2,110 +2,64 @@
 
 namespace Bitqit\Searchtap\Helper\Products;
 
+use \Bitqit\Searchtap\Helper\ConfigHelper;
+use \Bitqit\Searchtap\Helper\SearchtapHelper;
+use \Bitqit\Searchtap\Helper\Data;
+use \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use \Bitqit\Searchtap\Helper\Products\ImageHelper;
+use \Bitqit\Searchtap\Helper\Categories\CategoryHelper;
+use \Magento\Catalog\Model\ProductRepository;
+use \Magento\Catalog\Helper\Image;
+use \Magento\Store\Model\StoreManagerInterface;
+use \Magento\Directory\Model\Currency;
+use \Bitqit\Searchtap\Helper\Products\AttributeHelper;
+use \Magento\CatalogInventory\Api\StockRegistryInterface;
+
 class ProductHelper
 {
-    private $requiredAttributes;
+    private $attributeHelper;
     private $configHelper;
     private $imageHelper;
     private $searchtapHelper;
     private $productCollectionFactory;
-    private $discount_per;
-    private $objectManager;
-    private $categoryHelper;
-    private $attributeHelper;
-    private $storeManager;
     private $currencyFactory;
+    private $categoryHelper;
+    private $productImageHelper;
+    private $productRepository;
+    private $storeManager;
+    private $stockRepository;
+    private $dataHelper;
 
-    public function __construct(\Bitqit\Searchtap\Helper\ConfigHelper $configHelper,
-                                \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper,
-                                \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productFactory,
-                                \Bitqit\Searchtap\Helper\Products\ImageHelper $imageHelper,
-                                \Magento\Catalog\Model\Category $objectManager,
-                                \Bitqit\Searchtap\Helper\Categories\CategoryHelper $categoryHelper,
-                                \Bitqit\Searchtap\Helper\Products\AttributeHelper $attributeHelper,
-                                \Magento\Store\Model\StoreManagerInterface $storeManager,
-                                \Magento\Directory\Model\Currency $currencyFactory
+    public function __construct(
+        ConfigHelper $configHelper,
+        SearchtapHelper $searchtapHelper,
+        CollectionFactory $productFactory,
+        ImageHelper $imageHelper,
+        CategoryHelper $categoryHelper,
+        ProductRepository $productRepository,
+        Image $productImageHelper,
+        StoreManagerInterface $storeManager,
+        Currency $currencyFactory,
+        AttributeHelper $attributeHelper,
+        StockRegistryInterface $stockRepository,
+        Data $dataHelper
     )
     {
         $this->imageHelper = $imageHelper;
         $this->searchtapHelper = $searchtapHelper;
         $this->configHelper = $configHelper;
         $this->productCollectionFactory = $productFactory;
-        $this->objectManager = $objectManager;
         $this->categoryHelper = $categoryHelper;
-        $this->attributeHelper = $attributeHelper;
+        $this->productImageHelper = $productImageHelper;
+        $this->productRepository = $productRepository;
         $this->storeManager = $storeManager;
         $this->currencyFactory = $currencyFactory;
+        $this->attributeHelper = $attributeHelper;
+        $this->stockRepository = $stockRepository;
+        $this->dataHelper = $dataHelper;
     }
 
-    public function getDiscountPercentage($regularPrice, $specialPrice)
-    {
-        if ($specialPrice && $regularPrice) {
-            $discount = (($regularPrice - $specialPrice) / $regularPrice) * 100;
-            return round($discount);
-        }
-
-        return 0;
-    }
-
-    public function getCurrencySymbol($storeId)
-    {
-        $currencyCode =  $this->storeManager->getStore($storeId)->getCurrentCurrencyCode();
-        $currency = $this->currencyFactory->load($currencyCode);
-        return $currency->getCurrencySymbol();
-    }
-
-    public function getFormattedPrice($regularPrice, $specialPrice, $currencySymbol, $priceMin, $priceMax)
-    {
-        $data = [];
-
-        if ($regularPrice)
-            $data['regular_price'] = $currencySymbol . $regularPrice;
-        if ($specialPrice)
-            $data['special_price'] = $currencySymbol . $specialPrice;
-        if ($priceMin && $priceMax)
-            $data['price_range'] = $currencySymbol . $priceMin . " - " . $currencySymbol . $priceMax;
-
-        return $data;
-    }
-
-    public function getPrices($product, $storeId)
-    {
-        //todo: Index the prices based on customer group in Phase 3
-        //todo: Index the tier prices in Phase 4
-
-        $regularPrice = $this->searchtapHelper->getFormattedPrice($product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue());
-        $specialPrice = $this->searchtapHelper->getFormattedPrice($product->getFinalPrice());
-        $priceMin = $this->searchtapHelper->getFormattedPrice($product->getMinPrice());
-        $priceMax = $this->searchtapHelper->getFormattedPrice($product->getMaxPrice());
-        $specialFromDate = $product->getSpecialFromDate();
-        $specialToDate = $product->getSpecialToDate();
-        $currencySymbol = $this->getCurrencySymbol($storeId);
-        $formattedPrice = $this->getFormattedPrice($regularPrice, $specialPrice, $currencySymbol, $priceMin, $priceMax);
-
-        $data = [
-            'special_from_date' => $specialFromDate ? strtotime($specialFromDate) : false,
-            'special_to_date' => $specialToDate ? strtotime($specialToDate) : false,
-            'discount' => $this->getDiscountPercentage($regularPrice, $specialPrice)
-            ];
-
-        $productType = $product->getTypeId();
-
-        if ($productType === "simple" || $productType === "configurable") {
-            $data['price'] = $formattedPrice['regular_price'];
-
-            if ($specialPrice && $specialPrice !== $regularPrice) {
-                $data['price'] = $formattedPrice['special_price'];
-                $data['original_price'] = $formattedPrice['regular_price'];
-            }
-        } else {
-            $data['price'] = $formattedPrice['price_range'];
-        }
-
-        return $data;
-    }
-
-    public function getProductCollection($storeId, $productIds = null, $offset = null, $count = null)
+    public function getProductCollection($storeId, $offset, $count, $productIds)
     {
         $collection = $this->productCollectionFactory->create();
         $collection->setStore($storeId);
@@ -123,97 +77,205 @@ class ProductHelper
         return $collection;
     }
 
-    public function getProductsJSON($storeId, $productIds = null, $offset = null, $count = null)
+    public function getProductsJSON($token, $storeId, $count, $offset, $imageConfig, $productIds)
     {
-        if (!$this->configHelper->isIndexingEnabled($storeId)) {
-            echo "Indexing is disabled for the store: " . $storeId;
-            return;
+        if (!$this->dataHelper->checkPrivateKey($token)) {
+            return $this->searchtapHelper->error("Invalid token");
         }
+
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
 
-        $productCollection = $this->getProductCollection($storeId, $productIds);
+        $productCollection = $this->getProductCollection($storeId, $count, $offset, $productIds);
 
         $data = [];
 
         foreach ($productCollection as $product) {
-            //   $this->isIndexableProduct($product->getId());
-            $data[] = $this->getProductObject($product, $storeId);
+            $data[] = $this->getProductObject($product, $storeId, $imageConfig);
         }
+
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return json_encode($data);
+        return $this->searchtapHelper->okResult($data, count($data));
     }
 
     public function getFormattedString($string)
     {
-        return $this->searchtapHelper->getFormattedString($string);
+        return $this->searchtapHelper->getFormattedString(str_replace("\r\n", "", $string));
     }
 
-    public function getProductObject($product, $storeId)
+    public function getProductObject($product, $storeId, $imageConfig)
     {
         $data = [];
+
+        //Product Basic Information
         $data['id'] = $product->getId();
         $data['name'] = $this->getFormattedString($product->getName());
-        $data['sku'] = $product->getSKU();
-        $data['URL'] = $product->getProductUrl();
+        $data['url'] = $product->getProductUrl();
         $data['status'] = $product->getStatus();
-        $data['visibility'] = $product->getVisibility();// need todo
+        $data['visibility'] = $product->getVisibility();
         $data['type'] = $product->getTypeId();
-        $data['description'] = $this->getFormattedString(str_replace("\r\n", "", $product->getDescription()));
-        $data['base_image'] = $this->getFormattedString($this->imageHelper->generateImage($product, 'image'));
-        $data['thumbnail_image'] = $this->getFormattedString($this->imageHelper->generateImage($product, 'thumbnail'));
-        $data['created_at'] = $product->getCreatedAt();
-        $data['category'] = $this->getProductCategory($product, 'category');
-        $data['category_level'] = $this->getProductCategory($product, 'category_level');
-        $data['category_path'] = $this->getProductCategory($product, 'category_path', $storeId);
+        $data['created_at'] = strtotime($product->getCreatedAt());
+        $data['sku'] = $this->getSKUs($product);
+        $data['description'] = $this->getFormattedString($product->getDescription());
+        $data['short_description'] = $this->getFormattedString($product->getShortDescription());
+
+        //Product Stock Information
+        $data["in_stock"] = $this->stockRepository->getStockItem($product->getId())->getIsInStock();
+
+        //Product Price Information
         $data['price'] = $this->getPrices($product, $storeId);
 
-        $additionalAttributes = $this->attributeHelper->getAdditionalAttributes($product);
+        // Product Category Information
+        $data['_category_ids'] = $product->getCategoryIds();
 
-        return array_merge($data, $additionalAttributes);
+        $categoriesData = $this->categoryHelper->getProductCategories($product, $storeId);
+        $data['_categories'] = $categoriesData["_categories"];
+        $data["categories_path"] = $categoriesData["categories_path"];
+
+        //Product Image Information
+        $images = $this->imageHelper->getImages($imageConfig, $product);
+
+        //Additional Attributes Information
+        $additionalAttributes = $this->attributeHelper->getProductAdditionalAttributes($product);
+
+        //Get Product Variations Information
+        if ($product->getTypeId() === "configurable") {
+            $associatedProducts = $this->getAssociatedProducts($product, $storeId);
+            $data = array_merge($data, $associatedProducts);
+        }
+
+        $data = array_merge(
+            $data,
+            $images,
+            $categoriesData["category_level"],
+            $additionalAttributes
+        );
+
+        return $data;
     }
 
-    public function getAllImage($product)
+    public function getPrices($product, $storeId)
     {
-        $image = [];
-        $image['base_image'] = $this->imageHelper->generateImage($product, 'image');
-        $image['thumbnail_image'] = $this->imageHelper->generateImage($product, 'thumbnail');
-        // $image['media_gallary']=$this->imageHelper->getMediaGallary($product);
-        return $image;
+        //todo: check the fixed or dynamic price concept for bundle products
+        //todo: discounted price for bundle products
+
+        $regularPrice = $this->searchtapHelper->getFormattedPrice($product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue());
+        $specialPrice = $this->searchtapHelper->getFormattedPrice($product->getFinalPrice());
+
+        //todo: check for different versions
+//      $bundleObj = $product->getPriceInfo()->getPrice('final_price');
+
+        $priceMin = $this->searchtapHelper->getFormattedPrice($product->getMinPrice());
+        $priceMax = $this->searchtapHelper->getFormattedPrice($product->getMaxPrice());
+        $specialFromDate = $product->getSpecialFromDate();
+        $specialToDate = $product->getSpecialToDate();
+        $currencySymbol = $this->getCurrencySymbol($storeId);
+        $formattedPrice = $this->getFormattedPrice($regularPrice, $specialPrice, $currencySymbol, $priceMin, $priceMax);
+
+        $data = [
+            'special_from_date' => $specialFromDate ? strtotime($specialFromDate) : false,
+            'special_to_date' => $specialToDate ? strtotime($specialToDate) : false,
+            'discount' => $this->getDiscountPercentage($regularPrice, $specialPrice)
+        ];
+
+        $productType = $product->getTypeId();
+
+        if ($productType === "simple" || $productType === "configurable" || $productType === "downloadable") {
+            $data['price'] = $formattedPrice['regular_price'];
+
+            if ($specialPrice && $specialPrice !== $regularPrice) {
+                $data['price'] = $formattedPrice['special_price'];
+                $data['original_price'] = $formattedPrice['regular_price'];
+            }
+        } else {
+            $data['price'] = $formattedPrice['price_range'];
+        }
+
+        return $data;
     }
 
-    public function getProductCategory($product, $value = 'category', $storeId = 1)
+    public function getDiscountPercentage($regularPrice, $specialPrice)
     {
+        if ($specialPrice && $regularPrice) {
+            $discount = (($regularPrice - $specialPrice) / $regularPrice) * 100;
+            return round($discount);
+        }
+        return 0;
+    }
 
-        $getCategories = $product->getCategoryIds();
-        $path = "";
-        $categoryName = [];
-        $categoryPath = [];
-        $categoryLevel = [];
-        foreach ($getCategories as $category) {
-            $category = $this->objectManager->load($category);
-            if ((int)$category->getLevel() > 1) {
-                if ($path) $path .= "///" . $this->getFormattedString($category->getName());
-                else $path = $this->getFormattedString($category->getName());
-                $categoryName[] = $this->getFormattedString($category->getName());
-                $categoryPath[] = $path;
-                $categoryLevel[] = $category->getLevel();
+    public function getCurrencySymbol($storeId)
+    {
+        $currencyCode = $this->storeManager->getStore($storeId)->getCurrentCurrencyCode();
+        $currency = $this->currencyFactory->load($currencyCode);
 
+        return $currency->getCurrencySymbol();
+    }
+
+    public function getFormattedPrice($regularPrice, $specialPrice, $currencySymbol, $priceMin, $priceMax)
+    {
+        $data = [];
+
+        $data['regular_price'] = $currencySymbol . $regularPrice;
+        $data['special_price'] = $currencySymbol . $specialPrice;
+        $data['price_range'] = $currencySymbol . $priceMin . " - " . $currencySymbol . $priceMax;
+
+        return $data;
+    }
+
+    public function getAssociatedProducts($product, $storeId)
+    {
+        $associatedProducts = [];
+
+        $options = $product->getTypeInstance()->getConfigurableOptions($product);
+
+        foreach ($options as $option) {
+            foreach ($option as $simple) {
+                $product = $this->productRepository->get($simple['sku'], $storeId);
+                $stockStatus = $this->stockRepository->getStockItem($product->getId())->getIsInStock();
+                if ($stockStatus && $product->getStatus()) {
+                    if (!array_key_exists($simple['attribute_code'], $associatedProducts)
+                        || !in_array($simple['option_title'], $associatedProducts[$simple['attribute_code']]))
+                        $associatedProducts[$simple['attribute_code']][] = $this->getFormattedString($simple['option_title']);
+                }
             }
         }
-        switch ($value) {
-            case "category":
-                return $categoryName;
+
+        //todo: get images of child products that have color associated with them
+
+        return $associatedProducts;
+    }
+
+    public function getSKUs($product)
+    {
+        $sku = [];
+
+        switch ($product->getTypeId()) {
+            case 'configurable':
+                $sku[] = $product->getSKU();
+                $variationProduct = $product->getTypeInstance()->getUsedProducts($product);
+                foreach ($variationProduct as $child) {
+                    if ($child->getStatus())
+                        $sku[] = $child->getSku();
+                }
                 break;
-            case "category_level":
-                return $categoryLevel;
+            case 'grouped':
+                $sku[] = $product->getSKU();
+                $groupedProducts = $product->getTypeInstance(true)->getAssociatedProducts($product);
+                foreach ($groupedProducts as $child) {
+                    if ($child->getStatus())
+                        $sku[] = $child->getSku();
+                }
                 break;
-            case "category_path":
-                return $categoryPath;
-                break;
+            case 'downloadable':
+            case 'bundle':
+            case 'virtual':
+            case 'simple':
+            default:
+                $sku = $product->getSKU();
         }
-        return false;
+
+        return $sku;
     }
 }

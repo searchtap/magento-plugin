@@ -4,6 +4,7 @@ namespace Bitqit\Searchtap\Helper\Products;
 
 use Magento\Catalog\Helper\Image as ImageHelper;
 use Bitqit\Searchtap\Helper\SearchtapHelper as SearchtapHelper;
+use Bitqit\Searchtap\Helper\Data as DataHelper;
 use Bitqit\Searchtap\Helper\Logger as Logger;
 use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as ProductAttributeCollectionFactory;
 
@@ -13,6 +14,7 @@ class AttributeHelper
     private $searchtapHelper;
     private $imageHelper;
     private $logger;
+    private $dataHelper;
 
     const INPUT_TYPE = [
         'select',
@@ -24,68 +26,63 @@ class AttributeHelper
         ProductAttributeCollectionFactory $productAttributeCollectionFactory,
         SearchtapHelper $searchtapHelper,
         ImageHelper $imageHelper,
-        Logger $logger
+        Logger $logger,
+        DataHelper $dataHelper
     )
     {
         $this->productAttributeCollectionFactory = $productAttributeCollectionFactory;
         $this->searchtapHelper = $searchtapHelper;
         $this->imageHelper = $imageHelper;
         $this->logger = $logger;
+        $this->dataHelper = $dataHelper;
     }
 
-    public function getFilterableAttributesCollection()
+    public function getFilterableAttributesCollection($token)
     {
-        $data = [];
+        if (!$this->dataHelper->checkPrivateKey($token)) {
+            return $this->searchtapHelper->error("Invalid token");
+        }
 
+        $data = [];
         try {
             $collection = $this->productAttributeCollectionFactory->create()
                 ->addFieldToFilter('frontend_input', array('in' => self::INPUT_TYPE))
                 ->addFieldToFilter('is_filterable', true);
-
             foreach ($collection as $attribute) {
                 $data[] = $this->getObject($attribute);
             }
         } catch (error $e) {
             $this->logger->error($e);
         }
-
         return $this->searchtapHelper->okResult($data, count($data));
     }
 
     public function getProductUserDefinedAttributeCodes()
     {
         $data = [];
-
         try {
             $collection = $this->productAttributeCollectionFactory->create()
                 ->addFieldToFilter('is_user_defined', true);
-
             foreach ($collection as $attribute)
                 $data[] = $attribute->getAttributeCode();
-
         } catch (error $e) {
             $this->logger->error($e);
         }
-
         return $data;
     }
 
-    public function getAdditionalAttributes($product)
+    public function getProductAdditionalAttributes($product)
     {
         $data = [];
-
         try {
             $attributeCodes = $this->getProductUserDefinedAttributeCodes();
-
             foreach ($attributeCodes as $attribute) {
-
                 if (!$product->getData($attribute))
                     continue;
-
                 switch ($product->getResource()->getAttribute($attribute)->getFrontendInput()) {
                     case "multiselect":
                         $value = $product->getResource()->getAttribute($attribute)->getFrontend()->getValue($product);
-                        if ($value) $data[$attribute] = $this->searchtapHelper->getFormattedString(explode(",", $value));
+                        if ($value) $data[$attribute] = $this->searchtapHelper->getFormattedArray(explode(",", $value));
                         break;
                     case "select":
                         $value = $product->getResource()->getAttribute($attribute)->getFrontend()->getValue($product);
@@ -96,6 +93,7 @@ class AttributeHelper
                         $data[$attribute] = $this->searchtapHelper->getFormattedPrice($value);
                         break;
                     case "media_image":
+                        //todo: This logic should be in ImageHelper
                         $image = $this->imageHelper->init($product, 'category_page_list', ['type' => $attribute]);
                         $data[$attribute] = $image->getUrl();
                         break;
@@ -103,8 +101,6 @@ class AttributeHelper
                         $data[$attribute] = (bool)$product->getData($attribute);
                         break;
                     case "text":
-                        $data[$attribute] = $this->searchtapHelper->getFormattedString($product->getData());
-                        break;
                     case "textarea":
                         $data[$attribute] = $this->searchtapHelper->getFormattedString($product->getData());
                         break;
@@ -113,17 +109,17 @@ class AttributeHelper
                         if ($value) $data[$attribute] = $value;
                 }
             }
+
+            return $data;
         } catch (error $e) {
             $this->logger->error($e);
+            return [];
         }
-
-        return $data;
     }
 
     public function getObject($attribute)
     {
         $data = [];
-
         $data['id'] = $attribute->getId();
         $data['attribute_code'] = $attribute->getAttributeCode();
         $data['attribute_label'] = $attribute->getFrontendLabel();
@@ -131,7 +127,6 @@ class AttributeHelper
         $data['is_filterable'] = $attribute->getIsFilterable();
         $data['is_searchable'] = $attribute->getIsSearchable();
         $data['last_pushed_to_searchtap'] = $this->searchtapHelper->getCurrentDate();
-
         return $data;
     }
 
@@ -139,7 +134,6 @@ class AttributeHelper
     {
         if (in_array($attribute->getData('frontend_input'), self::INPUT_TYPE) && (bool)$attribute->getIsFilterable() === true)
             return true;
-
         return false;
     }
 }
