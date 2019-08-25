@@ -59,7 +59,7 @@ class ProductHelper
         $this->dataHelper = $dataHelper;
     }
 
-    public function getProductCollection($storeId, $offset, $count, $productIds)
+    public function getProductCollection($storeId, $count, $page, $productIds)
     {
         $collection = $this->productCollectionFactory->create();
         $collection->setStore($storeId);
@@ -68,8 +68,8 @@ class ProductHelper
         $collection->addAttributeToFilter('visibility', ['neq' => 1]);
         $collection->addMinimalPrice();
         $collection->addFinalPrice();
-        $collection->setPageSize($offset);
-        $collection->setCurPage($count);
+        $collection->setPageSize($count);
+        $collection->setCurPage($page);
 
         if ($productIds)
             $collection->addAttributeToFilter('entity_id', ['in' => $productIds]);
@@ -77,16 +77,20 @@ class ProductHelper
         return $collection;
     }
 
-    public function getProductsJSON($token, $storeId, $count, $offset, $imageConfig, $productIds)
+    public function getProductsJSON($token, $storeId, $count, $page, $imageConfig, $productIds)
     {
         if (!$this->dataHelper->checkPrivateKey($token)) {
             return $this->searchtapHelper->error("Invalid token");
         }
 
+        if (!$this->dataHelper->isStoreAvailable($storeId)) {
+            return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
+        }
+
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
 
-        $productCollection = $this->getProductCollection($storeId, $count, $offset, $productIds);
+        $productCollection = $this->getProductCollection($storeId, $count, $page, $productIds);
 
         $data = [];
 

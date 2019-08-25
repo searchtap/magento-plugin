@@ -4,8 +4,6 @@ namespace Bitqit\Searchtap\Helper;
 
 class SearchtapHelper
 {
-
-
     private $emulator;
     private $storeEmulation;
 
@@ -35,7 +33,6 @@ class SearchtapHelper
         }
         return $formatedValue;
     }
-
 
     public function startEmulation($storeId)
     {
@@ -90,5 +87,10 @@ class SearchtapHelper
             400 => \Magento\Framework\App\Response\Http::STATUS_CODE_400,
             403 => \Magento\Framework\App\Response\Http::STATUS_CODE_403,
         ];
+    }
+
+    public function getBaseApiUrl()
+    {
+        return "http://localhost:3000/api/v1/";
     }
 }

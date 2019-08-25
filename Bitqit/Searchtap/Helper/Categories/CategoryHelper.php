@@ -45,7 +45,7 @@ class CategoryHelper
             return $this->searchtapHelper->error("Invalid token");
         }
 
-        if (!$this->configHelper->isStoreAvailable($storeId)) {
+        if (!$this->dataHelper->isStoreAvailable($storeId)) {
             return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
         }
 

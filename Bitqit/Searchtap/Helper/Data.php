@@ -31,7 +31,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function checkPrivateKey($privateKey)
     {
-        $dbPrivateKey = $this->configHelper->getPrivateToken();
+        $dbPrivateKey = ($this->configHelper->getPrivateToken())->privateKey;
 
         if (!empty($privateKey)) {
             if ($privateKey === $dbPrivateKey)
@@ -87,5 +87,21 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $data = $this->queueFactory->create()->deleteQueueData(explode(',', $entityIds));
 
         return $this->searchtapHelper->okResult($data);
+    }
+
+    public function isStoreEnabled($store)
+    {
+        return $store->isActive();
+    }
+
+    public function isStoreAvailable($storeId)
+    {
+        $stores = $this->storeManager->getStores();
+
+        foreach ($stores as $store)
+            if (($store->getId() == $storeId) && $this->isStoreEnabled($store))
+                return true;
+
+        return false;
     }
 }

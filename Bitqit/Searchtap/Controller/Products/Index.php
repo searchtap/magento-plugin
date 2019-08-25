@@ -22,7 +22,7 @@ class Index extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         $storeId = $this->getRequest()->getParam('store', 1);
-        $offset = $this->getRequest()->getParam('offset', 1);
+        $page = $this->getRequest()->getParam('page', 1);
         $count = $this->getRequest()->getParam('count', 100);
         $productIds = $this->getRequest()->getParam('ids');
         $isCacheImage = $this->getRequest()->getParam('is_cache_image', true);
@@ -43,7 +43,7 @@ class Index extends \Magento\Framework\App\Action\Action
         if ($productIds)
             $productIds = explode(',', $productIds);
 
-        $response = $this->productHelper->getProductsJSON($token, $storeId, $count, $offset, $imageConfig, $productIds);
+        $response = $this->productHelper->getProductsJSON($token, $storeId, $count, $page, $imageConfig, $productIds);
 
         $this->getResponse()->setHeader('content-type', 'application/json');
         $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);

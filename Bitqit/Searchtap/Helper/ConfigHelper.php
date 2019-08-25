@@ -28,9 +28,9 @@ class ConfigHelper
 
     public function getPrivateToken()
     {
-        return $this->configInterface->getValue(self::PRIVATE_TOKEN);
+        $credentials = $this->configInterface->getValue(self::PRIVATE_TOKEN);
+        return json_decode($credentials);
     }
-
 
     public function getAllStoreIds()
     {
@@ -43,17 +43,6 @@ class ConfigHelper
         }
 
         return $storeIds;
-    }
-
-    public function isStoreAvailable($storeId)
-    {
-        $stores = $this->storeManager->getStores();
-
-        foreach ($stores as $store)
-            if ($store->getId() == $storeId)
-                return true;
-
-        return false;
     }
 
     public function getEnabledStoresForIndexing($storeId = 0)
