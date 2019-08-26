@@ -39,6 +39,10 @@ class AttributeHelper
 
     public function getFilterableAttributesCollection($token)
     {
+        if (!$this->dataHelper->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
         if (!$this->dataHelper->checkPrivateKey($token)) {
             return $this->searchtapHelper->error("Invalid token");
         }
@@ -48,12 +52,15 @@ class AttributeHelper
             $collection = $this->productAttributeCollectionFactory->create()
                 ->addFieldToFilter('frontend_input', array('in' => self::INPUT_TYPE))
                 ->addFieldToFilter('is_filterable', true);
+
             foreach ($collection as $attribute) {
                 $data[] = $this->getObject($attribute);
             }
         } catch (error $e) {
             $this->logger->error($e);
+            return $this->searchtapHelper->error($e);
         }
+
         return $this->searchtapHelper->okResult($data, count($data));
     }
 

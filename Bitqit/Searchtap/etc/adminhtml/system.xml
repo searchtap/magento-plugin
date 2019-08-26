@@ -13,8 +13,8 @@
             <resource>Bitqit_Searchtap::searchtap_config</resource>
             <group id="credentials" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Credentials</label>
-                <field id="private_token" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enter Private Token</label>
+                <field id="st_credentials_keys" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enter Credentials</label>
                 </field>
             </group>
         </section>

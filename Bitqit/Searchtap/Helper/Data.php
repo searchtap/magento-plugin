@@ -9,8 +9,6 @@ use \Bitqit\Searchtap\Model\QueueFactory as QueueFactory;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const PRIVATE_KEY = "private_key";
-
     private $configHelper;
     private $storeManager;
     private $searchtapHelper;
@@ -31,7 +29,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function checkPrivateKey($privateKey)
     {
-        $dbPrivateKey = $this->configHelper->getPrivateToken();
+        $dbPrivateKey = ($this->configHelper->getPrivateToken())->privateKey;
 
         if (!empty($privateKey)) {
             if ($privateKey === $dbPrivateKey)
@@ -41,8 +39,24 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return false;
     }
 
+    public function checkCredentials()
+    {
+        $credentials = $this->configHelper->getPrivateToken();
+
+        if ($credentials) {
+            if (isset($credentials->privateKey) && isset($credentials->uniqueId))
+                return true;
+        }
+
+        return false;
+    }
+
     public function getStoresData($token)
     {
+        if (!$this->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
         if (!$this->checkPrivateKey($token)) {
             return $this->searchtapHelper->error("Invalid token");
         }
@@ -65,6 +79,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getQueueData($token, $count, $page, $type, $action, $storeId)
     {
+        if (!$this->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
         if (!$this->checkPrivateKey($token)) {
             return $this->searchtapHelper->error("Invalid token");
         }
@@ -76,6 +94,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function deleteQueueData($token, $entityIds)
     {
+        if (!$this->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
+        if (!$this->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
         if (!$this->checkPrivateKey($token)) {
             return $this->searchtapHelper->error("Invalid token");
         }
@@ -87,5 +113,21 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $data = $this->queueFactory->create()->deleteQueueData(explode(',', $entityIds));
 
         return $this->searchtapHelper->okResult($data);
+    }
+
+    public function isStoreEnabled($store)
+    {
+        return $store->isActive();
+    }
+
+    public function isStoreAvailable($storeId)
+    {
+        $stores = $this->storeManager->getStores();
+
+        foreach ($stores as $store)
+            if (($store->getId() == $storeId) && $this->isStoreEnabled($store))
+                return true;
+
+        return false;
     }
 }

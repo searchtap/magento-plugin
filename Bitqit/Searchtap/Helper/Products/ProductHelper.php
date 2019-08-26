@@ -59,17 +59,18 @@ class ProductHelper
         $this->dataHelper = $dataHelper;
     }
 
-    public function getProductCollection($storeId, $offset, $count, $productIds)
+    public function getProductCollection($storeId, $count, $page, $productIds)
     {
         $collection = $this->productCollectionFactory->create();
         $collection->setStore($storeId);
         $collection->addAttributeToSelect('*');
         $collection->addAttributeToFilter('status', ['eq' => 1]);
         $collection->addAttributeToFilter('visibility', ['neq' => 1]);
-        $collection->addMinimalPrice();
-        $collection->addFinalPrice();
-        $collection->setPageSize($offset);
-        $collection->setCurPage($count);
+        $collection->setFlag('has_stock_status_filter', false);
+//        $collection->addMinimalPrice();
+//        $collection->addFinalPrice();
+        $collection->setPageSize($count);
+        $collection->setCurPage($page);
 
         if ($productIds)
             $collection->addAttributeToFilter('entity_id', ['in' => $productIds]);
@@ -77,16 +78,24 @@ class ProductHelper
         return $collection;
     }
 
-    public function getProductsJSON($token, $storeId, $count, $offset, $imageConfig, $productIds)
+    public function getProductsJSON($token, $storeId, $count, $page, $imageConfig, $productIds)
     {
+        if (!$this->dataHelper->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
         if (!$this->dataHelper->checkPrivateKey($token)) {
             return $this->searchtapHelper->error("Invalid token");
+        }
+
+        if (!$this->dataHelper->isStoreAvailable($storeId)) {
+            return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
         }
 
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
 
-        $productCollection = $this->getProductCollection($storeId, $count, $offset, $productIds);
+        $productCollection = $this->getProductCollection($storeId, $count, $page, $productIds);
 
         $data = [];
 
@@ -103,6 +112,15 @@ class ProductHelper
     public function getFormattedString($string)
     {
         return $this->searchtapHelper->getFormattedString(str_replace("\r\n", "", $string));
+    }
+
+    protected function getStockData($product)
+    {
+        if ($product->isSalable()) {
+            return $this->stockRepository->getStockItem($product->getId())->getIsInStock();
+        }
+
+        return false;
     }
 
     public function getProductObject($product, $storeId, $imageConfig)
@@ -122,7 +140,7 @@ class ProductHelper
         $data['short_description'] = $this->getFormattedString($product->getShortDescription());
 
         //Product Stock Information
-        $data["in_stock"] = $this->stockRepository->getStockItem($product->getId())->getIsInStock();
+        $data["in_stock"] = $this->getStockData($product);
 
         //Product Price Information
         $data['price'] = $this->getPrices($product, $storeId);
@@ -164,34 +182,45 @@ class ProductHelper
         $regularPrice = $this->searchtapHelper->getFormattedPrice($product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue());
         $specialPrice = $this->searchtapHelper->getFormattedPrice($product->getFinalPrice());
 
-        //todo: check for different versions
-//      $bundleObj = $product->getPriceInfo()->getPrice('final_price');
+        $priceObject = $product->getPriceInfo()->getPrice('final_price');
+        $priceMin = $priceObject->getMinimalPrice()->getValue();
+        $priceMax = $priceObject->getMaximalPrice()->getValue();
 
-        $priceMin = $this->searchtapHelper->getFormattedPrice($product->getMinPrice());
-        $priceMax = $this->searchtapHelper->getFormattedPrice($product->getMaxPrice());
+//        $priceMin = $this->searchtapHelper->getForm                                                                                   attedPrice($product->getMinPrice());
+//        $priceMax = $this->searchtapHelper->getFormattedPrice($product->getMaxPrice());
+
         $specialFromDate = $product->getSpecialFromDate();
         $specialToDate = $product->getSpecialToDate();
-        $currencySymbol = $this->getCurrencySymbol($storeId);
-        $formattedPrice = $this->getFormattedPrice($regularPrice, $specialPrice, $currencySymbol, $priceMin, $priceMax);
+//        $currencySymbol = $this->getCurrencySymbol($storeId);
+//        $formattedPrice = $this->getFormattedPrice($regularPrice, $specialPrice, $currencySymbol, $priceMin, $priceMax);
 
         $data = [
-            'special_from_date' => $specialFromDate ? strtotime($specialFromDate) : false,
-            'special_to_date' => $specialToDate ? strtotime($specialToDate) : false,
-            'discount' => $this->getDiscountPercentage($regularPrice, $specialPrice)
+            "price" => $regularPrice,
+            "special_price" => $specialPrice,
+            "currency_symbol" => $this->getCurrencySymbol($storeId),
+            "special_from_date" => $specialFromDate ? strtotime($specialFromDate) : false,
+            "special_to_date" => $specialToDate ? strtotime($specialToDate) : false,
+            "discount" => $this->getDiscountPercentage($regularPrice, $specialPrice),
+            "min_price" => $priceMin,
+            "max_price" => $priceMax,
+            "price_type" => $product->getPriceType(),
+            "price_view" => $product->getPriceView()
         ];
 
-        $productType = $product->getTypeId();
-
-        if ($productType === "simple" || $productType === "configurable" || $productType === "downloadable") {
-            $data['price'] = $formattedPrice['regular_price'];
-
-            if ($specialPrice && $specialPrice !== $regularPrice) {
-                $data['price'] = $formattedPrice['special_price'];
-                $data['original_price'] = $formattedPrice['regular_price'];
-            }
-        } else {
-            $data['price'] = $formattedPrice['price_range'];
-        }
+//        $productType = $product->getTypeId();
+//
+//        if ($productType === "simple" || $productType === "configurable" || $productType === "downloadable") {
+//            $data['price'] = $formattedPrice['regular_price'];
+//
+//            if ($specialPrice && $specialPrice !== $regularPrice) {
+//                $data['price'] = $formattedPrice['special_price'];
+//                $data['original_price'] = $formattedPrice['regular_price'];
+//            }
+//        } else {
+//            if ($product->getPriceType() == 0)
+//                $data['price'] = $formattedPrice['price_range'];
+//            else $data['price'] = $formattedPrice['special_price'];
+//        }
 
         return $data;
     }
