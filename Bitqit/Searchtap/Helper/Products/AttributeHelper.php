@@ -39,6 +39,10 @@ class AttributeHelper
 
     public function getFilterableAttributesCollection($token)
     {
+        if (!$this->dataHelper->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
         if (!$this->dataHelper->checkPrivateKey($token)) {
             return $this->searchtapHelper->error("Invalid token");
         }

@@ -3,20 +3,28 @@
 namespace Bitqit\Searchtap\Model\Indexer;
 
 use \Bitqit\Searchtap\Helper\Api;
+use \Bitqit\Searchtap\Helper\Data;
 
-class SearchtapQueue implements  \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
+class SearchtapQueue implements \Magento\Framework\Indexer\ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     private $api;
+    private $dataHelper;
 
     public function __construct(
-        Api $api
+        Api $api,
+        Data $dataHelper
     )
     {
         $this->api = $api;
+        $this->dataHelper = $dataHelper;
     }
 
-    public function execute ($ids)
+    public function execute($ids)
     {
+        if (!$this->dataHelper->checkCredentials()) {
+            echo "Invalid credentials";
+        }
+
         $this->api->requestToSync();
     }
 

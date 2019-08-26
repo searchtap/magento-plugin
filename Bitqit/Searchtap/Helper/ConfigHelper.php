@@ -9,7 +9,7 @@ use \Bitqit\Searchtap\Helper\SearchtapHelper;
 
 class ConfigHelper
 {
-    const PRIVATE_TOKEN = 'searchtap_credentials/credentials/private_token';
+    const PRIVATE_TOKEN = 'searchtap_credentials/credentials/st_credentials_keys';
 
     private $configInterface;
     private $storeManager;
