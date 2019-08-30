@@ -69,7 +69,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 "code" => $store->getCode(),
                 "name" => $store->getName(),
                 "is_active" => $store->isActive(),
-                "website_id" => $store->getWebsiteId()
+                "website_id" => $store->getWebsiteId(),
+                "url" => $store->getBaseUrl()
             );
             $stores[] = $data;
         }

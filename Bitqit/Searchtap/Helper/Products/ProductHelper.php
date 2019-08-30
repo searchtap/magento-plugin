@@ -176,9 +176,6 @@ class ProductHelper
 
     public function getPrices($product, $storeId)
     {
-        //todo: check the fixed or dynamic price concept for bundle products
-        //todo: discounted price for bundle products
-
         $regularPrice = $this->searchtapHelper->getFormattedPrice($product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue());
         $specialPrice = $this->searchtapHelper->getFormattedPrice($product->getFinalPrice());
 

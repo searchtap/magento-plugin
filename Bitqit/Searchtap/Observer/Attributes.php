@@ -32,16 +32,10 @@ class Attributes implements \Magento\Framework\Event\ObserverInterface
             case "catalog_entity_attribute_save_after":
                 $this->catalogEntityAttributeSaveAfter($attribute);
                 break;
-
             case "catalog_entity_attribute_delete_after":
                 $this->catalogEntityAttributeDeleteAfter($attribute);
                  break;
-
-            default:
-                break;
-
         }
-
     }
 
     public function catalogEntityAttributeSaveAfter($attribute)
