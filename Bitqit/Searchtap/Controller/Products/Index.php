@@ -26,10 +26,11 @@ class Index extends \Magento\Framework\App\Action\Action
         $count = $this->getRequest()->getParam('count', 100);
         $productIds = $this->getRequest()->getParam('ids');
         $isCacheImage = $this->getRequest()->getParam('is_cache_image', true);
-        $imageType = $this->getRequest()->getParam('image_type', "base_image");
+        $imageType = $this->getRequest()->getParam('image_type', 'base_image');
         $imageWidth = $this->getRequest()->getParam('image_width', 300);
         $imageHeight = $this->getRequest()->getParam('image_height', 300);
-        $onHoveImageType = $this->getRequest()->getParam('on_hover_image_type');
+        $onHoveImageType = $this->getRequest()->getParam('on_hover_image_type', 'base_image');
+        $onHoverImageStatus = $this->getRequest()->getParam('on_hover_image_status', false);
         $token = $this->getRequest()->getParam('token');
 
         $imageConfig = array(
@@ -37,6 +38,7 @@ class Index extends \Magento\Framework\App\Action\Action
             "image_type" => $imageType,
             "image_width" => $imageWidth,
             "image_height" => $imageHeight,
+            "on_hover_image_status" => $onHoverImageStatus,
             "on_hover_image_type" => $onHoveImageType
         );
 

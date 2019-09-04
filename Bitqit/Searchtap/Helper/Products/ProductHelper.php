@@ -106,7 +106,7 @@ class ProductHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return $this->searchtapHelper->okResult($data, count($data));
+        return $this->searchtapHelper->okResult($data, $productCollection->getSize());
     }
 
     public function getFormattedString($string)
