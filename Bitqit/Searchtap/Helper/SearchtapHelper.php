@@ -74,7 +74,7 @@ class SearchtapHelper
     public function error($message, $statusCode = 400)
     {
         return [
-            "output" => json_encode(array("data" => $message)),
+            "output" => json_encode(array("error" => $message)),
             "statusCode" => $statusCode
         ];
     }
