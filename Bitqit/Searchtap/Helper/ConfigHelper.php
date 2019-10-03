@@ -26,7 +26,7 @@ class ConfigHelper
         $this->searchtapHelper = $searchtapHelper;
     }
 
-    public function getPrivateToken()
+    public function getCredentials()
     {
         $credentials = $this->configInterface->getValue(self::PRIVATE_TOKEN);
         return json_decode($credentials);
@@ -43,6 +43,10 @@ class ConfigHelper
         }
 
         return $storeIds;
+    }
+
+    public function getStores() {
+        return $this->storeManager->getStores();
     }
 
     public function getEnabledStoresForIndexing($storeId = 0)

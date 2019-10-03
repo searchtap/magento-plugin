@@ -29,7 +29,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function checkPrivateKey($privateKey)
     {
-        $dbPrivateKey = ($this->configHelper->getPrivateToken())->privateKey;
+        $dbPrivateKey = ($this->configHelper->getCredentials())->privateKey;
 
         if (!empty($privateKey)) {
             if ($privateKey === $dbPrivateKey)
@@ -41,7 +41,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function checkCredentials()
     {
-        $credentials = $this->configHelper->getPrivateToken();
+        $credentials = $this->configHelper->getCredentials();
 
         if ($credentials) {
             if (isset($credentials->privateKey) && isset($credentials->uniqueId))
@@ -49,6 +49,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         return false;
+    }
+
+    public function getStores() {
+        return $this->storeManager->getStores();
     }
 
     public function getStoresData($token)
@@ -62,7 +66,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         $stores = [];
-        $collection = $this->storeManager->getStores();
+        $collection = $this->getStores();
         foreach ($collection as $store) {
             $data = array(
                 "id" => $store->getId(),

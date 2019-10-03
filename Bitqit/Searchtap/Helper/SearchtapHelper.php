@@ -91,6 +91,6 @@ class SearchtapHelper
 
     public function getBaseApiUrl()
     {
-        return "http://localhost:3000/api/v1/";
+        return "http://localhost:3000/api/v1";
     }
 }
