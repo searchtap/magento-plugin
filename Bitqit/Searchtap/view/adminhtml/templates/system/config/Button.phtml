@@ -11,12 +11,12 @@
                 loaderArea:     false,
                 asynchronous:   true,
                 parameters:     params,
-                onSuccess: function(transport) {
-                    var response = JSON.parse(transport.responseText);
+                onSuccess: function(data) {
                     alert('Stores are synced successfully');
-                }
-                error: function(xhr, ajaxOptions, thrownError) {
-                    alert(thrownError);
+                    // var response = JSON.parse(transport.responseText);
+                },
+                onError: function(error) {
+                    alert("error");
                 }
             });
         }
