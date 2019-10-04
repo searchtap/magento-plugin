@@ -1,0 +1,30 @@
+<script>
+    require([
+        'jquery',
+        'prototype',
+    ], function(jQuery){
+        function function_name() {
+            params = {
+            };
+
+            new Ajax.Request('<?php echo $block->getAjaxUrl() ?>', {
+                loaderArea:     false,
+                asynchronous:   true,
+                parameters:     params,
+                onSuccess: function(data) {
+                    alert('Stores are synced successfully');
+                    // var response = JSON.parse(transport.responseText);
+                },
+                onError: function(error) {
+                    alert("error");
+                }
+            });
+        }
+
+        jQuery('#btnid').click(function () {
+            function_name ();
+        });
+    });
+</script>
+
+<?php echo $block->getButtonHtml() ?>

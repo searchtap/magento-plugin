@@ -74,7 +74,7 @@ class SearchtapHelper
     public function error($message, $statusCode = 400)
     {
         return [
-            "output" => json_encode(array("data" => $message)),
+            "output" => json_encode(array("error" => $message)),
             "statusCode" => $statusCode
         ];
     }
@@ -91,6 +91,6 @@ class SearchtapHelper
 
     public function getBaseApiUrl()
     {
-        return "http://localhost:3000/api/v1/";
+        return "https://magento-portal.searchtap.net/api/v1";
     }
 }

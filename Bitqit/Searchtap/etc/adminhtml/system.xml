@@ -16,6 +16,11 @@
                 <field id="st_credentials_keys" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enter Credentials</label>
                 </field>
+
+                <field id="build_indexes" translate="label comment tooltip" type="button" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Sync Stores</label>
+                    <frontend_model>Bitqit\Searchtap\Block\System\Config\Button</frontend_model>
+                </field>
             </group>
         </section>
 

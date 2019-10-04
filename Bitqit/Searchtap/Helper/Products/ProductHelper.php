@@ -106,7 +106,7 @@ class ProductHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return $this->searchtapHelper->okResult($data, count($data));
+        return $this->searchtapHelper->okResult($data, $productCollection->getSize());
     }
 
     public function getFormattedString($string)
@@ -176,9 +176,6 @@ class ProductHelper
 
     public function getPrices($product, $storeId)
     {
-        //todo: check the fixed or dynamic price concept for bundle products
-        //todo: discounted price for bundle products
-
         $regularPrice = $this->searchtapHelper->getFormattedPrice($product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue());
         $specialPrice = $this->searchtapHelper->getFormattedPrice($product->getFinalPrice());
 
