@@ -12,8 +12,11 @@
                 asynchronous:   true,
                 parameters:     params,
                 onSuccess: function(transport) {
-<!--                    --><?php //echo $block->sendStoresToDashboard(); ?>
                     var response = JSON.parse(transport.responseText);
+                    alert('Stores are synced successfully');
+                }
+                error: function(xhr, ajaxOptions, thrownError) {
+                    alert(thrownError);
                 }
             });
         }
