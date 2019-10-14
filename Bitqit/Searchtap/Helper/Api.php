@@ -6,6 +6,7 @@ use \Bitqit\Searchtap\Helper\SearchtapHelper;
 use \Bitqit\Searchtap\Helper\Logger;
 use \Bitqit\Searchtap\Helper\Data;
 use Bitqit\Searchtap\Helper\ConfigHelper;
+use mysql_xdevapi\Exception;
 
 class Api
 {
@@ -30,7 +31,7 @@ class Api
         $this->configHelper = $configHelper;
     }
 
-    private function _getCurlObject($apiUrl, $requestType, $data = null)
+    private function _getCurlObject($apiUrl, $requestType, $token, $data = null)
     {
         $curlObject = array(
             CURLOPT_URL => $apiUrl,
@@ -46,7 +47,8 @@ class Api
             CURLOPT_POSTFIELDS => $data,
             CURLOPT_HTTPHEADER => array(
                 "cache-control: no-cache",
-                "content-type: application/json"
+                "content-type: application/json",
+                "Authorization: Bearer " . $token
             )
         );
 
@@ -71,13 +73,13 @@ class Api
                     'clientStoreId' => $store->getId(),
                     'clientStoreUrl' => $store->getBaseUrl(),
                     'clientStoreName' => $store->getName(),
-                    'clientStoreStatus' => $store->isActive(),
-                    'clientUniqueId' => $credentials->uniqueId,
-                    'clientPrivateKey' => $credentials->privateKey
+                    'clientStoreStatus' => $store->isActive()
                 );
             }
 
-            $config = $this->_getCurlObject($url, 'POST', json_encode($data));
+            $token = $credentials->uniqueId . "," . $credentials->privateKey;
+
+            $config = $this->_getCurlObject($url, 'POST', $token, json_encode($data));
             $curl = curl_init();
 
             curl_setopt_array($curl, $config);
@@ -87,6 +89,7 @@ class Api
             $this->logger->add($statusCode);
         } catch (error $e) {
             $this->logger->error($e);
+            throw new Exception($e);
         }
     }
 
