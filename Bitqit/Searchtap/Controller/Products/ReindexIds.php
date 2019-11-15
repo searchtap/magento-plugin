@@ -2,7 +2,7 @@
 
 namespace Bitqit\Searchtap\Controller\Products;
 
-class reindexIds extends \Magento\Framework\App\Action\Action
+class ReindexIds extends \Magento\Framework\App\Action\Action
 {
     private $productHelper;
     private $searchtapHelper;
