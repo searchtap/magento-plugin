@@ -10,6 +10,9 @@ use \Bitqit\Searchtap\Helper\SearchtapHelper;
 class ConfigHelper
 {
     const PRIVATE_TOKEN = 'searchtap_credentials/credentials/st_credentials_keys';
+    const JS_CONFIG = 'searchtap_credentials/credentials/st_config';
+    const SCRIPT_URL = 'searchtap_credentials/credentials/st_script_url';
+    const CSS_URL = 'searchtap_credentials/credentials/st_css_url';
 
     private $configInterface;
     private $storeManager;
@@ -32,6 +35,20 @@ class ConfigHelper
         return json_decode($credentials);
     }
 
+    public function getJsConfiguration()
+    {
+        $jsConfig = $this->configInterface->getValue(self::JS_CONFIG);
+        return json_decode($jsConfig);
+    }
+
+    public function getScriptUrl() {
+        return $this->configInterface->getValue(self::SCRIPT_URL);
+    }
+
+    public function getCssUrl() {
+        return $this->configInterface->getValue(self::CSS_URL);
+    }
+
     public function getAllStoreIds()
     {
         $storeIds = [];
@@ -45,9 +62,12 @@ class ConfigHelper
         return $storeIds;
     }
 
-    public function getStores() {
+    public function getStores()
+    {
         return $this->storeManager->getStores();
     }
+
+
 
     public function getEnabledStoresForIndexing($storeId = 0)
     {

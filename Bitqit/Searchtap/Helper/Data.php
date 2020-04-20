@@ -6,25 +6,41 @@ use \Bitqit\Searchtap\Helper\ConfigHelper;
 use \Bitqit\Searchtap\Helper\SearchtapHelper;
 use \Magento\Store\Model\StoreManagerInterface;
 use \Bitqit\Searchtap\Model\QueueFactory as QueueFactory;
+use Magento\Framework\App\Config\Storage\WriterInterface;
+use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\App\Cache\Frontend\Pool;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    const JS_CONFIG = 'searchtap_credentials/credentials/st_config';
+    const SCRIPT_URL = 'searchtap_credentials/credentials/st_script_url';
+    const CSS_URL = 'searchtap_credentials/credentials/st_css_url';
+
     private $configHelper;
     private $storeManager;
     private $searchtapHelper;
     private $queueFactory;
+    private $configInterface;
+    private $cacheTypeList;
+    private $cacheFrontendPool;
 
     public function __construct(
         ConfigHelper $configHelper,
         StoreManagerInterface $storeManager,
         SearchtapHelper $searchtapHelper,
-        QueueFactory $queueFactory
+        QueueFactory $queueFactory,
+        WriterInterface $configInterface,
+        TypeListInterface $cacheTypeList,
+        Pool $cacheFrontendPool
     )
     {
         $this->configHelper = $configHelper;
         $this->storeManager = $storeManager;
         $this->searchtapHelper = $searchtapHelper;
         $this->queueFactory = $queueFactory;
+        $this->configInterface = $configInterface;
+        $this->cacheTypeList = $cacheTypeList;
+        $this->cacheFrontendPool = $cacheFrontendPool;
     }
 
     public function checkPrivateKey($privateKey)
@@ -51,7 +67,36 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return false;
     }
 
-    public function getStores() {
+    public function setJSConfiguration($token, $data)
+    {
+        if (!$this->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
+        $token = str_replace("Bearer ", "", $token);
+        if (!$this->checkPrivateKey($token)) {
+            return $this->searchtapHelper->error("Invalid token");
+        }
+
+        $this->configInterface->save(self::JS_CONFIG, json_encode($data["config"]));
+        $this->configInterface->save(self::SCRIPT_URL, $data["scriptUrl"]);
+        $this->configInterface->save(self::CSS_URL, $data["cssUrl"]);
+        $this->_cleanCache();
+
+        return $this->searchtapHelper->okResult("ok");
+    }
+
+    private function _cleanCache() {
+        $types = ['config', 'full_page'];
+        foreach ($types as $type)
+            $this->cacheTypeList->cleanType($type);
+
+        foreach ($this->cacheFrontendPool as $pool)
+            $pool->getBackend()->clean();
+    }
+
+    public function getStores()
+    {
         return $this->storeManager->getStores();
     }
 
