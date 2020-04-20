@@ -17,6 +17,18 @@
                     <label>Enter Credentials</label>
                 </field>
 
+                <field id="st_script_url" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enter script url</label>
+                </field>
+
+                <field id="st_css_url" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enter css url</label>
+                </field>
+
+                <field id="st_config" type="text"></field>
+<!--                <field id="st_script_url" type="text"></field>-->
+<!--                <field id="st_css_url" type="text"></field>-->
+
                 <field id="build_indexes" translate="label comment tooltip" type="button" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Sync Stores</label>
                     <frontend_model>Bitqit\Searchtap\Block\System\Config\Button</frontend_model>

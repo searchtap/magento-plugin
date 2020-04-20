@@ -131,8 +131,9 @@ class AttributeHelper
         $data['attribute_code'] = $attribute->getAttributeCode();
         $data['attribute_label'] = $attribute->getFrontendLabel();
         $data['type'] = $attribute->getData('frontend_input');
-        $data['is_filterable'] = $attribute->getIsFilterable();
-        $data['is_searchable'] = $attribute->getIsSearchable();
+        $data['is_filterable'] = (int)$attribute->getIsFilterable();
+        $data['is_searchable'] = (int)$attribute->getIsSearchable();
+        $data['position'] = (int)$attribute->getPosition();
         $data['last_pushed_to_searchtap'] = $this->searchtapHelper->getCurrentDate();
         return $data;
     }

@@ -87,7 +87,7 @@ class Api
             $result = curl_exec($curl);
             $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             $this->logger->add($statusCode);
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
             throw new Exception($e);
         }

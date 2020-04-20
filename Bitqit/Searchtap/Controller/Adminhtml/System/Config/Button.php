@@ -3,6 +3,7 @@ namespace Bitqit\Searchtap\Controller\Adminhtml\System\Config;
 
 use \Magento\Catalog\Model\Product\Visibility;
 use Bitqit\Searchtap\Helper\Api;
+use mysql_xdevapi\Exception;
 
 class Button extends \Magento\Backend\App\Action
 {
@@ -20,6 +21,10 @@ class Button extends \Magento\Backend\App\Action
 
     public function execute()
     {
-        $this->apiHelper->requestToSyncStores();
+        try {
+            $this->apiHelper->requestToSyncStores();
+        } catch (error $e) {
+            throw new Exception($e);
+        }
     }
 }
