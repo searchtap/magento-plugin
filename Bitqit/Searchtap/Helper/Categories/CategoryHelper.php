@@ -39,7 +39,7 @@ class CategoryHelper
         $this->dataHelper = $dataHelper;
     }
 
-    public function getCategoriesJSON($token, $storeId, $categoryIds = null)
+    public function getCategoriesJSON($token, $storeId, $categoryIds = null, $page, $count)
     {
         if (!$this->dataHelper->checkCredentials()) {
             return $this->searchtapHelper->error("Invalid credentials");
@@ -56,7 +56,7 @@ class CategoryHelper
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
 
-        $collection = $this->getCategoryCollection($storeId, $categoryIds);
+        $collection = $this->getCategoryCollection($storeId, $categoryIds, $page, $count);
 
         $data = [];
 
@@ -66,7 +66,6 @@ class CategoryHelper
 
             $data[] = $this->getObject($category, $storeId);
         }
-
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
@@ -89,7 +88,7 @@ class CategoryHelper
         ];
     }
 
-    public function getCategoryCollection($storeId, $categoryIds = null)
+    public function getCategoryCollection($storeId, $categoryIds = null, $page, $count)
     {
         try {
             $requiredAttributes = $this->getRequiredAttributes();
@@ -103,10 +102,15 @@ class CategoryHelper
             $collection->addAttributeToFilter('level', ['gt' => 1]);
             $collection->addAttributeToFilter('path', ['like' => "1/$rootCategoryId/%"]);
 
-            if ($categoryIds)
+            if ($categoryIds){
                 $collection->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
-
+            }
+            else {
+                $collection->setPageSize($count);
+                $collection->setCurPage($page);
+            }
             return $collection;
+
         } catch (error $e) {
             $this->logger->error($e);
             return [];
@@ -195,8 +199,8 @@ class CategoryHelper
         $data['name'] = $this->getFormattedString($category->getName());
         $data['url'] = $category->getUrl();
         $data['product_count'] = $this->getProductCount($category, $storeId);
-        $data['is_active'] = (bool)$category->getIsActive();
-        $data['include_in_menu'] = (bool)$category->getIncludeInMenu();
+        $data['is_active'] = (int)$category->getIsActive();
+        $data['include_in_menu'] = (int)$category->getIncludeInMenu();
         $data['description'] = $this->getFormattedString($category->getDescription());
         $data['meta_title'] = $this->getFormattedString($category->getMetaTitle());
         $data['meta_description'] = $this->getFormattedString($category->getMetaDescription());
@@ -205,7 +209,7 @@ class CategoryHelper
         $data['parent_id'] = (int)$category->getParentId();
         $data['path'] = $this->getCategoryPath($category, $storeId);
         $data['created_at'] = strtotime($category->getCreatedAt());
-        $data['isLastLevel'] = $category->hasChildren() ? false : true;
+        $data['isLastLevel'] = $category->hasChildren() ? 0 : 1;
         $data['last_pushed_to_searchtap'] = $this->searchtapHelper->getCurrentDate();
 
         return $data;
