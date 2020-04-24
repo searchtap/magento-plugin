@@ -39,7 +39,7 @@ class CategoryHelper
         $this->dataHelper = $dataHelper;
     }
 
-    public function getCategoriesJSON($token, $storeId, $categoryIds = null, $page, $count)
+    public function getCategoriesJSON($token, $storeId,  $page, $count, $categoryIds = null)
     {
         if (!$this->dataHelper->checkCredentials()) {
             return $this->searchtapHelper->error("Invalid credentials");
@@ -101,14 +101,12 @@ class CategoryHelper
             $collection->addAttributeToFilter('is_active', ['eq' => true]);
             $collection->addAttributeToFilter('level', ['gt' => 1]);
             $collection->addAttributeToFilter('path', ['like' => "1/$rootCategoryId/%"]);
+            $collection->setPageSize($count);
+            $collection->setCurPage($page);
 
-            if ($categoryIds){
+            if ($categoryIds)
                 $collection->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
-            }
-            else {
-                $collection->setPageSize($count);
-                $collection->setCurPage($page);
-            }
+
             return $collection;
 
         } catch (error $e) {
