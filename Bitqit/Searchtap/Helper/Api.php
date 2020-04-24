@@ -70,10 +70,10 @@ class Api
             $data = [];
             foreach ($stores as $store) {
                 $data[] = array(
-                    'clientStoreId' => $store->getId(),
-                    'clientStoreUrl' => $store->getBaseUrl(),
-                    'clientStoreName' => $store->getName(),
-                    'clientStoreStatus' => $store->isActive()
+                    'storeId' => $store->getId(),
+                    'storeUrl' => $store->getBaseUrl(),
+                    'storeName' => $store->getName(),
+                    'storeStatus' => $store->isActive()
                 );
             }
 

@@ -37,8 +37,8 @@ class ConfigHelper
 
     public function getJsConfiguration()
     {
-        $jsConfig = $this->configInterface->getValue(self::JS_CONFIG);
-        return json_decode($jsConfig);
+        return $this->configInterface->getValue(self::JS_CONFIG);
+//        return json_decode($jsConfig);
     }
 
     public function getScriptUrl() {
