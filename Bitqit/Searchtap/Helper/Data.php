@@ -78,9 +78,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return $this->searchtapHelper->error("Invalid token");
         }
 
-        $this->configInterface->save(self::JS_CONFIG, json_encode($data["config"]));
-        $this->configInterface->save(self::SCRIPT_URL, $data["scriptUrl"]);
-        $this->configInterface->save(self::CSS_URL, $data["cssUrl"]);
+        $this->configInterface->save(self::JS_CONFIG, json_encode($data->config));
+        $this->configInterface->save(self::SCRIPT_URL, $data->scriptUrl);
+        $this->configInterface->save(self::CSS_URL, $data->cssUrl);
         $this->_cleanCache();
 
         return $this->searchtapHelper->okResult("ok");

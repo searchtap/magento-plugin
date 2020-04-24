@@ -17,17 +17,20 @@
                     <label>Enter Credentials</label>
                 </field>
 
+                <field id="st_config" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enter Credentials</label>
+                </field>
                 <field id="st_script_url" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enter script url</label>
+                    <label>Enter Credentials</label>
                 </field>
-
                 <field id="st_css_url" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enter css url</label>
+                    <label>Enter Credentials</label>
                 </field>
 
-                <field id="st_config" type="text"></field>
-<!--                <field id="st_script_url" type="text"></field>-->
-<!--                <field id="st_css_url" type="text"></field>-->
+
+<!--                <field id="st_config" type="text" showInWebsite="1" showInStore="1" ><label>Config</label></field>-->
+<!--                <field id="st_script_url" type="text" showInWebsite="1" showInStore="1" ><label>Script</label></field>-->
+<!--                <field id="st_css_url" type="text" showInWebsite="1" showInStore="1" ><label>CSS</label></field>-->
 
                 <field id="build_indexes" translate="label comment tooltip" type="button" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
                     <label>Sync Stores</label>

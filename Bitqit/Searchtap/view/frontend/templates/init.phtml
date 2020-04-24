@@ -1,14 +1,9 @@
 <?php
 
 $jsConfig = $block->getConfiguration();
-$scriptUrl = $block->getScriptUrl();
-$cssUrl = $block->getCssUrl();
 
 ?>
 
 <script>
     window.searchtapConfig = <?php echo $jsConfig; ?>;
 </script>
-
-<script type="text/javascript" src="<?php echo $scriptUrl ?>"></script>
-<link href="<?php echo $cssUrl?>" rel="stylesheet" type="text/css" media="all">

@@ -59,7 +59,7 @@ class ProductHelper
         $this->dataHelper = $dataHelper;
     }
 
-    public function getProductCollection($storeId, $count, $page, $productIds = null)
+    public function getProductCollection($storeId, $count, $page, $productIds)
     {
         $collection = $this->productCollectionFactory->create();
         $collection->setStore($storeId);
@@ -303,31 +303,5 @@ class ProductHelper
         }
 
         return $sku;
-    }
-
-    public function getReindexIds($storeId, $count, $page, $token)
-    {
-        if (!$this->dataHelper->checkCredentials()) {
-            return $this->searchtapHelper->error("Invalid credentials");
-        }
-
-        if (!$this->dataHelper->checkPrivateKey($token)) {
-            return $this->searchtapHelper->error("Invalid token");
-        }
-
-        if (!$this->dataHelper->isStoreAvailable($storeId)) {
-            return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
-        }
-
-        //Start Frontend Emulation
-        $this->searchtapHelper->startEmulation($storeId);
-        $productCollection = $this->getProductCollection($storeId, $count, $page);
-        $data = [];
-
-        foreach ($productCollection as $product) {
-            $data[] = $product->getId();
-
-        }
-        return $this->searchtapHelper->okResult($data, $productCollection->getSize());
     }
 }
