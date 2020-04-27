@@ -11,7 +11,7 @@ use Magento\Framework\Data\FormFactory;
 use Magento\Cms\Model\Wysiwyg\Config;
 use Bitqit\Searchtap\Model\System\Config\Status;
 
-class Setting extends Generic implements TabInterface
+class Settings extends Generic implements TabInterface
 {
     /**
      * @var \Magento\Cms\Model\Wysiwyg\Config
@@ -62,7 +62,7 @@ class Setting extends Generic implements TabInterface
 
         $fieldset = $form->addFieldset(
             'base_fieldset',
-            ['legend' => __('Enable Stores')]
+            ['legend' => __('Select Data Center')]
         );
 
       /*  if ($model->getId()) {
