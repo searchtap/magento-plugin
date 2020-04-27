@@ -10,6 +10,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Data\FormFactory;
 use Magento\Cms\Model\Wysiwyg\Config;
 use Bitqit\Searchtap\Model\System\Config\Status;
+use Bitqit\Searchtap\Helper\Configuration\PluginHelper;
 
 class Settings extends Generic implements TabInterface
 {
@@ -22,26 +23,21 @@ class Settings extends Generic implements TabInterface
      * @var \Bitqit\Searchtap\Model\Config\Status
      */
     protected $_newsStatus;
+    protected $_apiHelper;
 
-    /**
-     * @param Context $context
-     * @param Registry $registry
-     * @param FormFactory $formFactory
-     * @param Config $wysiwygConfig
-     * @param Status $newsStatus
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         Registry $registry,
         FormFactory $formFactory,
         Config $wysiwygConfig,
         Status $newsStatus,
+        PluginHelper $_apiHelper,
         array $data = []
     )
     {
         $this->_wysiwygConfig = $wysiwygConfig;
         $this->_newsStatus = $newsStatus;
+        $this->_apiHelper=$_apiHelper;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -60,50 +56,35 @@ class Settings extends Generic implements TabInterface
         $form->setHtmlIdPrefix('configuration_');
         $form->setFieldNameSuffix('configuration');
 
-        $fieldset = $form->addFieldset(
+        $dataCenter= $form->addFieldset(
             'base_fieldset',
             ['legend' => __('Select Data Center')]
         );
-
-      /*  if ($model->getId()) {
-            $fieldset->addField(
-                'id',
-                'hidden',
-                ['name' => 'id']
-            );
-        }
-     */
         $storeManager = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Store\Model\StoreManagerInterface');
         $stores = $storeManager->getStores(true, false);
         $i=0;
         foreach ($stores as $store) {
               $i++;
 
-            $fieldset->addField('select'.$i, 'select', array(
+            $dataCenter->addField('select'.$i, 'select', array(
                 'label' => $store->getName(),
                 'class' => 'required-entry',
-                'style'=>'
-    font-weight: 300;
-    background: lemonchiffon;
-',
+                'style'=>'font-weight: 600;background: lemonchiffon;',
                 'required' => true,
                 'name' => 'title',
-                'onclick' => "",
-                'onchange' => "",
                 'value' => '1',
-                'values' => array('-1' => 'Select Data Center', '1' => 'India', '2' => 'US-NYC', '3' => 'Australia'),
+               // 'values' => array('-1' => 'Select Data Center', '1' => 'India', '2' => 'US-NYC', '3' => 'Australia'),
+                'values' => $this->_apiHelper->getDataCenterList(),
                 'tabindex' => 1
             ));
         }
-        $fieldset->addField('link1', 'link', array(
-
-            'after_element_html' => '<button style="    background: #eb5202;
-    border-color: #eb5202;
-    color: #fbfbfb;">Save and Sync Store</button>'
+        $dataCenter->addField('dcsubmit', 'submit', array(
+            'required'  => true,
+            'value'  => 'Save and Sync Store',
+            'tabindex' => 1,
+            'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%;'
         ));
 
-        $data = $model->getData();
-        $form->setValues($data);
         $this->setForm($form);
 
         return parent::_prepareForm();

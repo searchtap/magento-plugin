@@ -9,6 +9,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Data\FormFactory;
 use Magento\Cms\Model\Wysiwyg\Config;
 use Bitqit\Searchtap\Model\System\Config\Status;
+use Bitqit\Searchtap\Helper\Configuration\PluginHelper;
 
 class Info extends Generic implements TabInterface
 {
@@ -18,6 +19,7 @@ class Info extends Generic implements TabInterface
     protected $_wysiwygConfig;
 
     protected $_newsStatus;
+    protected $_apiToken;
 
     /**
      * @param Context $context
@@ -33,11 +35,13 @@ class Info extends Generic implements TabInterface
         FormFactory $formFactory,
         Config $wysiwygConfig,
         Status $newsStatus,
+        PluginHelper $apiToken,
         array $data = []
     )
     {
         $this->_wysiwygConfig = $wysiwygConfig;
         $this->_newsStatus = $newsStatus;
+        $this->_apiToken= $apiToken;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -52,48 +56,42 @@ class Info extends Generic implements TabInterface
         $model = $this->_coreRegistry->registry('searchtap_configuration');
 
         /** @var \Magento\Framework\Data\Form $form */
+
         $form = $this->_formFactory->create();
         $form->setHtmlIdPrefix('configuration_');
         $form->setFieldNameSuffix('configuration');
 
-        $fieldset = $form->addFieldset(
-            'base_fieldset',
+        $searchtapDashboard = $form->addFieldset(
+            'dashboard_fieldset',
             ['legend' => __('Searchtap Dashboard')]
         );
 
-      /*  if ($model->getId()) {
-            $fieldset->addField(
-                'id',
-                'hidden',
-                ['name' => 'id']
-            );
-        }*/
-        $fieldset->addField('link', 'link', array(
+        $searchtapDashboard->addField('link', 'link', array(
             'label'     => ('Searchtap Account'),
-            'after_element_html'=>'<button style="background: #eb5202;border-color: #eb5202;color: #fbfbfb;">Signup for the Searchtap Account</button>'
+            'after_element_html'=>'<a href="https://magento-portal.searchtap.net/signup/" target="_blank" class="action-default primary" style="background-color: #e85d22;color: white;font-weight: 500;">Signup for the Searchtap Account</a>',
         ));
 
-
-        $fieldset2 = $form->addFieldset(
-            'base2_fieldset',
+        $apiToken= $form->addFieldset(
+            'token_fieldset',
             ['legend' => __('API Token')]
         );
 
-        $fieldset2->addField('textarea', 'textarea', array(
+        $apiToken->addField('api_token', 'textarea', array(
             'label'     => 'Token',
             'class'     => 'required-entry',
             'required'  => true,
             'name'      => 'Token',
-            'onclick' => "",
-            'onchange' => "",
-            'value'  => '<b><b/>',
+            'value'  => $this->_apiToken->getToken('api_token'),
 
-            'after_element_html' => '<button style="background: #eb5202;border-color: #eb5202;color: #fbfbfb;">Save Credential</button>',
-            'tabindex' => 1
         ));
 
-        $data = $model->getData();
-        $form->setValues($data);
+        $apiToken->addField('dsubmit', 'submit', array(
+            'required'  => true,
+            'value'  => 'Save Token Credential',
+            'tabindex' => 1,
+            'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%;'
+        ));
+
         $this->setForm($form);
 
         return parent::_prepareForm();
