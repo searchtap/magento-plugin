@@ -13,8 +13,9 @@ class InstallSchema implements InstallSchemaInterface
         $setup->startSetup();
 
         $tableName = $setup->getTable('searchtap_queue');
+        $tableName2= $setup->getTable('searchtap_config');
 
-        if ($setup->getConnection()->isTableExists($tableName) != true)
+        if ($setup->getConnection()->isTableExists($tableName) != true && $setup->getConnection()->isTableExists($tableName2) != true)
         {
             $table = $setup->getConnection()
                 ->newTable($setup->getTable('searchtap_queue'))
@@ -76,7 +77,39 @@ class InstallSchema implements InstallSchemaInterface
                     'Store IDs'
                 )->setComment("SearchTap Queue Table");
 
+
+            $configTable=$setup->getConnection()
+                ->newTable($setup->getTable('searchtap_config'))
+                ->addColumn(
+                    'id',
+                    Table::TYPE_INTEGER,
+                    null,
+                    [
+                        'identity' => true,
+                        'unsigned' => true,
+                        'nullable' => false,
+                        'primary' => true
+                    ],
+                    'ID'
+                )
+                ->addColumn(
+                    'api_token',
+                    Table::TYPE_TEXT,
+                    null,
+                    ['nullable' => false, 'default' => ''],
+                    'API Token'
+                )
+                ->addColumn(
+                    'store_datacenter',
+                    Table::TYPE_TEXT,
+                    null,
+                    ['nullable' => false, 'default' => ''],
+                    'Store Data Center'
+                )->setComment("SearchTap Config Table");
+
+
             $setup->getConnection()->createTable($table);
+            $setup->getConnection()->createTable($configTable);
         }
 
         $setup->endSetup();
