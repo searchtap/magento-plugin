@@ -9,7 +9,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Data\FormFactory;
 use Magento\Cms\Model\Wysiwyg\Config;
 use Bitqit\Searchtap\Model\System\Config\Status;
-use Bitqit\Searchtap\Helper\Configuration\PluginHelper;
+use \Bitqit\Searchtap\Helper\Api;
 
 class Info extends Generic implements TabInterface
 {
@@ -19,7 +19,8 @@ class Info extends Generic implements TabInterface
     protected $_wysiwygConfig;
 
     protected $_newsStatus;
-    protected $_apiToken;
+    protected $_apiHelper;
+
 
     /**
      * @param Context $context
@@ -35,13 +36,13 @@ class Info extends Generic implements TabInterface
         FormFactory $formFactory,
         Config $wysiwygConfig,
         Status $newsStatus,
-        PluginHelper $apiToken,
+        Api $_apiHelper,
         array $data = []
     )
     {
         $this->_wysiwygConfig = $wysiwygConfig;
         $this->_newsStatus = $newsStatus;
-        $this->_apiToken= $apiToken;
+        $this->_apiHelper= $_apiHelper;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -65,10 +66,21 @@ class Info extends Generic implements TabInterface
             'dashboard_fieldset',
             ['legend' => __('Searchtap Dashboard')]
         );
+        if ($model->getId()) {
+            $searchtapDashboard->addField(
+                'id',
+                'hidden',
+                ['name' => 'id']
+            );
+        }
+        $searchtapDashboard->addField('note', 'note', array(
+            'label' => __('Searchtap Account'),
+            'text' => '<img src=\'https://d33wubrfki0l68.cloudfront.net/f8230a812b6bff599763387cf815e960bf1625e2/c8b3c/img/logo-dark.png\' alt="Searchtap" width="125" />'.'<br>',
+        ));
 
         $searchtapDashboard->addField('link', 'link', array(
-            'label'     => ('Searchtap Account'),
-            'after_element_html'=>'<a href="https://magento-portal.searchtap.net/signup/" target="_blank" class="action-default primary" style="background-color: #e85d22;color: white;font-weight: 500;">Signup for the Searchtap Account</a>',
+            'after_element_html'=>'<a href="https://magento-portal.searchtap.net/signup/" target="_blank" class="action-default primary" style="background-color: #e85d22;color: white;font-weight: 500;padding-bottom: 0.6875em;
+    padding-top: 0.6875em;">Signup for the Searchtap Account</a>',
         ));
 
         $apiToken= $form->addFieldset(
@@ -80,16 +92,17 @@ class Info extends Generic implements TabInterface
             'label'     => 'Token',
             'class'     => 'required-entry',
             'required'  => true,
-            'name'      => 'Token',
-            'value'  => $this->_apiToken->getToken('api_token'),
+            'name'      => 'api_token',
+            'value'  => $this->_apiHelper->getToken()
 
         ));
 
         $apiToken->addField('dsubmit', 'submit', array(
             'required'  => true,
-            'value'  => 'Save Token Credential',
-            'tabindex' => 1,
-            'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%;'
+            'value'  => 'Save API Token',
+            'name' => 'searchtap_token_credential',
+            'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 40%;padding-bottom: 0.6875em;
+    padding-top: 0.6875em;'
         ));
 
         $this->setForm($form);

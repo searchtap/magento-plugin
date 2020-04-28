@@ -6,12 +6,15 @@ use \Bitqit\Searchtap\Helper\SearchtapHelper;
 use \Bitqit\Searchtap\Helper\Logger;
 use \Bitqit\Searchtap\Helper\Data;
 use Bitqit\Searchtap\Helper\ConfigHelper;
+use Bitqit\Searchtap\Model\ConfigureFactory;
+
 use mysql_xdevapi\Exception;
 
 class Api
 {
     const INDEXING_URL = "/sync";
     const STORE_API = '/my-stores';
+    const DCENTER_API='https://magento-portal.searchtap.net/client/data-centers';
 
     private $searchtapHelper;
     private $logger;
@@ -22,13 +25,15 @@ class Api
         SearchtapHelper $searchtapHelper,
         Logger $logger,
         Data $dataHelper,
-        ConfigHelper $configHelper
+        ConfigHelper $configHelper,
+        ConfigureFactory $configureFactory
     )
     {
         $this->searchtapHelper = $searchtapHelper;
         $this->logger = $logger;
         $this->dataHelper = $dataHelper;
         $this->configHelper = $configHelper;
+        $this->configureFactory = $configureFactory;
     }
 
     private function _getCurlObject($apiUrl, $requestType, $token, $data = null)
@@ -115,5 +120,33 @@ class Api
 //        } catch (err $e) {
 //            $this->logger->error($e);
 //        }
+    }
+    public function getDataCenterList($token){
+        try {
+            $curlObject = $this->_getCurlObject($this->getApiUrl(self::DCENTER_API), "GET",$token);
+            $curl = curl_init();
+            curl_setopt_array($curl, $curlObject);
+            $results = curl_exec($curl);
+            $responseHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($curl);
+
+            if ($curlError)
+                $this->logger->error($curlError);
+
+            curl_close($curl);
+
+            return $results;
+
+        } catch (err $e) {
+            $this->logger->error($e);
+        }
+    }
+
+    public function getToken(){
+        $configValue = $this->configureFactory->create()->getCollection();
+        foreach ($configValue as $val){
+            return $val->getAPIToken();
+        }
+        return;
     }
 }

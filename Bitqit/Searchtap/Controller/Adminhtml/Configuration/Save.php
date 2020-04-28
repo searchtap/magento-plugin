@@ -3,6 +3,7 @@
 namespace Bitqit\Searchtap\Controller\Adminhtml\Configuration;
 
 use Bitqit\Searchtap\Controller\Adminhtml\Configuration;
+//use Bitqit\Searchtap\Model\ConfigureFactory;
 
 class Save extends Configuration
 {
@@ -14,37 +15,23 @@ class Save extends Configuration
         $isPost = $this->getRequest()->getPost();
 
         if ($isPost) {
-            $Model = $this->_newsFactory->create();
-            $Id = $this->getRequest()->getParam('id');
+            $Model = $this->_configFactory->create();
+            $Model->load(1);
+            $formData = $this->getRequest()->getParams('api_token');
 
-            if ($Id) {
-                $Model->load($Id);
-            }
-            $formData = $this->getRequest()->getParam('news');
-            $Model->setData($formData);
-
+            $Model->setAPIToken($formData['configuration']['api_token']);
             try {
-                // Save news
                 $Model->save();
-
                 // Display success message
-                $this->messageManager->addSuccess(__('Saved.'));
-
-                // Check if 'Save and Continue'
-                if ($this->getRequest()->getParam('back')) {
-                    $this->_redirect('*/*/edit', ['id' => $Model->getId(), '_current' => true]);
-                    return;
-                }
-
+                $this->messageManager->addSuccess(__('Searchtap Configuration Saved !'));
                 // Go to grid page
-                $this->_redirect('*/*/');
+                $this->_redirect('*/*/edit');
                 return;
             } catch (\Exception $e) {
                 $this->messageManager->addError($e->getMessage());
             }
 
             $this->_getSession()->setFormData($formData);
-            $this->_redirect('*/*/edit', ['id' => $Id]);
         }
     }
 }

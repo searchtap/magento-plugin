@@ -3,6 +3,7 @@
 namespace Bitqit\Searchtap\Block\Adminhtml\Configuration\Edit;
 
 use Magento\Backend\Block\Widget\Tabs as WidgetTabs;
+use \Bitqit\Searchtap\Helper\Api;
 
 class Tabs extends WidgetTabs
 {
@@ -11,8 +12,22 @@ class Tabs extends WidgetTabs
      *
      * @return void
      */
+    protected $_apiHelper;
+    public function __construct(
+        \Magento\Backend\Block\Template\Context $context,
+        \Magento\Framework\Json\EncoderInterface $jsonEncoder,
+        \Magento\Backend\Model\Auth\Session $authSession,
+        \Magento\Framework\App\Request\Http $request,
+        Api $apiHelper,
+        array $data = []
+    ) {
+        $this->_apiHelper = $apiHelper;
+        $this->request = $request;
+        parent::__construct($context, $jsonEncoder, $authSession, $data);
+    }
     protected function _construct()
     {
+
         parent::_construct();
         $this->setId('configuration_edit_tabs');
         $this->setDestElementId('edit_form');
@@ -35,17 +50,20 @@ class Tabs extends WidgetTabs
                 'active' => true
             ]
         );
-        $this->addTab(
-            'merchandise_info',
-            [
-                'label' => __('Step 2: Settings'),
-                'title' => __('Step 2: Settings'),
-                'content' => $this->getLayout()->createBlock(
-                    'Bitqit\Searchtap\Block\Adminhtml\Configuration\Edit\Tab\Settings'
-                )->toHtml(),
-                'active' => false
-            ]
-        );
+
+        if($this->_apiHelper->getToken()){
+            $this->addTab(
+                'merchandise_info',
+                [
+                    'label' => __('Step 2: Settings'),
+                    'title' => __('Step 2: Settings'),
+                    'content' => $this->getLayout()->createBlock(
+                        'Bitqit\Searchtap\Block\Adminhtml\Configuration\Edit\Tab\Settings'
+                    )->toHtml(),
+                    'active' => false
+                ]
+            );
+        }
 
         return parent::_beforeToHtml();
     }

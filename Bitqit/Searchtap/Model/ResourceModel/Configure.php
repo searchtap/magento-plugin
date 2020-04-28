@@ -21,6 +21,6 @@ class Configure extends AbstractDb
 
     protected function _construct()
     {
-        $this->_init('bitqit_searchtap_config', 'id');
+        $this->_init('searchtap_config', 'id');
     }
 }

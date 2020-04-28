@@ -10,7 +10,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Data\FormFactory;
 use Magento\Cms\Model\Wysiwyg\Config;
 use Bitqit\Searchtap\Model\System\Config\Status;
-use Bitqit\Searchtap\Helper\Configuration\PluginHelper;
+use Bitqit\Searchtap\Helper\Api;
 
 class Settings extends Generic implements TabInterface
 {
@@ -31,7 +31,7 @@ class Settings extends Generic implements TabInterface
         FormFactory $formFactory,
         Config $wysiwygConfig,
         Status $newsStatus,
-        PluginHelper $_apiHelper,
+        Api $_apiHelper,
         array $data = []
     )
     {
@@ -70,16 +70,16 @@ class Settings extends Generic implements TabInterface
                 'label' => $store->getName(),
                 'class' => 'required-entry',
                 'style'=>'font-weight: 600;background: lemonchiffon;',
-                'required' => true,
+              //  'required' => true,
                 'name' => 'title',
                 'value' => '1',
                // 'values' => array('-1' => 'Select Data Center', '1' => 'India', '2' => 'US-NYC', '3' => 'Australia'),
-                'values' => $this->_apiHelper->getDataCenterList(),
+             //   'values' => $this->_apiHelper->getDataCenterList(),
                 'tabindex' => 1
             ));
         }
         $dataCenter->addField('dcsubmit', 'submit', array(
-            'required'  => true,
+          //  'required'  => true,
             'value'  => 'Save and Sync Store',
             'tabindex' => 1,
             'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%;'
