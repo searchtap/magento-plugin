@@ -69,23 +69,24 @@ class Settings extends Generic implements TabInterface
 
         $data_center = $this->_apiHelper->getDataCenterList();
         $objectToArray = (array)$data_center->data;
-        foreach ($objectToArray as $key => $value) {
+        foreach ($objectToArray as $key=>$value) {
             $dataCenterValue['0'] = 'Select Data Center';
             $dataCenterValue[$value] = $key;
         }
 
         $storeManager = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Store\Model\StoreManagerInterface');
         $stores = $storeManager->getStores(true, false);
-        $i = 0;
+
+        // Get Configuration from table
         $configValue = $this->_configFactory->create()->getCollection();
-        foreach ($configValue as $val) {
-            $data = (array)$val->getDataCenter();
+        foreach ($configValue as $values) {
+            $data = (array)$values->getDataCenter();
         }
-        $val = 1000; // for data center INDIA
+        $val = 0; // for data center INDIA 1000, US 2000, AUS 4000
         foreach ($stores as $store) {
-            foreach ($data as $key => $value) {
-                if (!strcmp($key, str_replace(" ", "_", $store->getName()))) {
-                    $val = $value;
+            foreach ($data as $k=>$v) {
+                if (!strcmp($k, str_replace(" ", "_", $store->getName()))) {
+                    $val = $v; // for selected value
                 }
             }
             if ($store->getID() == 0) {
