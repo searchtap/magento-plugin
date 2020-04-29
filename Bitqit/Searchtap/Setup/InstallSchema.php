@@ -13,8 +13,9 @@ class InstallSchema implements InstallSchemaInterface
         $setup->startSetup();
 
         $tableName = $setup->getTable('searchtap_queue');
+        $tableName2= $setup->getTable('searchtap_config');
 
-        if ($setup->getConnection()->isTableExists($tableName) != true)
+        if ($setup->getConnection()->isTableExists($tableName) != true && $setup->getConnection()->isTableExists($tableName2) != true)
         {
             $table = $setup->getConnection()
                 ->newTable($setup->getTable('searchtap_queue'))
@@ -67,7 +68,7 @@ class InstallSchema implements InstallSchemaInterface
                     'Type'
                 )
                 ->addColumn(
-                    'store',
+                    'store_id',
                     \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
                     100,
                     [
@@ -76,7 +77,32 @@ class InstallSchema implements InstallSchemaInterface
                     'Store IDs'
                 )->setComment("SearchTap Queue Table");
 
+
+            $table2 = $setup->getConnection()
+                ->newTable($setup->getTable('searchtap_config'))
+                ->addColumn(
+                    'id',
+                    Table::TYPE_INTEGER,
+                    null,
+                    [
+                        'identity' => true,
+                        'unsigned' => true,
+                        'nullable' => false,
+                        'primary' => true
+                    ],
+                    'ID'
+                )
+                ->addColumn(
+                    'title',
+                    Table::TYPE_TEXT,
+                    null,
+                    ['nullable' => false, 'default' => ''],
+                    'Title'
+                )->setComment("SearchTap Config Table");
+
+
             $setup->getConnection()->createTable($table);
+            $setup->getConnection()->createTable($table2);
         }
 
         $setup->endSetup();

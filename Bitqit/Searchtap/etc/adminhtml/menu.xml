@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Backend/etc/menu.xsd">
+    <menu>
+        <add id="Bitqit_Searchtap::main_menu" title="Searchtap" module="Bitqit_Searchtap" action="searchtap/configuration/edit" sortOrder="20" resource="Bitqit_Searchtap::searchtap" />
+  </menu>
+</config>

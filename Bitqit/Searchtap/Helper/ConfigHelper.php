@@ -67,8 +67,6 @@ class ConfigHelper
         return $this->storeManager->getStores();
     }
 
-
-
     public function getEnabledStoresForIndexing($storeId = 0)
     {
         $enabledStoreIds = [];
