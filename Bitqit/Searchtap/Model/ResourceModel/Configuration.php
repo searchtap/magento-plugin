@@ -2,17 +2,15 @@
 
 namespace Bitqit\Searchtap\Model\ResourceModel;
 
-use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use \Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use \Magento\Framework\Model\ResourceModel\Db\Context;
+use \Magento\Framework\Stdlib\DateTime\DateTime;
 
-class Configure extends AbstractDb
+class Configuration extends AbstractDb
 {
-    /**
-     * Define main table
-     */
-
     public function __construct(
-        \Magento\Framework\Model\ResourceModel\Db\Context $context,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
+        Context $context,
+        DateTime $date,
         $resourcePrefix = null
     ) {
         parent::__construct($context, $resourcePrefix);

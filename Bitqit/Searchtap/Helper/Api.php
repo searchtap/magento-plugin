@@ -6,15 +6,11 @@ use \Bitqit\Searchtap\Helper\SearchtapHelper;
 use \Bitqit\Searchtap\Helper\Logger;
 use \Bitqit\Searchtap\Helper\Data;
 use Bitqit\Searchtap\Helper\ConfigHelper;
-use Bitqit\Searchtap\Model\ConfigureFactory;
-
-use mysql_xdevapi\Exception;
 
 class Api
 {
-    const INDEXING_URL = "/sync";
     const STORE_API = '/my-stores';
-    const DCENTER_API='https://magento-portal.searchtap.net/client/data-centers';
+    const DATACENTER_API='/client/data-centers';
 
     private $searchtapHelper;
     private $logger;
@@ -25,15 +21,13 @@ class Api
         SearchtapHelper $searchtapHelper,
         Logger $logger,
         Data $dataHelper,
-        ConfigHelper $configHelper,
-        ConfigureFactory $configureFactory
+        ConfigHelper $configHelper
     )
     {
         $this->searchtapHelper = $searchtapHelper;
         $this->logger = $logger;
         $this->dataHelper = $dataHelper;
         $this->configHelper = $configHelper;
-        $this->configureFactory = $configureFactory;
     }
 
     private function _getCurlObject($apiUrl, $requestType, $token, $data = null)
@@ -89,64 +83,36 @@ class Api
 
             curl_setopt_array($curl, $config);
 
-            $result = curl_exec($curl);
+            curl_exec($curl);
             $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             $this->logger->add($statusCode);
-        } catch (\Exception $e) {
+        } catch (Exc $e) {
             $this->logger->error($e);
-            throw new Exception($e);
+//            throw new Exception($e);
         }
     }
 
-    public function requestToSync($data = null)
-    {
-//        try {
-//            $curlObject = $this->_getCurlObject($this->getApiUrl(self::INDEXING_URL), "POST");
-//            if ($data)
-//                $curlObject['CURLOPT_POSTFIELDS'] = $data;
-//
-//            $curl = curl_init();
-//            curl_setopt_array($curl, $curlObject);
-//
-//            $results = curl_exec($curl);
-//            $responseHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-//            $curlError = curl_error($curl);
-//
-//            if ($curlError)
-//                $this->logger->error($curlError);
-//
-//            curl_close($curl);
-//
-//        } catch (err $e) {
-//            $this->logger->error($e);
-//        }
-    }
-    public function getDataCenterList($token){
+    public function getDataCenters($token) {
         try {
-            $curlObject = $this->_getCurlObject($this->getApiUrl(self::DCENTER_API), "GET",$token);
+            $url = $this->getApiBaseUrl() . self::DATACENTER_API;
+
+            $curlObject = $this->_getCurlObject($url, "GET", $token);
             $curl = curl_init();
+
             curl_setopt_array($curl, $curlObject);
+
             $results = curl_exec($curl);
-            $responseHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
             $curlError = curl_error($curl);
 
-            if ($curlError)
-                $this->logger->error($curlError);
+            if ($curlError) $this->logger->error($curlError . "status code = " . $statusCode);
 
             curl_close($curl);
-
             return $results;
 
-        } catch (err $e) {
+        } catch (error $e) {
             $this->logger->error($e);
+            return [];
         }
-    }
-
-    public function getToken(){
-        $configValue = $this->configureFactory->create()->getCollection();
-        foreach ($configValue as $val){
-            return $val->getAPIToken();
-        }
-        return;
     }
 }

@@ -4,19 +4,19 @@ namespace Bitqit\Searchtap\Model;
 
 use Magento\Framework\Model\AbstractModel;
 
-class Configure extends AbstractModel
+class Configuration extends AbstractModel
 {
     /**
      * Define resource model
      */
     protected function _construct()
     {
-        $this->_init('Bitqit\Searchtap\Model\ResourceModel\Configure');
+        $this->_init('Bitqit\Searchtap\Model\ResourceModel\Configuration');
     }
 
 
     /**
-     * Get Title.
+     * Get Token.
      *
      * @return varchar
      */
@@ -26,7 +26,7 @@ class Configure extends AbstractModel
     }
 
     /**
-     * Set Title.
+     * Set Token.
      */
     public function setAPIToken($token)
     {

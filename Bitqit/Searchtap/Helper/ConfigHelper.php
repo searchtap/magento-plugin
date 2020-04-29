@@ -5,7 +5,7 @@ namespace Bitqit\Searchtap\Helper;
 use \Magento\Store\Model\ScopeInterface;
 use \Magento\Framework\App\Config\ScopeConfigInterface;
 use \Magento\Store\Model\StoreManagerInterface;
-use \Bitqit\Searchtap\Helper\SearchtapHelper;
+use Bitqit\Searchtap\Model\ConfigurationFactory;
 
 class ConfigHelper
 {
@@ -17,16 +17,28 @@ class ConfigHelper
     private $configInterface;
     private $storeManager;
     private $searchtapHelper;
+    private $configurationFactory;
 
     public function __construct(
         ScopeConfigInterface $configInterface,
         StoreManagerInterface $storeManager,
-        SearchtapHelper $searchtapHelper
+        SearchtapHelper $searchtapHelper,
+        ConfigurationFactory $configurationFactory
     )
     {
         $this->configInterface = $configInterface;
         $this->storeManager = $storeManager;
         $this->searchtapHelper = $searchtapHelper;
+        $this->configurationFactory = $configurationFactory;
+    }
+
+    public function getApiToken()
+    {
+        $configValue = $this->configurationFactory->create()->getCollection();
+        foreach ($configValue as $val) {
+            return $val->getAPIToken();
+        }
+        return;
     }
 
     public function getCredentials()
@@ -41,11 +53,13 @@ class ConfigHelper
 //        return json_decode($jsConfig);
     }
 
-    public function getScriptUrl() {
+    public function getScriptUrl()
+    {
         return $this->configInterface->getValue(self::SCRIPT_URL);
     }
 
-    public function getCssUrl() {
+    public function getCssUrl()
+    {
         return $this->configInterface->getValue(self::CSS_URL);
     }
 
@@ -66,7 +80,6 @@ class ConfigHelper
     {
         return $this->storeManager->getStores();
     }
-
 
 
     public function getEnabledStoresForIndexing($storeId = 0)

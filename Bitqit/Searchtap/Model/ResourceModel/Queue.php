@@ -4,7 +4,6 @@ namespace Bitqit\Searchtap\Model\ResourceModel;
 
 class Queue extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
-
     public function __construct(
         \Magento\Framework\Model\ResourceModel\Db\Context $context
     )
