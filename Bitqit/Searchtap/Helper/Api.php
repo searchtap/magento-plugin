@@ -6,34 +6,34 @@ use \Bitqit\Searchtap\Helper\SearchtapHelper;
 use \Bitqit\Searchtap\Helper\Logger;
 use \Bitqit\Searchtap\Helper\Data;
 use Bitqit\Searchtap\Helper\ConfigHelper;
-use Bitqit\Searchtap\Model\ConfigureFactory;
-
 use mysql_xdevapi\Exception;
+use Bitqit\Searchtap\Model\ConfigurationFactory;
 
 class Api
 {
     const INDEXING_URL = "/sync";
     const STORE_API = '/my-stores';
-    const DCENTER_API='https://magento-portal.searchtap.net/client/data-centers';
+    const DATACENTER_API='https://magento-portal.searchtap.net/client/data-centers';
 
     private $searchtapHelper;
     private $logger;
     private $dataHelper;
-    private $configHelper;
+    private $_configHelper;
+    private $_configFactory;
 
     public function __construct(
         SearchtapHelper $searchtapHelper,
         Logger $logger,
         Data $dataHelper,
         ConfigHelper $configHelper,
-        ConfigureFactory $configureFactory
+        ConfigurationFactory $configFactory
     )
     {
         $this->searchtapHelper = $searchtapHelper;
         $this->logger = $logger;
         $this->dataHelper = $dataHelper;
-        $this->configHelper = $configHelper;
-        $this->configureFactory = $configureFactory;
+        $this->_configHelper = $configHelper;
+        $this->_configFactory=$configFactory;
     }
 
     private function _getCurlObject($apiUrl, $requestType, $token, $data = null)
@@ -121,9 +121,12 @@ class Api
 //            $this->logger->error($e);
 //        }
     }
-    public function getDataCenterList($token){
+    public function getDataCenterList(){
+        $tokenValue=json_decode($this->_configHelper->getAPIToken());
+        $token=$tokenValue->uniqueId.",".$tokenValue->privateKey;
+
         try {
-            $curlObject = $this->_getCurlObject($this->getApiUrl(self::DCENTER_API), "GET",$token);
+            $curlObject = $this->_getCurlObject(self::DATACENTER_API, "GET",$token);
             $curl = curl_init();
             curl_setopt_array($curl, $curlObject);
             $results = curl_exec($curl);
@@ -135,18 +138,11 @@ class Api
 
             curl_close($curl);
 
-            return $results;
+            return json_decode($results);
 
         } catch (err $e) {
             $this->logger->error($e);
         }
     }
 
-    public function getToken(){
-        $configValue = $this->configureFactory->create()->getCollection();
-        foreach ($configValue as $val){
-            return $val->getAPIToken();
-        }
-        return;
-    }
 }

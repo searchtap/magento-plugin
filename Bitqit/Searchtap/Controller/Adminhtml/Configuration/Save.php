@@ -13,20 +13,34 @@ class Save extends Configuration
     public function execute()
     {
         $isPost = $this->getRequest()->getPost();
-
         if ($isPost) {
-            $Model = $this->_configFactory->create();
-            $Model->load(1);
-            $formData = $this->getRequest()->getParams('api_token');
-
-            $Model->setAPIToken($formData['configuration']['api_token']);
+            $model = $this->_configFactory->create();
+            $model->load(1);
+            $formData = $this->getRequest()->getParams();
             try {
-                $Model->save();
-                // Display success message
-                $this->messageManager->addSuccess(__('Searchtap Configuration Saved !'));
-                // Go to grid page
+            switch ($formData['searchtap_credential']) {
+                case 'Save API Token':
+                    $model->setAPIToken($formData['api_token']);
+                    $model->save();
+                    $this->messageManager->addSuccess(__('Searchtap API Token Saved'));
+                    break;
+
+                case 'Save and Sync Store':
+                    $dataCenter=[];
+                    foreach ($formData as $key=>$value){
+                        if(strpos($key,"store_" ) !== false){
+                            $dataCenter[substr($key,6)]=$value;
+                        }
+                    }
+                    $model->setDataCenter(json_encode($dataCenter));
+                    $model->save();
+                    $this->messageManager->addSuccess(__('Searchtap Setting Saved'));
+                    break;
+            }
+
                 $this->_redirect('*/*/edit');
                 return;
+
             } catch (\Exception $e) {
                 $this->messageManager->addError($e->getMessage());
             }

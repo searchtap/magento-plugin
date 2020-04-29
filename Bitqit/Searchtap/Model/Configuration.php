@@ -4,14 +4,14 @@ namespace Bitqit\Searchtap\Model;
 
 use Magento\Framework\Model\AbstractModel;
 
-class Configure extends AbstractModel
+class Configuration extends AbstractModel
 {
     /**
      * Define resource model
      */
     protected function _construct()
     {
-        $this->_init('Bitqit\Searchtap\Model\ResourceModel\Configure');
+        $this->_init('Bitqit\Searchtap\Model\ResourceModel\Configuration');
     }
 
 
@@ -26,10 +26,23 @@ class Configure extends AbstractModel
     }
 
     /**
-     * Set Title.
+     * Set Api token.
      */
     public function setAPIToken($token)
     {
         return $this->setData('api_token', $token);
+    }
+
+    public function getDataCenter()
+    {
+        return json_decode($this->getData('store_datacenter'));
+    }
+
+    /**
+     * Set Datacenter.
+     */
+    public function setDataCenter($data)
+    {
+        return $this->setData('store_datacenter', $data);
     }
 }

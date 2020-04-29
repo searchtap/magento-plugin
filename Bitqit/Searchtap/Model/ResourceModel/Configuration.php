@@ -4,7 +4,7 @@ namespace Bitqit\Searchtap\Model\ResourceModel;
 
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
-class Configure extends AbstractDb
+class Configuration extends AbstractDb
 {
     /**
      * Define main table

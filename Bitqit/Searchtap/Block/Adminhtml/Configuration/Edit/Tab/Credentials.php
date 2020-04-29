@@ -9,9 +9,9 @@ use Magento\Framework\Registry;
 use Magento\Framework\Data\FormFactory;
 use Magento\Cms\Model\Wysiwyg\Config;
 use Bitqit\Searchtap\Model\System\Config\Status;
-use \Bitqit\Searchtap\Helper\Api;
+use \Bitqit\Searchtap\Helper\ConfigHelper;
 
-class Info extends Generic implements TabInterface
+class Credentials extends Generic implements TabInterface
 {
     /**
      * @var \Magento\Cms\Model\Wysiwyg\Config
@@ -19,7 +19,7 @@ class Info extends Generic implements TabInterface
     protected $_wysiwygConfig;
 
     protected $_newsStatus;
-    protected $_apiHelper;
+    protected $_configHelper;
 
 
     /**
@@ -36,13 +36,13 @@ class Info extends Generic implements TabInterface
         FormFactory $formFactory,
         Config $wysiwygConfig,
         Status $newsStatus,
-        Api $_apiHelper,
+        ConfigHelper $configHelper,
         array $data = []
     )
     {
         $this->_wysiwygConfig = $wysiwygConfig;
         $this->_newsStatus = $newsStatus;
-        $this->_apiHelper= $_apiHelper;
+        $this->_configHelper= $configHelper;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -58,9 +58,7 @@ class Info extends Generic implements TabInterface
 
         /** @var \Magento\Framework\Data\Form $form */
 
-        $form = $this->_formFactory->create();
-        $form->setHtmlIdPrefix('configuration_');
-        $form->setFieldNameSuffix('configuration');
+        $form = $this->_formFactory->create(['data' => ['id' => 'edit_form', 'action' => $this->getData('action'), 'method' => 'post']]);
 
         $searchtapDashboard = $form->addFieldset(
             'dashboard_fieldset',
@@ -93,14 +91,14 @@ class Info extends Generic implements TabInterface
             'class'     => 'required-entry',
             'required'  => true,
             'name'      => 'api_token',
-            'value'  => $this->_apiHelper->getToken()
+            'value'  => $this->_configHelper->getAPIToken()
 
         ));
 
-        $apiToken->addField('dsubmit', 'submit', array(
+        $apiToken->addField('submit', 'submit', array(
             'required'  => true,
             'value'  => 'Save API Token',
-            'name' => 'searchtap_token_credential',
+            'name' => 'searchtap_credential',
             'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 40%;padding-bottom: 0.6875em;
     padding-top: 0.6875em;'
         ));

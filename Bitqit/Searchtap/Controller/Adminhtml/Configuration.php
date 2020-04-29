@@ -6,7 +6,7 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Result\PageFactory;
-use Bitqit\Searchtap\Model\ConfigureFactory;
+use Bitqit\Searchtap\Model\ConfigurationFactory;
 
 class Configuration extends \Magento\Backend\App\Action
 {
@@ -31,7 +31,7 @@ class Configuration extends \Magento\Backend\App\Action
         Context $context,
         Registry $coreRegistry,
         PageFactory $resultPageFactory,
-        ConfigureFactory $configFactory
+        ConfigurationFactory $configFactory
     ) {
         parent::__construct($context);
         $this->_coreRegistry = $coreRegistry;

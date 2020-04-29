@@ -13,16 +13,19 @@ class Tabs extends WidgetTabs
      * @return void
      */
     protected $_apiHelper;
+    protected $_configHelper;
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Json\EncoderInterface $jsonEncoder,
         \Magento\Backend\Model\Auth\Session $authSession,
         \Magento\Framework\App\Request\Http $request,
+        \Bitqit\Searchtap\Helper\ConfigHelper $configHelper,
         Api $apiHelper,
         array $data = []
     ) {
         $this->_apiHelper = $apiHelper;
         $this->request = $request;
+        $this->_configHelper=$configHelper;
         parent::__construct($context, $jsonEncoder, $authSession, $data);
     }
     protected function _construct()
@@ -45,13 +48,13 @@ class Tabs extends WidgetTabs
                 'label' => __('Step 1: API Token'),
                 'title' => __('Step 1: API Token'),
                 'content' => $this->getLayout()->createBlock(
-                    'Bitqit\Searchtap\Block\Adminhtml\Configuration\Edit\Tab\Info'
+                    'Bitqit\Searchtap\Block\Adminhtml\Configuration\Edit\Tab\Credentials'
                 )->toHtml(),
                 'active' => true
             ]
         );
 
-        if($this->_apiHelper->getToken()){
+        if($this->_configHelper->getAPIToken()){
             $this->addTab(
                 'merchandise_info',
                 [

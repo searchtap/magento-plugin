@@ -11,6 +11,8 @@ use Magento\Framework\Data\FormFactory;
 use Magento\Cms\Model\Wysiwyg\Config;
 use Bitqit\Searchtap\Model\System\Config\Status;
 use Bitqit\Searchtap\Helper\Api;
+use Bitqit\Searchtap\Helper\ConfigHelper;
+use Bitqit\Searchtap\Model\ConfigurationFactory;
 
 class Settings extends Generic implements TabInterface
 {
@@ -24,6 +26,8 @@ class Settings extends Generic implements TabInterface
      */
     protected $_newsStatus;
     protected $_apiHelper;
+    protected $_configHelper;
+    private $_configFactory;
 
     public function __construct(
         Context $context,
@@ -32,12 +36,16 @@ class Settings extends Generic implements TabInterface
         Config $wysiwygConfig,
         Status $newsStatus,
         Api $_apiHelper,
+        ConfigHelper $configHelper,
+        ConfigurationFactory $configFactory,
         array $data = []
     )
     {
         $this->_wysiwygConfig = $wysiwygConfig;
         $this->_newsStatus = $newsStatus;
-        $this->_apiHelper=$_apiHelper;
+        $this->_apiHelper = $_apiHelper;
+        $this->_configHelper = $configHelper;
+        $this->_configFactory = $configFactory;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -52,36 +60,52 @@ class Settings extends Generic implements TabInterface
         $model = $this->_coreRegistry->registry('searchtap_configuration');
 
         /** @var \Magento\Framework\Data\Form $form */
-        $form = $this->_formFactory->create();
-        $form->setHtmlIdPrefix('configuration_');
-        $form->setFieldNameSuffix('configuration');
+        $form = $this->_formFactory->create(['data' => ['id' => 'edit_form', 'action' => $this->getData('action'), 'method' => 'post']]);
 
-        $dataCenter= $form->addFieldset(
+        $dataCenter = $form->addFieldset(
             'base_fieldset',
             ['legend' => __('Select Data Center')]
         );
+
+        $data_center = $this->_apiHelper->getDataCenterList();
+        $objectToArray = (array)$data_center->data;
+        foreach ($objectToArray as $key => $value) {
+            $dataCenterValue['0'] = 'Select Data Center';
+            $dataCenterValue[$value] = $key;
+        }
+
         $storeManager = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Store\Model\StoreManagerInterface');
         $stores = $storeManager->getStores(true, false);
-        $i=0;
+        $i = 0;
+        $configValue = $this->_configFactory->create()->getCollection();
+        foreach ($configValue as $val) {
+            $data = (array)$val->getDataCenter();
+        }
+        $val = 1000; // for data center INDIA
         foreach ($stores as $store) {
-              $i++;
-
-            $dataCenter->addField('select'.$i, 'select', array(
+            foreach ($data as $key => $value) {
+                if (!strcmp($key, str_replace(" ", "_", $store->getName()))) {
+                    $val = $value;
+                }
+            }
+            if ($store->getID() == 0) {
+                continue;
+            }
+            $dataCenter->addField('select' . $store->getID(), 'select', array(
                 'label' => $store->getName(),
                 'class' => 'required-entry',
-                'style'=>'font-weight: 600;background: lemonchiffon;',
-              //  'required' => true,
-                'name' => 'title',
-                'value' => '1',
-               // 'values' => array('-1' => 'Select Data Center', '1' => 'India', '2' => 'US-NYC', '3' => 'Australia'),
-             //   'values' => $this->_apiHelper->getDataCenterList(),
+                'required' => true,
+                'name' => "store_" . str_replace(" ", "_", $store->getName()),
+                'value' => (int)$val,
+                'values' => $dataCenterValue,
                 'tabindex' => 1
             ));
         }
-        $dataCenter->addField('dcsubmit', 'submit', array(
-          //  'required'  => true,
-            'value'  => 'Save and Sync Store',
-            'tabindex' => 1,
+
+        $dataCenter->addField('submit', 'submit', array(
+            'required' => true,
+            'value' => 'Save and Sync Store',
+            'name' => 'searchtap_credential',
             'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%;'
         ));
 
