@@ -30,19 +30,15 @@ class ProductImport implements \Magento\Framework\Event\ObserverInterface
     public function execute(Observer $observer)
     {
             switch ($observer->getEvent()->getName()) {
-
-
                 case "catalog_product_import_bunch_save_after":
                     $productImport=$observer->getEvent()->getData('bunch');
                     $this->catalogProductImportBunchSaveAfter($productImport);
                     break;
-
                 case "catalog_product_import_bunch_delete_commit_before":
                     $idsToDelete = $observer->getEvent()->getData('ids_to_delete');
                     $this->catalogProductImportBunchDeleteCommitBefore($idsToDelete);
                     break;
             }
-
     }
 
     /*
@@ -50,7 +46,6 @@ class ProductImport implements \Magento\Framework\Event\ObserverInterface
      * Product Trigger Import
      *
      * */
-
     private function catalogProductImportBunchSaveAfter($productImport){
      $storeId = $this->product->getStoreId();
      foreach($productImport as $importId){

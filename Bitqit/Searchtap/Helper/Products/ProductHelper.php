@@ -14,6 +14,8 @@ use \Magento\Store\Model\StoreManagerInterface;
 use \Magento\Directory\Model\Currency;
 use \Bitqit\Searchtap\Helper\Products\AttributeHelper;
 use \Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableModel;
+use Magento\Bundle\Model\Product\Type as BundleModel;
 
 class ProductHelper
 {
@@ -29,6 +31,8 @@ class ProductHelper
     private $storeManager;
     private $stockRepository;
     private $dataHelper;
+    private $configurableModel;
+    private $bundleModel;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -42,7 +46,9 @@ class ProductHelper
         Currency $currencyFactory,
         AttributeHelper $attributeHelper,
         StockRegistryInterface $stockRepository,
-        Data $dataHelper
+        Data $dataHelper,
+        ConfigurableModel $configurableModel,
+        BundleModel $bundleModel
     )
     {
         $this->imageHelper = $imageHelper;
@@ -57,9 +63,12 @@ class ProductHelper
         $this->attributeHelper = $attributeHelper;
         $this->stockRepository = $stockRepository;
         $this->dataHelper = $dataHelper;
+        $this->configurableModel = $configurableModel;
+        $this->bundleModel = $bundleModel;
     }
 
-    public function getProductCollection($storeId, $count, $page, $productIds = null)
+    public
+    function getProductCollection($storeId, $count, $page, $productIds = null)
     {
         $collection = $this->productCollectionFactory->create();
         $collection->setStore($storeId);
@@ -78,7 +87,8 @@ class ProductHelper
         return $collection;
     }
 
-    public function getProductsJSON($token, $storeId, $count, $page, $imageConfig, $productIds)
+    public
+    function getProductsJSON($token, $storeId, $count, $page, $imageConfig, $productIds)
     {
         if (!$this->dataHelper->checkCredentials()) {
             return $this->searchtapHelper->error("Invalid credentials");
@@ -109,12 +119,14 @@ class ProductHelper
         return $this->searchtapHelper->okResult($data, $productCollection->getSize());
     }
 
-    public function getFormattedString($string)
+    public
+    function getFormattedString($string)
     {
         return $this->searchtapHelper->getFormattedString(str_replace("\r\n", "", $string));
     }
 
-    protected function getStockData($product)
+    protected
+    function getStockData($product)
     {
         if ($product->isSalable()) {
             return $this->stockRepository->getStockItem($product->getId())->getIsInStock();
@@ -123,7 +135,8 @@ class ProductHelper
         return false;
     }
 
-    public function getProductObject($product, $storeId, $imageConfig)
+    public
+    function getProductObject($product, $storeId, $imageConfig)
     {
         $data = [];
 
@@ -174,7 +187,8 @@ class ProductHelper
         return $data;
     }
 
-    public function getPrices($product, $storeId)
+    public
+    function getPrices($product, $storeId)
     {
         $regularPrice = $this->searchtapHelper->getFormattedPrice($product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue());
         $specialPrice = $this->searchtapHelper->getFormattedPrice($product->getFinalPrice());
@@ -222,7 +236,8 @@ class ProductHelper
         return $data;
     }
 
-    public function getDiscountPercentage($regularPrice, $specialPrice)
+    public
+    function getDiscountPercentage($regularPrice, $specialPrice)
     {
         if ($specialPrice && $regularPrice) {
             $discount = (($regularPrice - $specialPrice) / $regularPrice) * 100;
@@ -231,7 +246,8 @@ class ProductHelper
         return 0;
     }
 
-    public function getCurrencySymbol($storeId)
+    public
+    function getCurrencySymbol($storeId)
     {
         $currencyCode = $this->storeManager->getStore($storeId)->getCurrentCurrencyCode();
         $currency = $this->currencyFactory->load($currencyCode);
@@ -239,7 +255,8 @@ class ProductHelper
         return $currency->getCurrencySymbol();
     }
 
-    public function getFormattedPrice($regularPrice, $specialPrice, $currencySymbol, $priceMin, $priceMax)
+    public
+    function getFormattedPrice($regularPrice, $specialPrice, $currencySymbol, $priceMin, $priceMax)
     {
         $data = [];
 
@@ -250,7 +267,8 @@ class ProductHelper
         return $data;
     }
 
-    public function getAssociatedProducts($product, $storeId)
+    public
+    function getAssociatedProducts($product, $storeId)
     {
         $associatedProducts = [];
 
@@ -273,7 +291,8 @@ class ProductHelper
         return $associatedProducts;
     }
 
-    public function getSKUs($product)
+    public
+    function getSKUs($product)
     {
         $sku = [];
 
@@ -305,7 +324,8 @@ class ProductHelper
         return $sku;
     }
 
-    public function getReindexIds($storeId, $count, $page, $token)
+    public
+    function getReindexIds($storeId, $count, $page, $token)
     {
         if (!$this->dataHelper->checkCredentials()) {
             return $this->searchtapHelper->error("Invalid credentials");
@@ -329,5 +349,21 @@ class ProductHelper
 
         }
         return $this->searchtapHelper->okResult($data, $productCollection->getSize());
+    }
+
+    public
+    function getConfigurableProductIdFromChildProduct($productId)
+    {
+        $parent = $this->configurableModel->getParentIdsByChild($productId);
+        if ($parent) return $parent[0];
+        return 0;
+    }
+
+    public
+    function getBundleProductIdFromSimpleProduct($productId)
+    {
+        $bundleProduct = $this->bundleModel->getParentIdsByChild($productId);
+        if ($bundleProduct) return $bundleProduct[0];
+        return 0;
     }
 }

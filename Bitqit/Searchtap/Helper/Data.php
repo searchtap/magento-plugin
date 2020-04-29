@@ -86,7 +86,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return $this->searchtapHelper->okResult("ok");
     }
 
-    private function _cleanCache() {
+    private function _cleanCache()
+    {
         $types = ['config', 'full_page'];
         foreach ($types as $type)
             $this->cacheTypeList->cleanType($type);
@@ -179,5 +180,23 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 return true;
 
         return false;
+    }
+
+    public function getEnableStoreIds($storeId = 0)
+    {
+        $storeIds = [];
+
+        if ($storeId) {
+            $store = $this->storeManager->getStore($storeId);
+            if ($store->isActive()) $storeIds = [$storeId];
+            return $storeIds;
+        }
+
+        $storeCollection = $this->storeManager->getStores();
+        foreach ($storeCollection as $store) {
+            if ($store->isActive()) $storeIds[] = $store->getId();
+        }
+
+        return $storeIds;
     }
 }
