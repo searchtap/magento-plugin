@@ -11,6 +11,7 @@ class Edit extends Configuration
      */
    public function execute()
    {
+      
         $model = $this->_configFactory->create();
 
         // Restore previously entered form data from session
@@ -19,6 +20,7 @@ class Edit extends Configuration
             $model->setData($data);
         }
         $this->_coreRegistry->register('searchtap_configuration', $model);
+
 
         $resultPage = $this->_resultPageFactory->create();
         $resultPage->setActiveMenu('Bitqit_Searchtap::main_menu');

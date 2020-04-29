@@ -68,7 +68,7 @@ class InstallSchema implements InstallSchemaInterface
                     'Type'
                 )
                 ->addColumn(
-                    'store_id',
+                    'store',
                     \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
                     100,
                     [
@@ -78,7 +78,7 @@ class InstallSchema implements InstallSchemaInterface
                 )->setComment("SearchTap Queue Table");
 
 
-            $table2 = $setup->getConnection()
+            $configTable=$setup->getConnection()
                 ->newTable($setup->getTable('searchtap_config'))
                 ->addColumn(
                     'id',
@@ -93,16 +93,23 @@ class InstallSchema implements InstallSchemaInterface
                     'ID'
                 )
                 ->addColumn(
-                    'title',
+                    'api_token',
                     Table::TYPE_TEXT,
                     null,
                     ['nullable' => false, 'default' => ''],
-                    'Title'
+                    'API Token'
+                )
+                ->addColumn(
+                    'store_datacenter',
+                    Table::TYPE_TEXT,
+                    null,
+                    ['nullable' => false, 'default' => ''],
+                    'Store Data Center'
                 )->setComment("SearchTap Config Table");
 
 
             $setup->getConnection()->createTable($table);
-            $setup->getConnection()->createTable($table2);
+            $setup->getConnection()->createTable($configTable);
         }
 
         $setup->endSetup();

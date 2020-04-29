@@ -41,7 +41,7 @@ class Tabs extends WidgetTabs
                 'label' => __('Step 2: Settings'),
                 'title' => __('Step 2: Settings'),
                 'content' => $this->getLayout()->createBlock(
-                    'Bitqit\Searchtap\Block\Adminhtml\Configuration\Edit\Tab\Setting'
+                    'Bitqit\Searchtap\Block\Adminhtml\Configuration\Edit\Tab\Settings'
                 )->toHtml(),
                 'active' => false
             ]
