@@ -11,7 +11,6 @@ class Edit extends Configuration
      */
    public function execute()
    {
-      
         $model = $this->_configFactory->create();
 
         // Restore previously entered form data from session

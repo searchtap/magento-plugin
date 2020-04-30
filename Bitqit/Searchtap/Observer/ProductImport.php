@@ -2,7 +2,7 @@
 namespace Bitqit\Searchtap\Observer;
 
 use Magento\Framework\Event\Observer;
-use \Bitqit\Searchtap\Helper\Products\ProductHelper ;
+use \Bitqit\Searchtap\Helper\Products\ProductHelper;
 use \Bitqit\Searchtap\Helper\ConfigHelper ;
 use \Bitqit\Searchtap\Helper\Logger ;
 use \Magento\Catalog\Model\Product ;

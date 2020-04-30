@@ -149,10 +149,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return $this->searchtapHelper->error("Invalid credentials");
         }
 
-        if (!$this->checkCredentials()) {
-            return $this->searchtapHelper->error("Invalid credentials");
-        }
-
         if (!$this->checkPrivateKey($token)) {
             return $this->searchtapHelper->error("Invalid token");
         }

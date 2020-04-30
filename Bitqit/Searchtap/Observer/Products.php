@@ -37,7 +37,6 @@ class Products implements \Magento\Framework\Event\ObserverInterface
     {
         $product = $observer->getEvent()->getProduct();
 
-//        $storeIds = $this->dataHelper->getEnableStoreIds($product->getStoreIds());
         $storeIds = $product->getStoreIds();
 
         foreach ($storeIds as $storeId) {
@@ -67,34 +66,21 @@ class Products implements \Magento\Framework\Event\ObserverInterface
 
             //todo: Need to test if product is moved from one store to another store
             // Check if product is mapped to this store
-            $storeIds = $product->getStoreIds();
-            if (!in_array($storeId, $storeIds))
+//            $storeIds = $product->getStoreIds();
+//            if (!in_array($storeId, $storeIds))
+//                $action = "delete";
+
+            $parentId = null;
+
+            // Check if product can be re-indexed
+            if ($product->getStatus() != 1 || $product->getVisibility() == 1)
                 $action = "delete";
 
-            //todo: Check product type before checking parent product
-            /*
-             * Check if product is simple that is child of configurable products
-             * if yes then parent need to re-index
-             */
-            $configurableProductId = $this->productHelper->getConfigurableProductIdFromChildProduct($productId);
-            if ($configurableProductId) $productId = $configurableProductId;
-
-            /*
-             * Check if product is simple and part of bundle product
-             * if yes then both product and associated bundle product need to re-index
-             */
-            $bundleProductId = $this->productHelper->getBundleProductIdFromSimpleProduct($productId);
-            if ($bundleProductId) {
-                $this->queueFactory->create()->addToQueue($bundleProductId, 'add', 'pending', 'product', $storeId);
-            }
-
-            if (!$configurableProductId) {
-                // Check if product can be re-indexed
-                if ($product->getStatus() != 1 || $product->getVisibility() == 1)
-                    $action = "delete";
-            }
+            if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Simple::TYPE_CODE)
+                $this->addActionForParentProducts($productId, $storeId);
 
             $this->queueFactory->create()->addToQueue($productId, $action, 'pending', 'product', $storeId);
+
         } catch (Exception $e) {
             $this->logger->error($e);
         }
@@ -108,28 +94,45 @@ class Products implements \Magento\Framework\Event\ObserverInterface
     {
         try {
             $productId = $product->getId();
+
+            if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Simple::TYPE_CODE)
+                $this->addActionForParentProducts($productId, $storeId);
+
+            $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $storeId);
+
+        } catch (Exception $e) {
+            $this->logger->error($e);
+        }
+    }
+
+    public function addActionForParentProducts($productId, $storeId)
+    {
+        try {
             /*
              * Check if product is simple that is child of configurable products
              * if yes then parent need to re-index
-             */
+            */
             $configurableProductId = $this->productHelper->getConfigurableProductIdFromChildProduct($productId);
-            if ($configurableProductId) {
-                $this->queueFactory->create()->addToQueue($product->getId(), 'add', 'pending', 'product', $storeId);
-            }
+            if ($configurableProductId)
+                $this->queueFactory->create()->addToQueue($configurableProductId, 'add', 'pending', 'product', $storeId);
 
             /*
              * Check if product is simple and part of bundle product
-             * if yes then product need to delete and associated bundle product need to re-index
+             * if yes then both product and associated bundle product need to re-index
              */
             $bundleProductId = $this->productHelper->getBundleProductIdFromSimpleProduct($productId);
-            if ($bundleProductId) {
+            if ($bundleProductId)
                 $this->queueFactory->create()->addToQueue($bundleProductId, 'add', 'pending', 'product', $storeId);
-            }
 
-            if (!$configurableProductId) {
-                $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $storeId);
-            }
-        } catch (Exception $e) {
+            /*
+            * Check if product is simple and part of grouped product
+            * if yes then both product and associated grouped product need to re-index
+            */
+            $groupedProductId = $this->productHelper->getGroupedProductIdFromSimpleProduct($productId);
+            if ($groupedProductId)
+                $this->queueFactory->create()->addToQueue($groupedProductId, 'add', 'pending', 'product', $storeId);
+
+        } catch (error $e) {
             $this->logger->error($e);
         }
     }
