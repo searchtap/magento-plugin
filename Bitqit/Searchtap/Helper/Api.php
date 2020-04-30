@@ -78,8 +78,8 @@ class Api
             $data = [];
             foreach ($stores as $store) {
                 foreach ($dataCenter as $key=>$value) {
-                    if (!strcmp($key, str_replace(" ", "_", $store->getName()))) {
-                        $dataCenterCode = $value;
+                    if ($key==$store->getID()) {
+                        $dataCenterCode = $value; // for selected value
                     }
                 }
                 $data[] = array(
@@ -95,7 +95,7 @@ class Api
             $token=$tokenValue->uniqueId.",".$tokenValue->privateKey;
 
             $config = $this->_getCurlObject($url, 'POST', $token, json_encode($data));
-
+          
             $curl = curl_init();
 
             curl_setopt_array($curl, $config);

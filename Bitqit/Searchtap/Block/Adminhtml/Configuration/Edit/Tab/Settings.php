@@ -86,19 +86,21 @@ class Settings extends Generic implements TabInterface
         }
         $val = 0; // for data center INDIA 1000, US 2000, AUS 4000
         foreach ($stores as $store) {
-            foreach ($data as $k=>$v) {
-                if (!strcmp($k, str_replace(" ", "_", $store->getName()))) {
-                    $val = $v; // for selected value
-                }
-            }
             if ($store->getID() == 0) {
                 continue;
             }
+
+            foreach ($data as $k=>$v) {
+                if ($k==$store->getID()) {
+                    $val = $v; // for selected value
+                }
+            }
+
             $dataCenter->addField('select' . $store->getID(), 'select', array(
                 'label' => $store->getName(),
                 'class' => 'required-entry',
                 'required' => true,
-                'name' => "store_" . str_replace(" ", "_", $store->getName()),
+                'name' => "store_" . str_replace(" ", "_", $store->getID()),
                 'value' => (int)$val,
                 'values' => $dataCenterValue,
                 'tabindex' => 1
