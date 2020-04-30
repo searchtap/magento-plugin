@@ -178,15 +178,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return false;
     }
 
-    public function getEnableStoreIds($storeId = 0)
+    public function getEnabledStoreIds()
     {
         $storeIds = [];
-
-        if ($storeId) {
-            $store = $this->storeManager->getStore($storeId);
-            if ($store->isActive()) $storeIds = [$storeId];
-            return $storeIds;
-        }
 
         $storeCollection = $this->storeManager->getStores();
         foreach ($storeCollection as $store) {

@@ -40,6 +40,7 @@ class Products implements \Magento\Framework\Event\ObserverInterface
         $storeIds = $product->getStoreIds();
 
         foreach ($storeIds as $storeId) {
+            if ($storeId == 0) continue;
             switch ($observer->getEvent()->getName()) {
 //                case "catalog_product_save_before":
 //                    $this->catalogProductSaveBefore($product, $storeId);
