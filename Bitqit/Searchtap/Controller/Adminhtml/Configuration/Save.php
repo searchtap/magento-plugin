@@ -3,6 +3,7 @@
 namespace Bitqit\Searchtap\Controller\Adminhtml\Configuration;
 
 use Bitqit\Searchtap\Controller\Adminhtml\Configuration;
+
 //use Bitqit\Searchtap\Model\ConfigureFactory;
 
 class Save extends Configuration
@@ -10,6 +11,7 @@ class Save extends Configuration
     /**
      * @return void
      */
+
     public function execute()
     {
         $isPost = $this->getRequest()->getPost();
@@ -34,7 +36,10 @@ class Save extends Configuration
                     }
                     $model->setDataCenter(json_encode($dataCenter));
                     $model->save();
-                    $this->messageManager->addSuccess(__('Searchtap Setting Saved'));
+
+                    $this->_apiHelper->requestToSyncStores();
+
+                    $this->messageManager->addSuccess(__('Searchtap Setting Saved & Store Synced'));
                     break;
             }
 

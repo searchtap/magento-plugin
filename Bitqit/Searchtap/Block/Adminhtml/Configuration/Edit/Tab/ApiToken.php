@@ -99,9 +99,7 @@ class ApiToken extends Generic implements TabInterface
             'required'  => true,
             'value'  => 'Save API Token',
             'name' => 'searchtap_credential',
-            'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 40%;padding-bottom: 0.6875em;
-    padding-top: 0.6875em;'
-        ));
+            'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 40%;padding-bottom: 0.6875em; padding-top: 0.6875em;'));
 
         $this->setForm($form);
 

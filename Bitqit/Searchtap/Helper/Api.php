@@ -70,21 +70,32 @@ class Api
         try {
             $url = $this->getApiBaseUrl() . self::STORE_API;
             $stores = $this->dataHelper->getStores();
-            $credentials = $this->configHelper->getCredentials();
-
+            $credentials = $this->_configHelper->getCredentials();
+            $configValue = $this->_configFactory->create()->getCollection();
+            foreach ($configValue as $values) {
+                $dataCenter = (array)$values->getDataCenter();
+            }
             $data = [];
             foreach ($stores as $store) {
+                foreach ($dataCenter as $key=>$value) {
+                    if (!strcmp($key, str_replace(" ", "_", $store->getName()))) {
+                        $dataCenterCode = $value;
+                    }
+                }
                 $data[] = array(
-                    'storeId' => $store->getId(),
+                    'storeId' => (int)$store->getId(),
                     'storeUrl' => $store->getBaseUrl(),
                     'storeName' => $store->getName(),
-                    'storeStatus' => $store->isActive()
+                    'storeStatus' => $store->isActive(),
+                    'dataCenter'=>(int)$dataCenterCode
                 );
             }
 
-            $token = $credentials->uniqueId . "," . $credentials->privateKey;
+            $tokenValue=json_decode($this->_configHelper->getAPIToken());
+            $token=$tokenValue->uniqueId.",".$tokenValue->privateKey;
 
             $config = $this->_getCurlObject($url, 'POST', $token, json_encode($data));
+
             $curl = curl_init();
 
             curl_setopt_array($curl, $config);

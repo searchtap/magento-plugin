@@ -7,6 +7,8 @@ use Magento\Backend\App\Action\Context;
 use Magento\Framework\Registry;
 use Magento\Framework\View\Result\PageFactory;
 use Bitqit\Searchtap\Model\ConfigurationFactory;
+use Bitqit\Searchtap\Helper\Api;
+
 
 class Configuration extends \Magento\Backend\App\Action
 {
@@ -26,17 +28,20 @@ class Configuration extends \Magento\Backend\App\Action
 
 
     protected $_configFactory;
+    protected $_apiHelper;
 
     public function __construct(
         Context $context,
         Registry $coreRegistry,
         PageFactory $resultPageFactory,
-        ConfigurationFactory $configFactory
+        ConfigurationFactory $configFactory,
+        Api $apiHelper
     ) {
         parent::__construct($context);
         $this->_coreRegistry = $coreRegistry;
         $this->_resultPageFactory = $resultPageFactory;
         $this->_configFactory = $configFactory;
+        $this->_apiHelper=$apiHelper;
 
     }
     public function execute()

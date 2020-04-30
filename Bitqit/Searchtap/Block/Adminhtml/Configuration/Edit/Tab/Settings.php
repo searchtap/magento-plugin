@@ -13,6 +13,7 @@ use Bitqit\Searchtap\Model\System\Config\Status;
 use Bitqit\Searchtap\Helper\Api;
 use Bitqit\Searchtap\Helper\ConfigHelper;
 use Bitqit\Searchtap\Model\ConfigurationFactory;
+use Bitqit\Searchtap\Helper\Data;
 
 class Settings extends Generic implements TabInterface
 {
@@ -28,6 +29,7 @@ class Settings extends Generic implements TabInterface
     protected $_apiHelper;
     protected $_configHelper;
     private $_configFactory;
+    private $_dataHelper;
 
     public function __construct(
         Context $context,
@@ -38,6 +40,7 @@ class Settings extends Generic implements TabInterface
         Api $_apiHelper,
         ConfigHelper $configHelper,
         ConfigurationFactory $configFactory,
+        Data $dataHelper,
         array $data = []
     )
     {
@@ -46,6 +49,7 @@ class Settings extends Generic implements TabInterface
         $this->_apiHelper = $_apiHelper;
         $this->_configHelper = $configHelper;
         $this->_configFactory = $configFactory;
+        $this->_dataHelper=$dataHelper;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -74,9 +78,7 @@ class Settings extends Generic implements TabInterface
             $dataCenterValue[$value] = $key;
         }
 
-        $storeManager = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Store\Model\StoreManagerInterface');
-        $stores = $storeManager->getStores(true, false);
-
+        $stores=$this->_dataHelper->getStores();
         // Get Configuration from table
         $configValue = $this->_configFactory->create()->getCollection();
         foreach ($configValue as $values) {
@@ -107,7 +109,7 @@ class Settings extends Generic implements TabInterface
             'required' => true,
             'value' => 'Save and Sync Store',
             'name' => 'searchtap_credential',
-            'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%;'
+            'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%; padding-bottom: 0.6875em; padding-top: 0.6875em;'
         ));
 
         $this->setForm($form);
