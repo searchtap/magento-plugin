@@ -11,7 +11,7 @@ use Magento\Cms\Model\Wysiwyg\Config;
 use Bitqit\Searchtap\Model\System\Config\Status;
 use \Bitqit\Searchtap\Helper\ConfigHelper;
 
-class Credentials extends Generic implements TabInterface
+class ApiToken extends Generic implements TabInterface
 {
     /**
      * @var \Magento\Cms\Model\Wysiwyg\Config

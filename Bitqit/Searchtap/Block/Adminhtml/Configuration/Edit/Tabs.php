@@ -48,7 +48,7 @@ class Tabs extends WidgetTabs
                 'label' => __('Step 1: API Token'),
                 'title' => __('Step 1: API Token'),
                 'content' => $this->getLayout()->createBlock(
-                    'Bitqit\Searchtap\Block\Adminhtml\Configuration\Edit\Tab\Credentials'
+                    'Bitqit\Searchtap\Block\Adminhtml\Configuration\Edit\Tab\ApiToken'
                 )->toHtml(),
                 'active' => true
             ]

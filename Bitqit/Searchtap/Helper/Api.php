@@ -13,7 +13,7 @@ class Api
 {
     const INDEXING_URL = "/sync";
     const STORE_API = '/my-stores';
-    const DATACENTER_API='https://magento-portal.searchtap.net/client/data-centers';
+    const DATACENTER_API='/data-centers';
 
     private $searchtapHelper;
     private $logger;
@@ -124,9 +124,8 @@ class Api
     public function getDataCenterList(){
         $tokenValue=json_decode($this->_configHelper->getAPIToken());
         $token=$tokenValue->uniqueId.",".$tokenValue->privateKey;
-
         try {
-            $curlObject = $this->_getCurlObject(self::DATACENTER_API, "GET",$token);
+            $curlObject = $this->_getCurlObject($this->getApiBaseUrl().self::DATACENTER_API, "GET",$token);
             $curl = curl_init();
             curl_setopt_array($curl, $curlObject);
             $results = curl_exec($curl);
