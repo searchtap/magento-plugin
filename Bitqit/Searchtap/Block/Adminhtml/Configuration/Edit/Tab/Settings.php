@@ -10,6 +10,10 @@ use Magento\Framework\Registry;
 use Magento\Framework\Data\FormFactory;
 use Magento\Cms\Model\Wysiwyg\Config;
 use Bitqit\Searchtap\Model\System\Config\Status;
+use Bitqit\Searchtap\Helper\Api;
+use Bitqit\Searchtap\Helper\ConfigHelper;
+use Bitqit\Searchtap\Model\ConfigurationFactory;
+use Bitqit\Searchtap\Helper\Data;
 
 class Settings extends Generic implements TabInterface
 {
@@ -22,26 +26,30 @@ class Settings extends Generic implements TabInterface
      * @var \Bitqit\Searchtap\Model\Config\Status
      */
     protected $_newsStatus;
+    protected $_apiHelper;
+    protected $_configHelper;
+    private $_configFactory;
+    private $_dataHelper;
 
-    /**
-     * @param Context $context
-     * @param Registry $registry
-     * @param FormFactory $formFactory
-     * @param Config $wysiwygConfig
-     * @param Status $newsStatus
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         Registry $registry,
         FormFactory $formFactory,
         Config $wysiwygConfig,
         Status $newsStatus,
+        Api $_apiHelper,
+        ConfigHelper $configHelper,
+        ConfigurationFactory $configFactory,
+        Data $dataHelper,
         array $data = []
     )
     {
         $this->_wysiwygConfig = $wysiwygConfig;
         $this->_newsStatus = $newsStatus;
+        $this->_apiHelper = $_apiHelper;
+        $this->_configHelper = $configHelper;
+        $this->_configFactory = $configFactory;
+        $this->_dataHelper=$dataHelper;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -56,54 +64,56 @@ class Settings extends Generic implements TabInterface
         $model = $this->_coreRegistry->registry('searchtap_configuration');
 
         /** @var \Magento\Framework\Data\Form $form */
-        $form = $this->_formFactory->create();
-        $form->setHtmlIdPrefix('configuration_');
-        $form->setFieldNameSuffix('configuration');
+        $form = $this->_formFactory->create(['data' => ['id' => 'edit_form', 'action' => $this->getData('action'), 'method' => 'post']]);
 
-        $fieldset = $form->addFieldset(
+        $dataCenter = $form->addFieldset(
             'base_fieldset',
             ['legend' => __('Select Data Center')]
         );
 
-      /*  if ($model->getId()) {
-            $fieldset->addField(
-                'id',
-                'hidden',
-                ['name' => 'id']
-            );
+        $data_center = $this->_apiHelper->getDataCenterList();
+        $objectToArray = (array)$data_center->data;
+        foreach ($objectToArray as $key=>$value) {
+            $dataCenterValue['0'] = 'Select Data Center';
+            $dataCenterValue[$value] = $key;
         }
-     */
-        $storeManager = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Store\Model\StoreManagerInterface');
-        $stores = $storeManager->getStores(true, false);
-        $i=0;
-        foreach ($stores as $store) {
-              $i++;
 
-            $fieldset->addField('select'.$i, 'select', array(
+        $stores=$this->_dataHelper->getStores();
+        // Get Configuration from table
+        $configValue = $this->_configFactory->create()->getCollection();
+        foreach ($configValue as $values) {
+            $data = (array)$values->getDataCenter();
+        }
+        $val = 0; // for data center INDIA 1000, US 2000, AUS 4000
+        foreach ($stores as $store) {
+            if ($store->getID() == 0) {
+                continue;
+            }
+
+            foreach ($data as $k=>$v) {
+                if ($k==$store->getID()) {
+                    $val = $v; // for selected value
+                }
+            }
+
+            $dataCenter->addField('select' . $store->getID(), 'select', array(
                 'label' => $store->getName(),
                 'class' => 'required-entry',
-                'style'=>'
-    font-weight: 300;
-    background: lemonchiffon;
-',
                 'required' => true,
-                'name' => 'title',
-                'onclick' => "",
-                'onchange' => "",
-                'value' => '1',
-                'values' => array('-1' => 'Select Data Center', '1' => 'India', '2' => 'US-NYC', '3' => 'Australia'),
+                'name' => "store_" . str_replace(" ", "_", $store->getID()),
+                'value' => (int)$val,
+                'values' => $dataCenterValue,
                 'tabindex' => 1
             ));
         }
-        $fieldset->addField('link1', 'link', array(
 
-            'after_element_html' => '<button style="    background: #eb5202;
-    border-color: #eb5202;
-    color: #fbfbfb;">Save and Sync Store</button>'
+        $dataCenter->addField('submit', 'submit', array(
+            'required' => true,
+            'value' => 'Save and Sync Store',
+            'name' => 'searchtap_credential',
+            'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%; padding-bottom: 0.6875em; padding-top: 0.6875em;'
         ));
 
-        $data = $model->getData();
-        $form->setValues($data);
         $this->setForm($form);
 
         return parent::_prepareForm();

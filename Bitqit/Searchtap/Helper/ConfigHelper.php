@@ -6,6 +6,8 @@ use \Magento\Store\Model\ScopeInterface;
 use \Magento\Framework\App\Config\ScopeConfigInterface;
 use \Magento\Store\Model\StoreManagerInterface;
 use \Bitqit\Searchtap\Helper\SearchtapHelper;
+use Bitqit\Searchtap\Model\ConfigurationFactory;
+
 
 class ConfigHelper
 {
@@ -17,16 +19,19 @@ class ConfigHelper
     private $configInterface;
     private $storeManager;
     private $searchtapHelper;
+    private $_configFactory;
 
     public function __construct(
         ScopeConfigInterface $configInterface,
         StoreManagerInterface $storeManager,
-        SearchtapHelper $searchtapHelper
+        SearchtapHelper $searchtapHelper,
+        ConfigurationFactory $configFactory
     )
     {
         $this->configInterface = $configInterface;
         $this->storeManager = $storeManager;
         $this->searchtapHelper = $searchtapHelper;
+        $this->_configFactory=$configFactory;
     }
 
     public function getCredentials()
@@ -83,4 +88,14 @@ class ConfigHelper
 
         return $enabledStoreIds;
     }
+
+
+    public function getAPIToken(){
+        $configValue = $this->_configFactory->create()->getCollection();
+        foreach ($configValue as $val){
+            return $val->getAPIToken();
+        }
+        return;
+    }
+
 }

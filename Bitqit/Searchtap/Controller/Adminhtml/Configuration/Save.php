@@ -4,47 +4,53 @@ namespace Bitqit\Searchtap\Controller\Adminhtml\Configuration;
 
 use Bitqit\Searchtap\Controller\Adminhtml\Configuration;
 
+//use Bitqit\Searchtap\Model\ConfigureFactory;
+
 class Save extends Configuration
 {
     /**
      * @return void
      */
+
     public function execute()
     {
         $isPost = $this->getRequest()->getPost();
-
         if ($isPost) {
-            $Model = $this->_newsFactory->create();
-            $Id = $this->getRequest()->getParam('id');
-
-            if ($Id) {
-                $Model->load($Id);
-            }
-            $formData = $this->getRequest()->getParam('news');
-            $Model->setData($formData);
-
+            $model = $this->_configFactory->create();
+            $model->load(1);
+            $formData = $this->getRequest()->getParams();
             try {
-                // Save news
-                $Model->save();
+            switch ($formData['searchtap_credential']) {
+                case 'Save API Token':
+                    $model->setAPIToken($formData['api_token']);
+                    $model->save();
+                    $this->messageManager->addSuccess(__('Searchtap API Token Saved'));
+                    break;
 
-                // Display success message
-                $this->messageManager->addSuccess(__('Saved.'));
+                case 'Save and Sync Store':
+                    $dataCenter=[];
+                    foreach ($formData as $key=>$value){
+                        if(strpos($key,"store_" ) !== false){
+                            $dataCenter[substr($key,6)]=$value;
+                        }
+                    }
+                    $model->setDataCenter(json_encode($dataCenter));
+                    $model->save();
 
-                // Check if 'Save and Continue'
-                if ($this->getRequest()->getParam('back')) {
-                    $this->_redirect('*/*/edit', ['id' => $Model->getId(), '_current' => true]);
-                    return;
-                }
+                    $this->_apiHelper->requestToSyncStores();
 
-                // Go to grid page
-                $this->_redirect('*/*/');
+                    $this->messageManager->addSuccess(__('Searchtap Setting Saved & Store Synced'));
+                    break;
+            }
+
+                $this->_redirect('*/*/edit');
                 return;
+
             } catch (\Exception $e) {
                 $this->messageManager->addError($e->getMessage());
             }
 
             $this->_getSession()->setFormData($formData);
-            $this->_redirect('*/*/edit', ['id' => $Id]);
         }
     }
 }

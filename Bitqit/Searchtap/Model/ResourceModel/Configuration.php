@@ -4,7 +4,7 @@ namespace Bitqit\Searchtap\Model\ResourceModel;
 
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
-class Configure extends AbstractDb
+class Configuration extends AbstractDb
 {
     /**
      * Define main table
@@ -21,6 +21,6 @@ class Configure extends AbstractDb
 
     protected function _construct()
     {
-        $this->_init('bitqit_searchtap_config', 'id');
+        $this->_init('searchtap_config', 'id');
     }
 }
