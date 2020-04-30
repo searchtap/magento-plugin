@@ -20,28 +20,34 @@ class Save extends Configuration
             $model->load(1);
             $formData = $this->getRequest()->getParams();
             try {
-            switch ($formData['searchtap_credential']) {
-                case 'Save API Token':
-                    $model->setAPIToken($formData['api_token']);
-                    $model->save();
-                    $this->messageManager->addSuccess(__('Searchtap API Token Saved'));
-                    break;
-
-                case 'Save and Sync Store':
-                    $dataCenter=[];
-                    foreach ($formData as $key=>$value){
-                        if(strpos($key,"store_" ) !== false){
-                            $dataCenter[substr($key,6)]=$value;
+                switch ($formData['searchtap_credential']) {
+                    case 'Save API Token':
+                        $model->setAPIToken($formData['api_token']);
+                        $model->save();
+                        if ($this->_apiHelper->getDataCenterList()){
+                            $this->messageManager->addSuccess(__('Searchtap API Token Saved'));
                         }
-                    }
-                    $model->setDataCenter(json_encode($dataCenter));
-                    $model->save();
+                        else{
+                            $this->messageManager->addError(__("Invalid Token !!!"));
+                        }
 
-                    $this->_apiHelper->requestToSyncStores();
+                        break;
 
-                    $this->messageManager->addSuccess(__('Searchtap Setting Saved & Store Synced'));
-                    break;
-            }
+                    case 'Save and Sync Store':
+                        $dataCenter = [];
+                        foreach ($formData as $key => $value) {
+                            if (strpos($key, "store_") !== false) {
+                                $dataCenter[substr($key, 6)] = $value;
+                            }
+                        }
+                        $model->setDataCenter(json_encode($dataCenter));
+                        $model->save();
+
+                        $this->_apiHelper->requestToSyncStores();
+
+                        $this->messageManager->addSuccess(__('Searchtap Setting Saved & Store Synced'));
+                        break;
+                }
 
                 $this->_redirect('*/*/edit');
                 return;

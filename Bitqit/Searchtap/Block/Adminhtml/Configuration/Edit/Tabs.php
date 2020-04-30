@@ -20,12 +20,14 @@ class Tabs extends WidgetTabs
         \Magento\Backend\Model\Auth\Session $authSession,
         \Magento\Framework\App\Request\Http $request,
         \Bitqit\Searchtap\Helper\ConfigHelper $configHelper,
+        \Magento\Framework\Message\ManagerInterface $messageManager,
         Api $apiHelper,
         array $data = []
     ) {
         $this->_apiHelper = $apiHelper;
         $this->request = $request;
         $this->_configHelper=$configHelper;
+        $this->messageManager = $messageManager;
         parent::__construct($context, $jsonEncoder, $authSession, $data);
     }
     protected function _construct()
@@ -54,7 +56,7 @@ class Tabs extends WidgetTabs
             ]
         );
 
-        if($this->_configHelper->getAPIToken()){
+        if($this->_configHelper->getAPIToken() && $this->_apiHelper->getDataCenterList()){
             $this->addTab(
                 'merchandise_info',
                 [
@@ -67,7 +69,6 @@ class Tabs extends WidgetTabs
                 ]
             );
         }
-
         return parent::_beforeToHtml();
     }
 }

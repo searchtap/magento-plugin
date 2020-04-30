@@ -95,7 +95,7 @@ class Api
             $token=$tokenValue->uniqueId.",".$tokenValue->privateKey;
 
             $config = $this->_getCurlObject($url, 'POST', $token, json_encode($data));
-          
+
             $curl = curl_init();
 
             curl_setopt_array($curl, $config);
@@ -134,7 +134,10 @@ class Api
     }
     public function getDataCenterList(){
         $tokenValue=json_decode($this->_configHelper->getAPIToken());
-        $token=$tokenValue->uniqueId.",".$tokenValue->privateKey;
+      //  print_r($tokenValue);
+
+        if($tokenValue){
+            $token=$tokenValue->uniqueId.",".$tokenValue->privateKey;
         try {
             $curlObject = $this->_getCurlObject($this->getApiBaseUrl().self::DATACENTER_API, "GET",$token);
             $curl = curl_init();
@@ -152,7 +155,7 @@ class Api
 
         } catch (err $e) {
             $this->logger->error($e);
-        }
+        }}
     }
 
 }

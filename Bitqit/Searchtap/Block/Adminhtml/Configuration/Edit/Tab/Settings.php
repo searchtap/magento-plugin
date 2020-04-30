@@ -72,12 +72,13 @@ class Settings extends Generic implements TabInterface
         );
 
         $data_center = $this->_apiHelper->getDataCenterList();
-        $objectToArray = (array)$data_center->data;
-        foreach ($objectToArray as $key=>$value) {
-            $dataCenterValue['0'] = 'Select Data Center';
-            $dataCenterValue[$value] = $key;
+        if($data_center) {
+            $objectToArray = (array)$data_center->data;
+            foreach ($objectToArray as $key => $value) {
+                $dataCenterValue['0'] = 'Select Data Center';
+                $dataCenterValue[$value] = $key;
+            }
         }
-
         $stores=$this->_dataHelper->getStores();
         // Get Configuration from table
         $configValue = $this->_configFactory->create()->getCollection();
@@ -100,7 +101,7 @@ class Settings extends Generic implements TabInterface
                 'label' => $store->getName(),
                 'class' => 'required-entry',
                 'required' => true,
-                'name' => "store_" . str_replace(" ", "_", $store->getID()),
+                'name' => "store_" .$store->getID(),
                 'value' => (int)$val,
                 'values' => $dataCenterValue,
                 'tabindex' => 1
