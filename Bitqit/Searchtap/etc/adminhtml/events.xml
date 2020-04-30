@@ -15,7 +15,7 @@
         <observer name="st_category_delete" instance="Bitqit\Searchtap\Observer\Categories" />
     </event>
 
-    <!-- Product Trigger -->
+    <!-- Product Events -->
     <event name="catalog_product_save_before">
         <observer name="st_product_save_before" instance="Bitqit\Searchtap\Observer\Products" />
     </event>

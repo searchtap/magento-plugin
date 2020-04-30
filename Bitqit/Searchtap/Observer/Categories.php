@@ -39,7 +39,7 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
             case "catalog_category_delete_before":
                 $this->catalogCategoryDeleteBefore($category);
                 break;
-            //todo: catalog_catagory_move_after event
+            //todo: catalog_category_move_after event
         }
     }
 
