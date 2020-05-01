@@ -10,6 +10,10 @@ use Magento\Framework\Registry;
 use Magento\Framework\Data\FormFactory;
 use Magento\Cms\Model\Wysiwyg\Config;
 use Bitqit\Searchtap\Model\System\Config\Status;
+use Bitqit\Searchtap\Helper\Api;
+use Bitqit\Searchtap\Helper\ConfigHelper;
+use Bitqit\Searchtap\Model\ConfigurationFactory;
+use Bitqit\Searchtap\Helper\Data;
 
 class Settings extends Generic implements TabInterface
 {
@@ -22,26 +26,30 @@ class Settings extends Generic implements TabInterface
      * @var \Bitqit\Searchtap\Model\Config\Status
      */
     protected $_newsStatus;
+    protected $_apiHelper;
+    protected $_configHelper;
+    private $_configurationFactory;
+    private $_dataHelper;
 
-    /**
-     * @param Context $context
-     * @param Registry $registry
-     * @param FormFactory $formFactory
-     * @param Config $wysiwygConfig
-     * @param Status $newsStatus
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         Registry $registry,
         FormFactory $formFactory,
         Config $wysiwygConfig,
         Status $newsStatus,
+        Api $_apiHelper,
+        ConfigHelper $configHelper,
+        ConfigurationFactory $configurationFactory,
+        Data $dataHelper,
         array $data = []
     )
     {
         $this->_wysiwygConfig = $wysiwygConfig;
         $this->_newsStatus = $newsStatus;
+        $this->_apiHelper = $_apiHelper;
+        $this->_configHelper = $configHelper;
+        $this->_configurationFactory = $configurationFactory;
+        $this->_dataHelper = $dataHelper;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -56,54 +64,47 @@ class Settings extends Generic implements TabInterface
         $model = $this->_coreRegistry->registry('searchtap_configuration');
 
         /** @var \Magento\Framework\Data\Form $form */
-        $form = $this->_formFactory->create();
-        $form->setHtmlIdPrefix('configuration_');
-        $form->setFieldNameSuffix('configuration');
+        $form = $this->_formFactory->create(['data' => ['id' => 'edit_form', 'action' => $this->getData('action'), 'method' => 'post']]);
 
-        $fieldset = $form->addFieldset(
-            'base_fieldset',
+        /*
+         * Select data centers for stores
+         */
+        $dataCenterFieldSet = $form->addFieldset(
+            'st-data-centers',
             ['legend' => __('Select Data Center')]
         );
 
-      /*  if ($model->getId()) {
-            $fieldset->addField(
-                'id',
-                'hidden',
-                ['name' => 'id']
-            );
-        }
-     */
-        $storeManager = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Store\Model\StoreManagerInterface');
-        $stores = $storeManager->getStores(true, false);
-        $i=0;
-        foreach ($stores as $store) {
-              $i++;
+        $isDisabled = false;
+        $stores = $this->_dataHelper->getEnabledStores();
+        $dataCenters = $this->_apiHelper->getDataCenters();
+        $dataCenters[0] = "Select Data Center";
+        $dbDataCenters = $this->_configurationFactory->create()->getDataCenters();
+        if ($dbDataCenters && count($dbDataCenters) > 0) $isDisabled = true;
 
-            $fieldset->addField('select'.$i, 'select', array(
+        foreach ($stores as $store) {
+            $storeId = $store->getId();
+            $selectedValue = $dbDataCenters[$storeId];
+            $dataCenterFieldSet->addField('select' . $storeId, 'select', array(
                 'label' => $store->getName(),
                 'class' => 'required-entry',
-                'style'=>'
-    font-weight: 300;
-    background: lemonchiffon;
-',
                 'required' => true,
-                'name' => 'title',
-                'onclick' => "",
-                'onchange' => "",
-                'value' => '1',
-                'values' => array('-1' => 'Select Data Center', '1' => 'India', '2' => 'US-NYC', '3' => 'Australia'),
+                'name' => "store_" . $storeId,
+                'disabled' => $isDisabled,
+                'value' => $selectedValue,
+                'values' => $dataCenters,
                 'tabindex' => 1
             ));
         }
-        $fieldset->addField('link1', 'link', array(
 
-            'after_element_html' => '<button style="    background: #eb5202;
-    border-color: #eb5202;
-    color: #fbfbfb;">Save and Sync Store</button>'
-        ));
+        if (!$isDisabled) {
+            $dataCenterFieldSet->addField('submit', 'submit', array(
+                'required' => true,
+                'value' => 'Save and Sync Stores',
+                'name' => 'st-save-data-centers',
+                'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%; padding-bottom: 0.6875em; padding-top: 0.6875em;'
+            ));
+        }
 
-        $data = $model->getData();
-        $form->setValues($data);
         $this->setForm($form);
 
         return parent::_prepareForm();
@@ -116,7 +117,7 @@ class Settings extends Generic implements TabInterface
      */
     public function getTabLabel()
     {
-        return __('Searchtap Config');
+        return __('SearchTap Config');
     }
 
     /**
@@ -126,7 +127,7 @@ class Settings extends Generic implements TabInterface
      */
     public function getTabTitle()
     {
-        return __('Searchtap Config');
+        return __('SearchTap Config');
     }
 
     /**
@@ -144,6 +145,4 @@ class Settings extends Generic implements TabInterface
     {
         return false;
     }
-
-
 }

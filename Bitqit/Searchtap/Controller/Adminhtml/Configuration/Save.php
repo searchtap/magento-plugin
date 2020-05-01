@@ -3,48 +3,45 @@
 namespace Bitqit\Searchtap\Controller\Adminhtml\Configuration;
 
 use Bitqit\Searchtap\Controller\Adminhtml\Configuration;
+use MongoDB\Driver\Exception\Exception;
 
 class Save extends Configuration
 {
     /**
      * @return void
      */
+
     public function execute()
     {
-        $isPost = $this->getRequest()->getPost();
+       try {
+           $post = $this->getRequest()->getPost();
+           if (!$post) return;
 
-        if ($isPost) {
-            $Model = $this->_newsFactory->create();
-            $Id = $this->getRequest()->getParam('id');
+           $formData = $this->getRequest()->getParams();
+           $apiToken = $formData["api_token"];
+           $dataCenters = [];
 
-            if ($Id) {
-                $Model->load($Id);
-            }
-            $formData = $this->getRequest()->getParam('news');
-            $Model->setData($formData);
+           //Formatting the data center values in the required format
+           foreach ($formData as $key => $value) {
+               if (strpos($key,"store_" ) !== false)
+                   $dataCenters[str_replace("store_", "", $key)] = $value;
+           }
 
-            try {
-                // Save news
-                $Model->save();
+           //Send request to sync stores
+           if ($dataCenters && count($dataCenters) > 0)
+               $this->_apiHelper->requestToSyncStores($dataCenters);
 
-                // Display success message
-                $this->messageManager->addSuccess(__('Saved.'));
+           //Save updated data
+           $this->_configurationFactory->create()->setConfiguration($apiToken, $dataCenters);
 
-                // Check if 'Save and Continue'
-                if ($this->getRequest()->getParam('back')) {
-                    $this->_redirect('*/*/edit', ['id' => $Model->getId(), '_current' => true]);
-                    return;
-                }
+           $this->messageManager->addSuccess(__('Settings have been saved successfully'));
 
-                // Go to grid page
-                $this->_redirect('*/*/');
-                return;
-            } catch (\Exception $e) {
-                $this->messageManager->addError($e->getMessage());
-            }
+           $this->_getSession()->setFormData($formData);
 
-            $this->_getSession()->setFormData($formData);
-            $this->_redirect('*/*/edit', ['id' => $Id]);
-        }
+           $this->_redirect('*/*/edit');
+
+       } catch (Exception $exception) {
+           $this->messageManager->addError($exception->getMessage());
+       }
     }
 }

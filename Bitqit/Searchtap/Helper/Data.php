@@ -9,6 +9,7 @@ use \Bitqit\Searchtap\Model\QueueFactory as QueueFactory;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Cache\Frontend\Pool;
+use \Bitqit\Searchtap\Model\ConfigurationFactory;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -23,6 +24,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     private $configInterface;
     private $cacheTypeList;
     private $cacheFrontendPool;
+    private $configurationFactory;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -31,7 +33,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         QueueFactory $queueFactory,
         WriterInterface $configInterface,
         TypeListInterface $cacheTypeList,
-        Pool $cacheFrontendPool
+        Pool $cacheFrontendPool,
+        ConfigurationFactory $configurationFactory
     )
     {
         $this->configHelper = $configHelper;
@@ -41,11 +44,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->configInterface = $configInterface;
         $this->cacheTypeList = $cacheTypeList;
         $this->cacheFrontendPool = $cacheFrontendPool;
+        $this->configurationFactory = $configurationFactory;
+    }
+
+    public function getCredentials()
+    {
+        $credentials = $this->configurationFactory->create()->getToken();
+        return json_decode($credentials);
     }
 
     public function checkPrivateKey($privateKey)
     {
-        $dbPrivateKey = ($this->configHelper->getCredentials())->privateKey;
+        $dbPrivateKey = ($this->getCredentials())->privateKey;
 
         if (!empty($privateKey)) {
             if ($privateKey === $dbPrivateKey)
@@ -57,7 +67,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function checkCredentials()
     {
-        $credentials = $this->configHelper->getCredentials();
+        $credentials = $this->getCredentials();
 
         if ($credentials) {
             if (isset($credentials->privateKey) && isset($credentials->uniqueId))
@@ -178,21 +188,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return false;
     }
 
-    public function getEnableStoreIds($storeId = 0)
+    public function getEnabledStores()
     {
-        $storeIds = [];
-
-        if ($storeId) {
-            $store = $this->storeManager->getStore($storeId);
-            if ($store->isActive()) $storeIds = [$storeId];
-            return $storeIds;
-        }
+        $stores = [];
 
         $storeCollection = $this->storeManager->getStores();
         foreach ($storeCollection as $store) {
-            if ($store->isActive()) $storeIds[] = $store->getId();
+            if ($store->isActive()) $stores[] = $store;
         }
 
-        return $storeIds;
+        return $stores;
     }
 }
