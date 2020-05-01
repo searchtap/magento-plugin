@@ -3,8 +3,7 @@
 namespace Bitqit\Searchtap\Controller\Adminhtml\Configuration;
 
 use Bitqit\Searchtap\Controller\Adminhtml\Configuration;
-
-//use Bitqit\Searchtap\Model\ConfigureFactory;
+use MongoDB\Driver\Exception\Exception;
 
 class Save extends Configuration
 {
@@ -14,43 +13,35 @@ class Save extends Configuration
 
     public function execute()
     {
-        $isPost = $this->getRequest()->getPost();
-        if ($isPost) {
-            $model = $this->_configFactory->create();
-            $model->load(1);
-            $formData = $this->getRequest()->getParams();
-            try {
-            switch ($formData['searchtap_credential']) {
-                case 'Save API Token':
-                    $model->setAPIToken($formData['api_token']);
-                    $model->save();
-                    $this->messageManager->addSuccess(__('Searchtap API Token Saved'));
-                    break;
+       try {
+           $post = $this->getRequest()->getPost();
+           if (!$post) return;
 
-                case 'Save and Sync Store':
-                    $dataCenter=[];
-                    foreach ($formData as $key=>$value){
-                        if(strpos($key,"store_" ) !== false){
-                            $dataCenter[substr($key,6)]=$value;
-                        }
-                    }
-                    $model->setDataCenter(json_encode($dataCenter));
-                    $model->save();
+           $formData = $this->getRequest()->getParams();
+           $apiToken = $formData["api_token"];
+           $dataCenters = [];
 
-                    $this->_apiHelper->requestToSyncStores();
+           //Formatting the data center values in the required format
+           foreach ($formData as $key => $value) {
+               if (strpos($key,"store_" ) !== false)
+                   $dataCenters[str_replace("store_", "", $key)] = $value;
+           }
 
-                    $this->messageManager->addSuccess(__('Searchtap Setting Saved & Store Synced'));
-                    break;
-            }
+           //Send request to sync stores
+           if ($dataCenters && count($dataCenters) > 0)
+               $this->_apiHelper->requestToSyncStores($dataCenters);
 
-                $this->_redirect('*/*/edit');
-                return;
+           //Save updated data
+           $this->_configurationFactory->create()->setConfiguration($apiToken, $dataCenters);
 
-            } catch (\Exception $e) {
-                $this->messageManager->addError($e->getMessage());
-            }
+           $this->messageManager->addSuccess(__('Settings have been saved successfully'));
 
-            $this->_getSession()->setFormData($formData);
-        }
+           $this->_getSession()->setFormData($formData);
+
+           $this->_redirect('*/*/edit');
+
+       } catch (Exception $exception) {
+           $this->messageManager->addError($exception->getMessage());
+       }
     }
 }

@@ -28,7 +28,7 @@ class Settings extends Generic implements TabInterface
     protected $_newsStatus;
     protected $_apiHelper;
     protected $_configHelper;
-    private $_configFactory;
+    private $_configurationFactory;
     private $_dataHelper;
 
     public function __construct(
@@ -39,7 +39,7 @@ class Settings extends Generic implements TabInterface
         Status $newsStatus,
         Api $_apiHelper,
         ConfigHelper $configHelper,
-        ConfigurationFactory $configFactory,
+        ConfigurationFactory $configurationFactory,
         Data $dataHelper,
         array $data = []
     )
@@ -48,8 +48,8 @@ class Settings extends Generic implements TabInterface
         $this->_newsStatus = $newsStatus;
         $this->_apiHelper = $_apiHelper;
         $this->_configHelper = $configHelper;
-        $this->_configFactory = $configFactory;
-        $this->_dataHelper=$dataHelper;
+        $this->_configurationFactory = $configurationFactory;
+        $this->_dataHelper = $dataHelper;
         parent::__construct($context, $registry, $formFactory, $data);
     }
 
@@ -66,53 +66,44 @@ class Settings extends Generic implements TabInterface
         /** @var \Magento\Framework\Data\Form $form */
         $form = $this->_formFactory->create(['data' => ['id' => 'edit_form', 'action' => $this->getData('action'), 'method' => 'post']]);
 
-        $dataCenter = $form->addFieldset(
-            'base_fieldset',
+        /*
+         * Select data centers for stores
+         */
+        $dataCenterFieldSet = $form->addFieldset(
+            'st-data-centers',
             ['legend' => __('Select Data Center')]
         );
 
-        $data_center = $this->_apiHelper->getDataCenterList();
-        $objectToArray = (array)$data_center->data;
-        foreach ($objectToArray as $key=>$value) {
-            $dataCenterValue['0'] = 'Select Data Center';
-            $dataCenterValue[$value] = $key;
-        }
+        $isDisabled = false;
+        $stores = $this->_dataHelper->getEnabledStores();
+        $dataCenters = $this->_apiHelper->getDataCenters();
+        $dataCenters[0] = "Select Data Center";
+        $dbDataCenters = $this->_configurationFactory->create()->getDataCenters();
+        if ($dbDataCenters && count($dbDataCenters) > 0) $isDisabled = true;
 
-        $stores=$this->_dataHelper->getStores();
-        // Get Configuration from table
-        $configValue = $this->_configFactory->create()->getCollection();
-        foreach ($configValue as $values) {
-            $data = (array)$values->getDataCenter();
-        }
-        $val = 0; // for data center INDIA 1000, US 2000, AUS 4000
         foreach ($stores as $store) {
-            if ($store->getID() == 0) {
-                continue;
-            }
-
-            foreach ($data as $k=>$v) {
-                if ($k==$store->getID()) {
-                    $val = $v; // for selected value
-                }
-            }
-
-            $dataCenter->addField('select' . $store->getID(), 'select', array(
+            $storeId = $store->getId();
+            $selectedValue = $dbDataCenters[$storeId];
+            $dataCenterFieldSet->addField('select' . $storeId, 'select', array(
                 'label' => $store->getName(),
                 'class' => 'required-entry',
                 'required' => true,
-                'name' => "store_" . str_replace(" ", "_", $store->getID()),
-                'value' => (int)$val,
-                'values' => $dataCenterValue,
+                'name' => "store_" . $storeId,
+                'disabled' => $isDisabled,
+                'value' => $selectedValue,
+                'values' => $dataCenters,
                 'tabindex' => 1
             ));
         }
 
-        $dataCenter->addField('submit', 'submit', array(
-            'required' => true,
-            'value' => 'Save and Sync Store',
-            'name' => 'searchtap_credential',
-            'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%; padding-bottom: 0.6875em; padding-top: 0.6875em;'
-        ));
+        if (!$isDisabled) {
+            $dataCenterFieldSet->addField('submit', 'submit', array(
+                'required' => true,
+                'value' => 'Save and Sync Stores',
+                'name' => 'st-save-data-centers',
+                'style' => 'background: #e85d22;border-color: #e85d22;color: #ffffff; width: 35%; padding-bottom: 0.6875em; padding-top: 0.6875em;'
+            ));
+        }
 
         $this->setForm($form);
 
@@ -126,7 +117,7 @@ class Settings extends Generic implements TabInterface
      */
     public function getTabLabel()
     {
-        return __('Searchtap Config');
+        return __('SearchTap Config');
     }
 
     /**
@@ -136,7 +127,7 @@ class Settings extends Generic implements TabInterface
      */
     public function getTabTitle()
     {
-        return __('Searchtap Config');
+        return __('SearchTap Config');
     }
 
     /**
@@ -154,6 +145,4 @@ class Settings extends Generic implements TabInterface
     {
         return false;
     }
-
-
 }

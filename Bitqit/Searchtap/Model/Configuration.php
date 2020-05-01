@@ -3,46 +3,108 @@
 namespace Bitqit\Searchtap\Model;
 
 use Magento\Framework\Model\AbstractModel;
+use \Bitqit\Searchtap\Model\ConfigurationFactory;
 
-class Configuration extends AbstractModel
+class Configuration extends AbstractModel implements \Magento\Framework\DataObject\IdentityInterface
 {
     /**
      * Define resource model
      */
+    const CACHE_TAG = 'searchtap_config';
+
+    const TOKEN = "api_token";
+    const DATACENTERS = "store_datacenter";
+
+    protected $configurationFactory;
+
+    public function __construct(
+        \Magento\Framework\Model\Context $context,
+        \Magento\Framework\Registry $registry,
+        ConfigurationFactory $configurationFactory,
+        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
+        \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
+        array $data = []
+    )
+    {
+        $this->_init('Bitqit\Searchtap\Model\ResourceModel\Configuration');
+        $this->configurationFactory = $configurationFactory;
+        parent::__construct($context, $registry, $resource, $resourceCollection, $data);
+    }
+
     protected function _construct()
     {
         $this->_init('Bitqit\Searchtap\Model\ResourceModel\Configuration');
     }
 
-
-    /**
-     * Get Title.
-     *
-     * @return varchar
-     */
-    public function getAPIToken()
+    public function getIdentities()
     {
-        return $this->getData('api_token');
+        return [self::CACHE_TAG . '_' . $this->getId()];
     }
 
-    /**
-     * Set Api token.
-     */
-    public function setAPIToken($token)
+    public function getToken()
     {
-        return $this->setData('api_token', $token);
+        $collection = $this->configurationFactory->create()
+            ->getCollection()
+            ->load();
+
+        $token = null;
+
+        foreach ($collection as $config) {
+            $token = $config->getData(self::TOKEN);
+        }
+
+        return $token;
     }
 
-    public function getDataCenter()
+    public function getDataCenters()
     {
-        return json_decode($this->getData('store_datacenter'));
+        $collection = $this->configurationFactory->create()
+            ->getCollection()
+            ->load();
+
+        $dataCenters = null;
+
+        foreach ($collection as $config) {
+            $dataCenters = $config->getData(self::DATACENTERS);
+        }
+
+        return json_decode($dataCenters, true);
     }
 
-    /**
-     * Set Datacenter.
-     */
-    public function setDataCenter($data)
+    public function setToken($token)
     {
-        return $this->setData('store_datacenter', $data);
+        $this->setData(self::TOKEN, $token);
+        return $this;
     }
+
+    public function setDataCenters($dataCenters)
+    {
+        $this->setData(self::DATACENTERS, json_encode($dataCenters));
+        return $this;
+    }
+
+    public function isDataExists()
+    {
+        $collection = $this->configurationFactory->create()
+            ->getCollection()
+            ->load();
+
+        foreach ($collection as $entity)
+            if ($entity) return $entity;
+
+        return 0;
+    }
+
+    public function setConfiguration($token = null, $dataCenters = null) {
+        $data = $this->configurationFactory->create();
+
+        if ($token) $data->setToken($token);
+        if ($dataCenters) $data->setDataCenters($dataCenters);
+
+        $entity = $this->isDataExists();
+        if ($entity) $data->setId($entity->getId());
+
+        $data->save();
+    }
+
 }
