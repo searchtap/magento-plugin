@@ -2,7 +2,7 @@
 
 namespace Bitqit\Searchtap\Controller\Categories;
 
-class ReindexCatIds extends \Magento\Framework\App\Action\Action
+class Ids extends \Magento\Framework\App\Action\Action
 {
     private $categoryHelper;
     private $searchtapHelper;
