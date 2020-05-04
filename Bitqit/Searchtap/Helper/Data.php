@@ -50,8 +50,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getCredentials()
     {
         $credentials = $this->configurationFactory->create()->getToken();
-        if ($credentials) return json_decode($credentials);
-        else return false;
+        return json_decode($credentials);
     }
 
     public function checkPrivateKey($privateKey)
