@@ -63,7 +63,7 @@ class ApiToken extends Generic implements TabInterface
             ['legend' => __('SearchTap Dashboard')]
         );
 
-        if ($model->getId()) {
+        if ($model && $model->getId()) {
             $searchtapDashboard->addField(
                 'id',
                 'hidden',

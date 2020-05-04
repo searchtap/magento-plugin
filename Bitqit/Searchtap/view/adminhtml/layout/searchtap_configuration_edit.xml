@@ -4,7 +4,7 @@
 layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
     <head>
         <title>
-           Searchtap
+           SearchTap
         </title>
     </head>
     <body>
