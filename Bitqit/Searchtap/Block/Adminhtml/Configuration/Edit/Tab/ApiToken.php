@@ -89,13 +89,13 @@ class ApiToken extends Generic implements TabInterface
             ['legend' => __('API Token')]
         );
 
-        $token = json_encode($this->_dataHelper->getCredentials());
+        $token = $model->getId() ? json_encode($this->_dataHelper->getCredentials()) : "";
         $apiToken->addField('api_token', 'textarea', array(
             'label' => 'Token',
             'class' => 'required-entry',
             'required' => true,
             'name' => 'api_token',
-            'value' => $token ? $token : ""
+            'value' => $token
         ));
 
         /*
