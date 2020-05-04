@@ -43,16 +43,15 @@ class Configuration extends AbstractModel implements \Magento\Framework\DataObje
 
     public function getToken()
     {
-        $collection = $this->configurationFactory->create()
-            ->getCollection()
-            ->load();
-
         $token = null;
-
-        foreach ($collection as $config) {
-            $token = $config->getData(self::TOKEN);
+        if($this->isDataExists()){
+            $collection = $this->configurationFactory->create()
+                ->getCollection()
+                ->load();
+            foreach ($collection as $config) {
+                $token = $config->getData(self::TOKEN);
+            }
         }
-
         return $token;
     }
 
