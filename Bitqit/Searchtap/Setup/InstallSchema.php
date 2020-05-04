@@ -107,7 +107,6 @@ class InstallSchema implements InstallSchemaInterface
                     'Store Data Center'
                 )->setComment("SearchTap Config Table");
 
-
             $setup->getConnection()->createTable($table);
             $setup->getConnection()->createTable($configTable);
         }

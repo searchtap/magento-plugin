@@ -39,19 +39,19 @@ class ConfigHelper
 //        return json_decode($credentials);
 //    }
 
-    public function getJsConfiguration()
+    public function getJsConfiguration($storeId)
     {
-        return $this->configInterface->getValue(self::JS_CONFIG);
+        return $this->configInterface->getValue(self::JS_CONFIG, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getScriptUrl()
+    public function getScriptUrl($storeId)
     {
-        return $this->configInterface->getValue(self::SCRIPT_URL);
+        return $this->configInterface->getValue(self::SCRIPT_URL, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
     }
 
-    public function getCssUrl()
+    public function getCssUrl($storeId)
     {
-        return $this->configInterface->getValue(self::CSS_URL);
+        return $this->configInterface->getValue(self::CSS_URL, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     public function getCredentials()
