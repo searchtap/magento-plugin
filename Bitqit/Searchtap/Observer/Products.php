@@ -77,7 +77,7 @@ class Products implements \Magento\Framework\Event\ObserverInterface
             if ($product->getStatus() != 1 || $product->getVisibility() == 1)
                 $action = "delete";
 
-            if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Simple::TYPE_CODE)
+            if ($product->getTypeId() === "simple")
                 $this->addActionForParentProducts($productId, $storeId);
 
             $this->queueFactory->create()->addToQueue($productId, $action, 'pending', 'product', $storeId);
