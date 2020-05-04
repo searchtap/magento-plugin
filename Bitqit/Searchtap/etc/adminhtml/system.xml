@@ -1,44 +1,12 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
-        <tab id="searchtap" translate="label">
-            <label>Searchtap</label>
-        </tab>
-        <!-- Credentials -->
-<!--        <section id="searchtap_credentials" translate="label" sortOrder="0" showInDefault="0" showInWebsite="0" showInStore="0">-->
-<!--            <group id="credentials">-->
-<!--                <field id="st_config" type="text" />-->
-<!--                <field id="st_script_url" type="text" />-->
-<!--                <field id="st_css_url" type="text" />-->
-<!--            </group>-->
-<!--        </section>-->
-
-        <!-- Credentials -->
-        <section id="searchtap_credentials" translate="label" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-            <class>separator-top</class>
-            <label>Credentials</label>
-            <tab>searchtap</tab>
-            <resource>Bitqit_Searchtap::searchtap_config</resource>
-            <group id="credentials" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Credentials</label>
-                <field id="st_credentials_keys" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enter Credentials</label>
-                </field>
-
-                <field id="st_config" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enter Credentials</label>
-                </field>
-                <field id="st_script_url" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enter Credentials</label>
-                </field>
-                <field id="st_css_url" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enter Credentials</label>
-                </field>
-
-                <!--                <field id="st_config" type="text" showInWebsite="1" showInStore="1" ><label>Config</label></field>-->
-                <!--                <field id="st_script_url" type="text" showInWebsite="1" showInStore="1" ><label>Script</label></field>-->
-                <!--                <field id="st_css_url" type="text" showInWebsite="1" showInStore="1" ><label>CSS</label></field>-->
-
+<!--         Credentials -->
+        <section id="searchtap_credentials" translate="label" sortOrder="0" showInDefault="0" showInWebsite="0" showInStore="0">
+            <group id="credentials">
+                <field id="st_config" type="text" />
+                <field id="st_script_url" type="text" />
+                <field id="st_css_url" type="text" />
             </group>
         </section>
     </system>

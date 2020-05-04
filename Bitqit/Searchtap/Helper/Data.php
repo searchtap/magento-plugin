@@ -88,15 +88,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return $this->searchtapHelper->error("Invalid token");
         }
 
-//        foreach ($data as $item) {
-//            $this->configInterface->save(
-//                self::JS_CONFIG,
-//                json_encode($item->config),
-//                "stores",
-//                $item->storeId);
-//            $this->configInterface->save(self::SCRIPT_URL, $item->scriptUrl, "stores", $item->storeId);
-//            $this->configInterface->save(self::CSS_URL, $item->cssUrl, "stores", $item->storeId);
-//        }
+        foreach ($data as $item) {
+            $this->configInterface->save(
+                self::JS_CONFIG,
+                json_encode($item->config),
+                "stores",
+                $item->storeId);
+            $this->configInterface->save(self::SCRIPT_URL, $item->scriptUrl, "stores", $item->storeId);
+            $this->configInterface->save(self::CSS_URL, $item->cssUrl, "stores", $item->storeId);
+        }
 
         $this->_cleanCache();
 

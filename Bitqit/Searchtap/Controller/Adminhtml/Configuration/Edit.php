@@ -6,11 +6,11 @@ use Bitqit\Searchtap\Controller\Adminhtml\Configuration;
 
 class Edit extends Configuration
 {
-   /**
+    /**
      * @return void
      */
-   public function execute()
-   {
+    public function execute()
+    {
         $model = $this->_configurationFactory->create();
 
         // Restore previously entered form data from session
@@ -26,5 +26,5 @@ class Edit extends Configuration
         $resultPage->getConfig()->getTitle()->prepend(__('SearchTap'));
 
         return $resultPage;
-   }
+    }
 }
