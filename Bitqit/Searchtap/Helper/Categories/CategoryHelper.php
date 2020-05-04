@@ -70,7 +70,7 @@ class CategoryHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return $this->searchtapHelper->okResult($data, count($data));
+        return $this->searchtapHelper->okResult($data, $collection->getSize());
     }
 
     public function getRequiredAttributes()
@@ -89,7 +89,7 @@ class CategoryHelper
         ];
     }
 
-    public function getCategoryCollection($storeId, $page, $count, $categoryIds)
+    public function getCategoryCollection($storeId, $page, $count, $categoryIds=null)
     {
         try {
             $requiredAttributes = $this->getRequiredAttributes();
@@ -102,8 +102,8 @@ class CategoryHelper
             $collection->addAttributeToFilter('is_active', ['eq' => true]);
             $collection->addAttributeToFilter('level', ['gt' => 1]);
             $collection->addAttributeToFilter('path', ['like' => "1/$rootCategoryId/%"]);
-            $collection->setPageSize($count);
-            $collection->setCurPage($page);
+            $collection->setPageSize($page);
+            $collection->setCurPage($count);
 
             if ($categoryIds)
                 $collection->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
@@ -254,4 +254,32 @@ class CategoryHelper
 
         return $categoriesData;
     }
+
+
+    public function getReindexCatIds($storeId, $count, $page, $token)
+    {
+        if (!$this->dataHelper->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
+        if (!$this->dataHelper->checkPrivateKey($token)) {
+            return $this->searchtapHelper->error("Invalid token");
+        }
+
+        if (!$this->dataHelper->isStoreAvailable($storeId)) {
+            return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
+        }
+
+        //Start Frontend Emulation
+        $this->searchtapHelper->startEmulation($storeId);
+        $categoryCollection = $this->getCategoryCollection($storeId, $count, $page);
+        $data = [];
+
+        foreach ($categoryCollection as $category) {
+            $data[] = $category->getId();
+        }
+
+        return $this->searchtapHelper->okResult($data, $categoryCollection->getSize());
+    }
+
 }
