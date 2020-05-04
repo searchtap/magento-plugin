@@ -9,6 +9,7 @@ use \Bitqit\Searchtap\Model\QueueFactory as QueueFactory;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Cache\Frontend\Pool;
+use \Bitqit\Searchtap\Model\ConfigurationFactory;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -23,6 +24,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     private $configInterface;
     private $cacheTypeList;
     private $cacheFrontendPool;
+    private $configurationFactory;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -31,7 +33,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         QueueFactory $queueFactory,
         WriterInterface $configInterface,
         TypeListInterface $cacheTypeList,
-        Pool $cacheFrontendPool
+        Pool $cacheFrontendPool,
+        ConfigurationFactory $configurationFactory
     )
     {
         $this->configHelper = $configHelper;
@@ -41,11 +44,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->configInterface = $configInterface;
         $this->cacheTypeList = $cacheTypeList;
         $this->cacheFrontendPool = $cacheFrontendPool;
+        $this->configurationFactory = $configurationFactory;
+    }
+
+    public function getCredentials()
+    {
+        $credentials = $this->configurationFactory->create()->getToken();
+        return json_decode($credentials);
     }
 
     public function checkPrivateKey($privateKey)
     {
-        $dbPrivateKey = ($this->configHelper->getCredentials())->privateKey;
+        $dbPrivateKey = ($this->getCredentials())->privateKey;
 
         if (!empty($privateKey)) {
             if ($privateKey === $dbPrivateKey)
@@ -57,7 +67,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function checkCredentials()
     {
-        $credentials = $this->configHelper->getCredentials();
+        $credentials = $this->getCredentials();
 
         if ($credentials) {
             if (isset($credentials->privateKey) && isset($credentials->uniqueId))
@@ -78,15 +88,23 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return $this->searchtapHelper->error("Invalid token");
         }
 
-        $this->configInterface->save(self::JS_CONFIG, json_encode($data->config));
-        $this->configInterface->save(self::SCRIPT_URL, $data->scriptUrl);
-        $this->configInterface->save(self::CSS_URL, $data->cssUrl);
+        foreach ($data as $item) {
+            $this->configInterface->save(
+                self::JS_CONFIG,
+                json_encode($item->config),
+                "stores",
+                $item->storeId);
+            $this->configInterface->save(self::SCRIPT_URL, $item->scriptUrl, "stores", $item->storeId);
+            $this->configInterface->save(self::CSS_URL, $item->cssUrl, "stores", $item->storeId);
+        }
+
         $this->_cleanCache();
 
         return $this->searchtapHelper->okResult("ok");
     }
 
-    private function _cleanCache() {
+    private function _cleanCache()
+    {
         $types = ['config', 'full_page'];
         foreach ($types as $type)
             $this->cacheTypeList->cleanType($type);
@@ -148,10 +166,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             return $this->searchtapHelper->error("Invalid credentials");
         }
 
-        if (!$this->checkCredentials()) {
-            return $this->searchtapHelper->error("Invalid credentials");
-        }
-
         if (!$this->checkPrivateKey($token)) {
             return $this->searchtapHelper->error("Invalid token");
         }
@@ -179,5 +193,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 return true;
 
         return false;
+    }
+
+    public function getEnabledStores()
+    {
+        $stores = [];
+
+        $storeCollection = $this->storeManager->getStores();
+        foreach ($storeCollection as $store) {
+            if ($store->isActive()) $stores[] = $store;
+        }
+
+        return $stores;
     }
 }

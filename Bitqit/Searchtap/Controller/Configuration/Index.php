@@ -26,9 +26,7 @@ class Index extends \Magento\Framework\App\Action\Action
         $data = $this->getRequest()->getContent();
         $token = $this->getRequest()->getHeader("authorization");
 
-        //todo: set script url and css url
-        $data = json_decode($data);
-        $response = $this->dataHelper->setJSConfiguration($token, $data);
+        $response = $this->dataHelper->setJSConfiguration($token, json_decode($data));
 
         $this->getResponse()->setHeader('content-type', 'application/json');
         $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);

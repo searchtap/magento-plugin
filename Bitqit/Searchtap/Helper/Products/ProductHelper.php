@@ -14,6 +14,9 @@ use \Magento\Store\Model\StoreManagerInterface;
 use \Magento\Directory\Model\Currency;
 use \Bitqit\Searchtap\Helper\Products\AttributeHelper;
 use \Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableModel;
+use Magento\Bundle\Model\Product\Type as BundleModel;
+use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedModel;
 
 class ProductHelper
 {
@@ -29,6 +32,9 @@ class ProductHelper
     private $storeManager;
     private $stockRepository;
     private $dataHelper;
+    private $configurableModel;
+    private $bundleModel;
+    private $groupedModel;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -42,7 +48,10 @@ class ProductHelper
         Currency $currencyFactory,
         AttributeHelper $attributeHelper,
         StockRegistryInterface $stockRepository,
-        Data $dataHelper
+        Data $dataHelper,
+        ConfigurableModel $configurableModel,
+        BundleModel $bundleModel,
+        GroupedModel $groupedModel
     )
     {
         $this->imageHelper = $imageHelper;
@@ -57,6 +66,9 @@ class ProductHelper
         $this->attributeHelper = $attributeHelper;
         $this->stockRepository = $stockRepository;
         $this->dataHelper = $dataHelper;
+        $this->configurableModel = $configurableModel;
+        $this->bundleModel = $bundleModel;
+        $this->groupedModel = $groupedModel;
     }
 
     public function getProductCollection($storeId, $count, $page, $productIds = null)
@@ -159,7 +171,7 @@ class ProductHelper
         $additionalAttributes = $this->attributeHelper->getProductAdditionalAttributes($product);
 
         //Get Product Variations Information
-        if ($product->getTypeId() === "configurable") {
+        if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
             $associatedProducts = $this->getAssociatedProducts($product, $storeId);
             $data = array_merge($data, $associatedProducts);
         }
@@ -326,8 +338,28 @@ class ProductHelper
 
         foreach ($productCollection as $product) {
             $data[] = $product->getId();
-
         }
+
         return $this->searchtapHelper->okResult($data, $productCollection->getSize());
+    }
+
+    public function getConfigurableProductIdFromChildProduct($productId)
+    {
+        $parent = $this->configurableModel->getParentIdsByChild($productId);
+        if ($parent) return $parent[0];
+        return 0;
+    }
+
+    public function getBundleProductIdFromSimpleProduct($productId)
+    {
+        $bundleProduct = $this->bundleModel->getParentIdsByChild($productId);
+        if ($bundleProduct) return $bundleProduct[0];
+        return 0;
+    }
+
+    public function getGroupedProductIdFromSimpleProduct($productId) {
+        $groupedProduct = $this->groupedModel->getParentIdsByChild($productId);
+        if ($groupedProduct) return $groupedProduct[0];
+        return 0;
     }
 }

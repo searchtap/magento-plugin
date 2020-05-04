@@ -56,6 +56,7 @@ class Edit extends Container
             $region = 'header';
         }
         parent::addButton($buttonId, $data, $level, $sortOrder, $region);
+        return;
     }
 
     /**
@@ -68,17 +69,6 @@ class Edit extends Container
         return $this->__('<a href="https://www.searchtap.io" target="_blank">Go To Web</a>');
     }
 
-//    public function getHeaderText()
-//    {
-//        $newsRegistry = $this->_coreRegistry->registry('simplenews_news');
-//        if ($newsRegistry->getId()) {
-//            $newsTitle = $this->escapeHtml($newsRegistry->getTitle());
-//            return __("Edit News '%1'", $newsTitle);
-//        } else {
-//            return __('Add News');
-//        }
-//    }
- 
     /**
      * Prepare layout
      *

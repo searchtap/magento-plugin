@@ -9,6 +9,7 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
     private $queueFactory;
     private $categoryHelper;
     private $productHelper;
+    private $dataHelper;
     protected $associatedProductIds;
     private $logger;
 
@@ -16,12 +17,14 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
         \Bitqit\Searchtap\Model\QueueFactory $queueFactory,
         \Bitqit\Searchtap\Helper\Categories\CategoryHelper $categoryHelper,
         \Bitqit\Searchtap\Helper\Products\ProductHelper $productHelper,
+        \Bitqit\Searchtap\Helper\Data $dataHelper,
         \Bitqit\Searchtap\Helper\Logger $logger
     )
     {
         $this->queueFactory = $queueFactory;
         $this->categoryHelper = $categoryHelper;
         $this->productHelper = $productHelper;
+        $this->dataHelper = $dataHelper;
         $this->logger = $logger;
     }
 
@@ -39,7 +42,7 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
             case "catalog_category_delete_before":
                 $this->catalogCategoryDeleteBefore($category);
                 break;
-            //todo: catalog_catagory_move_after event
+            //todo: catalog_category_move_after event
         }
     }
 
@@ -57,18 +60,22 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
         try {
             $action = "add";
 
-            $storeId = $category->getStoreId();
+            $storeIds = $category->getStoreIds();
 
-            if (!$this->categoryHelper->canCategoryBeReindex($category, $storeId))
-                $action = "delete";
+            foreach ($storeIds as $storeId) {
+                if ($storeId == 0) continue;
+                if (!$this->categoryHelper->canCategoryBeReindex($category, $storeId))
+                    $action = "delete";
 
-            $this->queueFactory->create()->addToQueue($category->getId(), $action, 'pending', 'category', $storeId);
+                $this->queueFactory->create()->addToQueue($category->getId(), $action, 'pending', 'category', $storeId);
 
-            $associatedProductIds = $category->getProductCollection()->getColumnValues('entity_id');
-            $this->associatedProductIds = array_unique(array_merge($this->associatedProductIds, $associatedProductIds));
+                $associatedProductIds = $category->getProductCollection()->getColumnValues('entity_id');
 
-            foreach ($this->associatedProductIds as $productId) {
-                $this->queueFactory->create()->addToQueue($productId, "add", 'pending', 'product', $storeId);
+                $this->associatedProductIds = array_unique(array_merge($this->associatedProductIds, $associatedProductIds));
+
+                foreach ($this->associatedProductIds as $productId) {
+                    $this->queueFactory->create()->addToQueue($productId, "add", 'pending', 'product', $storeId);
+                }
             }
 
             unset($this->associatedProductIds);
@@ -77,16 +84,21 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
         }
     }
 
-    public function catalogCategoryDeleteBefore($category, $storeId)
+    public function catalogCategoryDeleteBefore($category)
     {
         try {
-            $this->associatedProductIds = $category->getProductCollection()->getColumnValues('entity_id');
+            $storeIds = $category->getStoreIds();
 
-            foreach ($this->associatedProductIds as $productId) {
-                $this->queueFactory->create()->addToQueue($productId, "add", 'pending', 'product', $storeId);
+            foreach ($storeIds as $storeId) {
+                if ($storeId == 0) continue;
+                $this->associatedProductIds = $category->getProductCollection()->getColumnValues('entity_id');
+
+                foreach ($this->associatedProductIds as $productId) {
+                    $this->queueFactory->create()->addToQueue($productId, "add", 'pending', 'product', $storeId);
+                }
+
+                $this->queueFactory->create()->addToQueue($category->getId(), "delete", 'pending', 'category', $storeId);
             }
-
-            $this->queueFactory->create()->addToQueue($category->getId(), "delete", 'pending', 'category', $storeId);
         } catch (error $e) {
             $this->logger->error($e);
         }

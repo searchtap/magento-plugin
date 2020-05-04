@@ -9,7 +9,6 @@ use Magento\Framework\View\Result\PageFactory;
 use Bitqit\Searchtap\Model\ConfigurationFactory;
 use Bitqit\Searchtap\Helper\Api;
 
-
 class Configuration extends \Magento\Backend\App\Action
 {
     /**
@@ -27,20 +26,20 @@ class Configuration extends \Magento\Backend\App\Action
     protected $_resultPageFactory;
 
 
-    protected $_configFactory;
+    protected $_configurationFactory;
     protected $_apiHelper;
 
     public function __construct(
         Context $context,
         Registry $coreRegistry,
         PageFactory $resultPageFactory,
-        ConfigurationFactory $configFactory,
+        ConfigurationFactory $configurationFactory,
         Api $apiHelper
     ) {
         parent::__construct($context);
         $this->_coreRegistry = $coreRegistry;
         $this->_resultPageFactory = $resultPageFactory;
-        $this->_configFactory = $configFactory;
+        $this->_configurationFactory = $configurationFactory;
         $this->_apiHelper=$apiHelper;
 
     }
@@ -48,7 +47,7 @@ class Configuration extends \Magento\Backend\App\Action
     {
         $resultPage = $this->_resultPageFactory->create();
         $resultPage->setActiveMenu('Bitqit_Searchtap::main_menu');
-        $resultPage->getConfig()->getTitle()->prepend(__('Searchtap Configuration'));
+        $resultPage->getConfig()->getTitle()->prepend(__('SearchTap Configuration'));
         return $resultPage;
     }
 

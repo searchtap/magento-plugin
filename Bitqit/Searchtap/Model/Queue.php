@@ -159,8 +159,7 @@ class Queue extends \Magento\Framework\Model\AbstractModel
     public function deleteQueueData($entityIds)
     {
         foreach ($entityIds as $entityId) {
-            $entity = $this->queueFactory->create()
-                ->load($entityId);
+            $entity = $this->queueFactory->create()->load($entityId);
             $entity->delete();
         }
 

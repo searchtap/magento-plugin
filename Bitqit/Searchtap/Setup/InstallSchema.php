@@ -82,7 +82,7 @@ class InstallSchema implements InstallSchemaInterface
                 ->newTable($setup->getTable('searchtap_config'))
                 ->addColumn(
                     'id',
-                    Table::TYPE_INTEGER,
+                    \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
                     null,
                     [
                         'identity' => true,
@@ -94,14 +94,14 @@ class InstallSchema implements InstallSchemaInterface
                 )
                 ->addColumn(
                     'api_token',
-                    Table::TYPE_TEXT,
+                    \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
                     null,
                     ['nullable' => false, 'default' => ''],
                     'API Token'
                 )
                 ->addColumn(
                     'store_datacenter',
-                    Table::TYPE_TEXT,
+                    \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
                     null,
                     ['nullable' => false, 'default' => ''],
                     'Store Data Center'

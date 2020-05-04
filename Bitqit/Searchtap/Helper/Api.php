@@ -5,35 +5,30 @@ namespace Bitqit\Searchtap\Helper;
 use \Bitqit\Searchtap\Helper\SearchtapHelper;
 use \Bitqit\Searchtap\Helper\Logger;
 use \Bitqit\Searchtap\Helper\Data;
-use Bitqit\Searchtap\Helper\ConfigHelper;
 use mysql_xdevapi\Exception;
 use Bitqit\Searchtap\Model\ConfigurationFactory;
 
 class Api
 {
-    const INDEXING_URL = "/sync";
     const STORE_API = '/my-stores';
-    const DATACENTER_API='/data-centers';
+    const DATACENTER_API = '/data-centers';
 
     private $searchtapHelper;
     private $logger;
     private $dataHelper;
-    private $_configHelper;
-    private $_configFactory;
+    private $configurationFactory;
 
     public function __construct(
         SearchtapHelper $searchtapHelper,
         Logger $logger,
         Data $dataHelper,
-        ConfigHelper $configHelper,
-        ConfigurationFactory $configFactory
+        ConfigurationFactory $configurationFactory
     )
     {
         $this->searchtapHelper = $searchtapHelper;
         $this->logger = $logger;
         $this->dataHelper = $dataHelper;
-        $this->_configHelper = $configHelper;
-        $this->_configFactory=$configFactory;
+        $this->configurationFactory = $configurationFactory;
     }
 
     private function _getCurlObject($apiUrl, $requestType, $token, $data = null)
@@ -65,34 +60,25 @@ class Api
         return $this->searchtapHelper->getBaseApiUrl();
     }
 
-    public function requestToSyncStores()
+    public function requestToSyncStores($dataCenters)
     {
         try {
             $url = $this->getApiBaseUrl() . self::STORE_API;
             $stores = $this->dataHelper->getStores();
-            $credentials = $this->_configHelper->getCredentials();
-            $configValue = $this->_configFactory->create()->getCollection();
-            foreach ($configValue as $values) {
-                $dataCenter = (array)$values->getDataCenter();
-            }
+
             $data = [];
             foreach ($stores as $store) {
-                foreach ($dataCenter as $key=>$value) {
-                    if ($key==$store->getID()) {
-                        $dataCenterCode = $value; // for selected value
-                    }
-                }
                 $data[] = array(
                     'storeId' => (int)$store->getId(),
                     'storeUrl' => $store->getBaseUrl(),
                     'storeName' => $store->getName(),
                     'storeStatus' => $store->isActive(),
-                    'dataCenter'=>(int)$dataCenterCode
+                    'dataCenter' => (int)$dataCenters[$store->getId()]
                 );
             }
 
-            $tokenValue=json_decode($this->_configHelper->getAPIToken());
-            $token=$tokenValue->uniqueId.",".$tokenValue->privateKey;
+            $credentials = $this->dataHelper->getCredentials();
+            $token = $credentials->uniqueId . "," . $credentials->privateKey;
 
             $config = $this->_getCurlObject($url, 'POST', $token, json_encode($data));
 
@@ -102,44 +88,22 @@ class Api
 
             $result = curl_exec($curl);
             $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            $this->logger->add($statusCode);
+            curl_close($curl);
         } catch (\Exception $e) {
             $this->logger->error($e);
             throw new Exception($e);
         }
     }
 
-    public function requestToSync($data = null)
+    public function getDataCenters()
     {
-//        try {
-//            $curlObject = $this->_getCurlObject($this->getApiUrl(self::INDEXING_URL), "POST");
-//            if ($data)
-//                $curlObject['CURLOPT_POSTFIELDS'] = $data;
-//
-//            $curl = curl_init();
-//            curl_setopt_array($curl, $curlObject);
-//
-//            $results = curl_exec($curl);
-//            $responseHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-//            $curlError = curl_error($curl);
-//
-//            if ($curlError)
-//                $this->logger->error($curlError);
-//
-//            curl_close($curl);
-//
-//        } catch (err $e) {
-//            $this->logger->error($e);
-//        }
-    }
-    public function getDataCenterList(){
-        $tokenValue=json_decode($this->_configHelper->getAPIToken());
-      //  print_r($tokenValue);
-
-        if($tokenValue){
-            $token=$tokenValue->uniqueId.",".$tokenValue->privateKey;
         try {
-            $curlObject = $this->_getCurlObject($this->getApiBaseUrl().self::DATACENTER_API, "GET",$token);
+            $credentials = $this->dataHelper->getCredentials();
+            $token = $credentials->uniqueId . "," . $credentials->privateKey;
+
+            $url = $this->getApiBaseUrl() . self::DATACENTER_API;
+
+            $curlObject = $this->_getCurlObject($url, "GET", $token);
             $curl = curl_init();
             curl_setopt_array($curl, $curlObject);
             $results = curl_exec($curl);
@@ -151,11 +115,11 @@ class Api
 
             curl_close($curl);
 
-            return json_decode($results);
-
-        } catch (err $e) {
+            return json_decode($results, true)["data"];
+        } catch (error $e) {
             $this->logger->error($e);
-        }}
+            return [];
+        }
     }
 
 }
