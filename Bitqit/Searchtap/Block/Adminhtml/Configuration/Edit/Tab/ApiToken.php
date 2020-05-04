@@ -88,6 +88,10 @@ class ApiToken extends Generic implements TabInterface
             'st-api-token',
             ['legend' => __('API Token')]
         );
+        $token="";
+        if($model->getId()){
+            $token = json_encode($this->_dataHelper->getCredentials());
+        }
 
         $token = json_encode($this->_dataHelper->getCredentials());
         $apiToken->addField('api_token', 'textarea', array(
