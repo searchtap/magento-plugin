@@ -56,7 +56,7 @@ class Tabs extends WidgetTabs
             ]
         );
 
-        if (json_encode($this->_dataHelper->getCredentials())) {
+        if ($this->_dataHelper->getCredentials()) {
             $this->addTab(
                 'st-store-settings',
                 [

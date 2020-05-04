@@ -99,6 +99,8 @@ class Api
     {
         try {
             $credentials = $this->dataHelper->getCredentials();
+            if (!$credentials) return [];
+
             $token = $credentials->uniqueId . "," . $credentials->privateKey;
 
             $url = $this->getApiBaseUrl() . self::DATACENTER_API;
