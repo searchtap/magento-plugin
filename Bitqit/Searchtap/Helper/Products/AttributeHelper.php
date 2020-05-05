@@ -37,7 +37,7 @@ class AttributeHelper
         $this->dataHelper = $dataHelper;
     }
 
-    public function getFilterableAttributesCollection($token)
+    public function getFilterableAttributesCollection($token, $attributeIds = null)
     {
         if (!$this->dataHelper->checkCredentials()) {
             return $this->searchtapHelper->error("Invalid credentials");
@@ -52,6 +52,9 @@ class AttributeHelper
             $collection = $this->productAttributeCollectionFactory->create()
                 ->addFieldToFilter('frontend_input', array('in' => self::INPUT_TYPE))
                 ->addFieldToFilter('is_filterable', true);
+
+            if ($attributeIds)
+                $collection->addFieldToFilter('entity_id', array('in' => $attributeIds));
 
             foreach ($collection as $attribute) {
                 $data[] = $this->getObject($attribute);
