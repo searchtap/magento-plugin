@@ -15,7 +15,6 @@ class Ids extends \Magento\Framework\App\Action\Action
     {
         $this->categoryHelper = $categoryHelper;
         $this->searchtapHelper = $searchtapHelper;
-
         parent::__construct($context);
     }
 
@@ -26,7 +25,7 @@ class Ids extends \Magento\Framework\App\Action\Action
         $count = $this->getRequest()->getParam('count', 100);
         $token = $this->getRequest()->getParam('token');
 
-        $response = $this->categoryHelper->getReindexCatIds($storeId,$count, $page, $token);
+        $response = $this->categoryHelper->getReindexableCategoryIds($storeId,$count, $page, $token);
         $this->getResponse()->setHeader('content-type', 'application/json');
         $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
         $this->getResponse()->setBody($response["output"]);

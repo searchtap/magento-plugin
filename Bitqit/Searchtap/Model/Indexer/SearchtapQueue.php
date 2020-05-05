@@ -25,7 +25,7 @@ class SearchtapQueue implements \Magento\Framework\Indexer\ActionInterface, \Mag
             echo "Invalid credentials";
         }
 
-       // $this->api->requestToSync();
+//        $this->api->requestToSyncStores();
     }
 
     public function executeFull()
