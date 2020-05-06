@@ -102,8 +102,8 @@ class CategoryHelper
             $collection->addAttributeToFilter('is_active', ['eq' => true]);
             $collection->addAttributeToFilter('level', ['gt' => 1]);
             $collection->addAttributeToFilter('path', ['like' => "1/$rootCategoryId/%"]);
-            $collection->setPageSize($count);
-            $collection->setCurPage($page);
+            $collection->setPageSize($page);
+            $collection->setCurPage($count);
 
             if ($categoryIds)
                 $collection->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
