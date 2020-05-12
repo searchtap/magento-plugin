@@ -90,6 +90,14 @@ class ProductHelper
         return $collection;
     }
 
+    public function getProductByIds($productIds, $storeId) {
+        $collection = $this->productCollectionFactory->create();
+        $collection->setStore($storeId);
+        $collection->addAttributeToSelect(['entity_id', 'status', 'visibility', 'type']);
+        $collection->addAttributeToFilter('entity_id', ['in' => $productIds]);
+        return $collection;
+    }
+
     public function getProductsJSON($token, $storeId, $count, $page, $imageConfig, $productIds)
     {
         if (!$this->dataHelper->checkCredentials()) {
@@ -317,7 +325,7 @@ class ProductHelper
         return $sku;
     }
 
-    public function getReindexIds($storeId, $count, $page, $token)
+    public function getReindexableProductIds($storeId, $count, $page, $token)
     {
         if (!$this->dataHelper->checkCredentials()) {
             return $this->searchtapHelper->error("Invalid credentials");

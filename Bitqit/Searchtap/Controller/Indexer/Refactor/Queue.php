@@ -1,8 +1,8 @@
 <?php
 
-namespace Bitqit\Searchtap\Controller\Indexer;
+namespace Bitqit\Searchtap\Controller\Indexer\Refactor;
 
-class DeleteQueue extends \Magento\Framework\App\Action\Action
+class Queue extends \Magento\Framework\App\Action\Action
 {
     private $dataHelper;
     private $searchtapHelper;

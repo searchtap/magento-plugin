@@ -37,31 +37,35 @@ class AttributeHelper
         $this->dataHelper = $dataHelper;
     }
 
-    public function getFilterableAttributesCollection($token)
+    public function getFilterableAttributesCollection($token, $attributeCodes = null)
     {
-        if (!$this->dataHelper->checkCredentials()) {
-            return $this->searchtapHelper->error("Invalid credentials");
-        }
-
-        if (!$this->dataHelper->checkPrivateKey($token)) {
-            return $this->searchtapHelper->error("Invalid token");
-        }
-
-        $data = [];
         try {
+            if (!$this->dataHelper->checkCredentials()) {
+                return $this->searchtapHelper->error("Invalid credentials");
+            }
+
+            if (!$this->dataHelper->checkPrivateKey($token)) {
+                return $this->searchtapHelper->error("Invalid token");
+            }
+
+            $data = [];
             $collection = $this->productAttributeCollectionFactory->create()
                 ->addFieldToFilter('frontend_input', array('in' => self::INPUT_TYPE))
                 ->addFieldToFilter('is_filterable', true);
 
+            if ($attributeCodes)
+                $collection->addFieldToFilter('attribute_code', ['in' => $attributeCodes]);
+
             foreach ($collection as $attribute) {
                 $data[] = $this->getObject($attribute);
             }
+
+            return $this->searchtapHelper->okResult($data, count($data));
+
         } catch (error $e) {
             $this->logger->error($e);
             return $this->searchtapHelper->error($e);
         }
-
-        return $this->searchtapHelper->okResult($data, count($data));
     }
 
     public function getProductUserDefinedAttributeCodes()
@@ -81,9 +85,12 @@ class AttributeHelper
     public function getProductAdditionalAttributes($product)
     {
         $data = [];
+        $attributeIds = [];
+
         try {
             $attributeCodes = $this->getProductUserDefinedAttributeCodes();
             foreach ($attributeCodes as $attribute) {
+
                 if (!$product->getData($attribute))
                     continue;
                 $inputType = $product->getResource()->getAttribute($attribute)->getFrontendInput();
@@ -132,7 +139,6 @@ class AttributeHelper
         $data['id'] = $attribute->getId();
         $data['attribute_code'] = $attribute->getAttributeCode();
         $data['attribute_label'] = $attribute->getFrontendLabel();
-//        $data['type'] = $attribute->getData('frontend_input');
         $data['type'] = $attribute->getFrontendInput();
         $data['is_filterable'] = (int)$attribute->getIsFilterable();
         $data['is_searchable'] = (int)$attribute->getIsSearchable();

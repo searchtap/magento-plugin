@@ -8,6 +8,7 @@ use \Bitqit\Searchtap\Helper\Products\ProductHelper;
 use \Bitqit\Searchtap\Helper\ConfigHelper;
 use \Bitqit\Searchtap\Helper\Data;
 use \Bitqit\Searchtap\Helper\Logger;
+use \Magento\Catalog\Model\Product;
 use mysql_xdevapi\Exception;
 
 class Products implements \Magento\Framework\Event\ObserverInterface
@@ -17,13 +18,15 @@ class Products implements \Magento\Framework\Event\ObserverInterface
     private $configHelper;
     private $dataHelper;
     private $logger;
+    private $product;
 
     public function __construct(
         QueueFactory $queueFactory,
         ProductHelper $productHelper,
         ConfigHelper $configHelper,
         Data $dataHelper,
-        Logger $logger
+        Logger $logger,
+        Product $product
     )
     {
         $this->queueFactory = $queueFactory;
@@ -31,75 +34,124 @@ class Products implements \Magento\Framework\Event\ObserverInterface
         $this->configHelper = $configHelper;
         $this->dataHelper = $dataHelper;
         $this->logger = $logger;
+        $this->product = $product;
     }
 
     public function execute(Observer $observer)
     {
-        $product = $observer->getEvent()->getProduct();
-
-        $storeIds = $product->getStoreIds();
-
-        foreach ($storeIds as $storeId) {
-            if ($storeId == 0) continue;
-            switch ($observer->getEvent()->getName()) {
+        switch ($observer->getEvent()->getName()) {
 //                case "catalog_product_save_before":
 //                    $this->catalogProductSaveBefore($product, $storeId);
 //                    break;
-                case "catalog_product_save_after":
-                    $this->catalogProductSaveAfter($product, $storeId);
-                    break;
-                case "catalog_product_delete_before":
-                    $this->catalogProductDeleteBefore($product, $storeId);
-                    break;
-            }
+            case "catalog_product_save_after":
+                $this->catalogProductSaveAfter($observer);
+                break;
+            case "catalog_product_delete_before":
+                $this->catalogProductDeleteBefore($observer);
+                break;
+            case "catalog_product_attribute_update_before":
+                $this->catalogProductAttributeUpdateBefore($observer);
+                break;
+            case "catalog_product_import_bunch_save_after":
+                $this->catalogProductImportBunchSaveAfter($observer);
+                break;
+            case "catalog_product_import_bunch_delete_commit_before":
+                $this->catalogProductImportBunchDeleteCommitBefore($observer);
+                break;
         }
     }
 
-    /*
-     * @searchtap
-     * Product Trigger After Save
-     * */
-    private function catalogProductSaveAfter($product, $storeId)
+    public function catalogProductImportBunchSaveAfter($observer)
+    {
+        $data = $observer->getEvent()->getData('bunch');
+        $stores = $this->dataHelper->getEnabledStores();
+        foreach ($stores as $store) {
+            foreach ($data as $product) {
+                $productId = $this->product->getIdBySku($product['sku']);
+                $this->queueFactory->create()->addToQueue($productId, 'add', 'pending', 'product', $store->getId());
+            }
+        }
+
+    }
+
+    public function catalogProductImportBunchDeleteCommitBefore($observer)
+    {
+        $idsToDelete = $observer->getEvent()->getData('ids_to_delete');
+        $stores = $this->dataHelper->getEnabledStores();
+        foreach ($stores as $store) {
+            foreach ($idsToDelete as $productId)
+                $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $store->getId());
+        }
+    }
+
+    public function catalogProductAttributeUpdateBefore($observer)
+    {
+        $productIds = $observer->getEvent()->getProductIds();
+        $stores = $this->dataHelper->getEnabledStores();
+        foreach ($stores as $store) {
+            $products = $this->productHelper->getProductByIds($productIds, $store->getId());
+            $actualProductIds = [];
+            foreach ($products as $product) {
+                $actualProductIds[] = $product->getId();
+                $action = "add";
+                // Check if product can be re-indexed
+                if ($product->getStatus() != 1 || $product->getVisibility() == 1)
+                    $action = "delete";
+
+                if ($product->getTypeId() === "simple")
+                    $this->addActionForParentProducts($product->getId(), $store->getId());
+
+                $this->queueFactory->create()->addToQueue($product->getId(), $action, 'pending', 'product', $store->getId());
+            }
+
+            $idsToDelete = array_diff($productIds, $actualProductIds);
+            foreach ($idsToDelete as $productId)
+                $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $store->getId());
+        }
+    }
+
+    public function catalogProductSaveAfter($observer)
     {
         try {
-            $productId = $product->getId();
-            $action = "add";
-
             //todo: Need to test if product is moved from one store to another store
             // Check if product is mapped to this store
 //            $storeIds = $product->getStoreIds();
 //            if (!in_array($storeId, $storeIds))
-//                $action = "delete";
+//                $this->logger($storeId);
 
-            $parentId = null;
+            $product = $observer->getEvent()->getProduct();
+            $storeIds = $product->getStoreIds();
 
-            // Check if product can be re-indexed
-            if ($product->getStatus() != 1 || $product->getVisibility() == 1)
-                $action = "delete";
+            foreach ($storeIds as $storeId) {
+                $action = "add";
+                // Check if product can be re-indexed
+                if ($product->getStatus() != 1 || $product->getVisibility() == 1)
+                    $action = "delete";
 
-            if ($product->getTypeId() === "simple")
-                $this->addActionForParentProducts($productId, $storeId);
+                if ($product->getTypeId() === "simple")
+                    $this->addActionForParentProducts($product->getId(), $storeId);
 
-            $this->queueFactory->create()->addToQueue($productId, $action, 'pending', 'product', $storeId);
+                $this->queueFactory->create()->addToQueue($product->getId(), $action, 'pending', 'product', $storeId);
+            }
 
         } catch (Exception $e) {
             $this->logger->error($e);
         }
     }
 
-    /*
-     * @searchtap
-     * Product Trigger Delete Before
-     * */
-    private function catalogProductDeleteBefore($product, $storeId)
+    public function catalogProductDeleteBefore($observer)
     {
         try {
+            $product = $observer->getEvent()->getProduct();
+            $storeIds = $product->getStoreIds();
             $productId = $product->getId();
 
-            if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Simple::TYPE_CODE)
-                $this->addActionForParentProducts($productId, $storeId);
+            foreach ($storeIds as $storeId) {
+                if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Simple::TYPE_CODE)
+                    $this->addActionForParentProducts($productId, $storeId);
 
-            $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $storeId);
+                $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $storeId);
+            }
 
         } catch (Exception $e) {
             $this->logger->error($e);

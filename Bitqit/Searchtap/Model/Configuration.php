@@ -13,7 +13,7 @@ class Configuration extends AbstractModel implements \Magento\Framework\DataObje
     const CACHE_TAG = 'searchtap_config';
 
     const TOKEN = "api_token";
-    const DATACENTERS = "store_datacenter";
+    const DATACENTERS = "data_centers";
 
     protected $configurationFactory;
 
