@@ -118,10 +118,9 @@ class Api
             curl_close($curl);
 
             return json_decode($results, true)["data"];
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
             return [];
         }
     }
-
 }

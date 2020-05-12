@@ -108,7 +108,7 @@ class Queue extends \Magento\Framework\Model\AbstractModel
         $collection = $this->queueFactory->create()
             ->getCollection()
             ->addFilter('entity_id', $entityId)
-            ->addFilter('type', $type)
+            ->addFilter('type', $type) //todo: check if we need type in checking if the data exists
             ->addFilter('store', $storeId)
             ->load();
 

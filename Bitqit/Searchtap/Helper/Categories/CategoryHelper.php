@@ -39,7 +39,7 @@ class CategoryHelper
         $this->dataHelper = $dataHelper;
     }
 
-    public function getCategoriesJSON($token, $storeId,  $page, $count, $categoryIds)
+    public function getCategoriesJSON($token, $storeId, $page, $count, $categoryIds)
     {
         if (!$this->dataHelper->checkCredentials()) {
             return $this->searchtapHelper->error("Invalid credentials");
@@ -271,12 +271,18 @@ class CategoryHelper
 
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
-        $categoryCollection = $this->getCategoryCollection($storeId, $count, $page);
+        $categoryCollection = $this->getCategoryCollection($storeId, $page, $count);
         $data = [];
 
         foreach ($categoryCollection as $category) {
+            if (!$this->isCategoryPathActive($category, $storeId))
+                continue;
+
             $data[] = $category->getId();
         }
+
+        //Stop Emulation
+        $this->searchtapHelper->stopEmulation();
 
         return $this->searchtapHelper->okResult($data, $categoryCollection->getSize());
     }

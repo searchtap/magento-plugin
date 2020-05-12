@@ -73,7 +73,7 @@ class ApiToken extends Generic implements TabInterface
 
         $searchtapDashboard->addField('note', 'note', array(
             'label' => __('SearchTap Account'),
-            'text' => '<img src=\'https://d33wubrfki0l68.cloudfront.net/f8230a812b6bff599763387cf815e960bf1625e2/c8b3c/img/logo-dark.png\' alt="Searchtap" width="125" />' . '<br>',
+            'text' => '<img src=\'https://d33wubrfki0l68.cloudfront.net/f8230a812b6bff599763387cf815e960bf1625e2/c8b3c/img/logo-dark.png\' alt="SearchTap" width="125" />' . '<br>',
         ));
 
         $searchtapDashboard->addField('link', 'link', array(

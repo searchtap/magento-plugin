@@ -12,11 +12,10 @@ class InstallSchema implements InstallSchemaInterface
     {
         $setup->startSetup();
 
-        $tableName = $setup->getTable('searchtap_queue');
-        $tableName2= $setup->getTable('searchtap_config');
+        $queuetableName = $setup->getTable('searchtap_queue');
+        $configTableName = $setup->getTable('searchtap_config');
 
-        if ($setup->getConnection()->isTableExists($tableName) != true && $setup->getConnection()->isTableExists($tableName2) != true)
-        {
+        if ($setup->getConnection()->isTableExists($queuetableName) != true && $setup->getConnection()->isTableExists($configTableName) != true) {
             $table = $setup->getConnection()
                 ->newTable($setup->getTable('searchtap_queue'))
                 ->addColumn(
@@ -78,7 +77,7 @@ class InstallSchema implements InstallSchemaInterface
                 )->setComment("SearchTap Queue Table");
 
 
-            $configTable=$setup->getConnection()
+            $configTable = $setup->getConnection()
                 ->newTable($setup->getTable('searchtap_config'))
                 ->addColumn(
                     'id',
@@ -100,7 +99,7 @@ class InstallSchema implements InstallSchemaInterface
                     'API Token'
                 )
                 ->addColumn(
-                    'store_datacenter',
+                    'data_centers',
                     \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
                     null,
                     ['nullable' => false, 'default' => ''],

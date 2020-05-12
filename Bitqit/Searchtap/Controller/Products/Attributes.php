@@ -21,9 +21,9 @@ class Attributes extends \Magento\Framework\App\Action\Action
     public function execute()
     {
         $token = $this->getRequest()->getParam("token");
-        $ids = $this->getRequest()->getParm("ids");
+        $attributeCodes = $this->getRequest()->getParam("attribute_code");
 
-        $response = $this->attributeHelper->getFilterableAttributesCollection($token, $ids);
+        $response = $this->attributeHelper->getFilterableAttributesCollection($token, $attributeCodes);
 
         $this->getResponse()->setHeader('content-type', 'application/json');
         $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);

@@ -26,7 +26,7 @@ class ReindexIds extends \Magento\Framework\App\Action\Action
         $count = $this->getRequest()->getParam('count', 100);
         $token = $this->getRequest()->getParam('token');
 
-        $response = $this->productHelper->getReindexIds($storeId,$count, $page, $token);
+        $response = $this->productHelper->getReindexableProductIds($storeId, $count, $page, $token);
         $this->getResponse()->setHeader('content-type', 'application/json');
         $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
         $this->getResponse()->setBody($response["output"]);
