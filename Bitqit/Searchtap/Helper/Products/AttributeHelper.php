@@ -90,7 +90,6 @@ class AttributeHelper
         try {
             $attributeCodes = $this->getProductUserDefinedAttributeCodes();
             foreach ($attributeCodes as $attribute) {
-
                 if (!$product->getData($attribute))
                     continue;
                 $inputType = $product->getResource()->getAttribute($attribute)->getFrontendInput();
