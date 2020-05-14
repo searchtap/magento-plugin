@@ -17,6 +17,7 @@ use \Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableModel;
 use Magento\Bundle\Model\Product\Type as BundleModel;
 use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedModel;
+use Bitqit\Searchtap\Helper\Logger as Logger;
 
 class ProductHelper
 {
@@ -35,6 +36,7 @@ class ProductHelper
     private $configurableModel;
     private $bundleModel;
     private $groupedModel;
+    private $logger;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -51,7 +53,8 @@ class ProductHelper
         Data $dataHelper,
         ConfigurableModel $configurableModel,
         BundleModel $bundleModel,
-        GroupedModel $groupedModel
+        GroupedModel $groupedModel,
+        Logger $logger
     )
     {
         $this->imageHelper = $imageHelper;
@@ -69,6 +72,7 @@ class ProductHelper
         $this->configurableModel = $configurableModel;
         $this->bundleModel = $bundleModel;
         $this->groupedModel = $groupedModel;
+        $this->logger = $logger;
     }
 
     public function getProductCollection($storeId, $count, $page, $productIds = null)
@@ -78,7 +82,7 @@ class ProductHelper
         $collection->addAttributeToSelect('*');
         $collection->addAttributeToFilter('status', ['eq' => 1]);
         $collection->addAttributeToFilter('visibility', ['neq' => 1]);
-        $collection->setFlag('has_stock_status_filter', false);
+//        $collection->setFlag('has_stock_status_filter', false);
 //        $collection->addMinimalPrice();
 //        $collection->addFinalPrice();
         $collection->setPageSize($count);
@@ -90,7 +94,8 @@ class ProductHelper
         return $collection;
     }
 
-    public function getProductByIds($productIds, $storeId) {
+    public function getProductByIds($productIds, $storeId)
+    {
         $collection = $this->productCollectionFactory->create();
         $collection->setStore($storeId);
         $collection->addAttributeToSelect(['entity_id', 'status', 'visibility', 'type']);
@@ -98,7 +103,7 @@ class ProductHelper
         return $collection;
     }
 
-    public function getProductsJSON($token, $storeId, $count, $page, $imageConfig, $productIds)
+    public function getProductsJSON($token, $storeId, $count, $page, $imageConfig, $indexOutOfStockVariations, $productIds)
     {
         if (!$this->dataHelper->checkCredentials()) {
             return $this->searchtapHelper->error("Invalid credentials");
@@ -120,7 +125,7 @@ class ProductHelper
         $data = [];
 
         foreach ($productCollection as $product) {
-            $data[] = $this->getProductObject($product, $storeId, $imageConfig);
+            $data[] = $this->getProductObject($product, $storeId, $imageConfig, $indexOutOfStockVariations);
         }
 
         //Stop Emulation
@@ -143,7 +148,7 @@ class ProductHelper
         return false;
     }
 
-    public function getProductObject($product, $storeId, $imageConfig)
+    public function getProductObject($product, $storeId, $imageConfig, $indexOutOfStockVariations)
     {
         $data = [];
 
@@ -155,7 +160,8 @@ class ProductHelper
         $data['visibility'] = $product->getVisibility();
         $data['type'] = $product->getTypeId();
         $data['created_at'] = strtotime($product->getCreatedAt());
-        $data['sku'] = $this->getSKUs($product);
+        $data['sku'] = $product->getSKU();
+        $data['child_skus'] = $this->getChildSKUs($product);
         $data['description'] = $this->getFormattedString($product->getDescription());
         $data['short_description'] = $this->getFormattedString($product->getShortDescription());
 
@@ -180,7 +186,7 @@ class ProductHelper
 
         //Get Product Variations Information
         if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
-            $associatedProducts = $this->getAssociatedProducts($product, $storeId);
+            $associatedProducts = $this->getAssociatedProductAttributes($product, $storeId, $indexOutOfStockVariations);
             $data = array_merge($data, $associatedProducts);
         }
 
@@ -203,13 +209,8 @@ class ProductHelper
         $priceMin = $priceObject->getMinimalPrice()->getValue();
         $priceMax = $priceObject->getMaximalPrice()->getValue();
 
-//        $priceMin = $this->searchtapHelper->getForm                                                                                   attedPrice($product->getMinPrice());
-//        $priceMax = $this->searchtapHelper->getFormattedPrice($product->getMaxPrice());
-
         $specialFromDate = $product->getSpecialFromDate();
         $specialToDate = $product->getSpecialToDate();
-//        $currencySymbol = $this->getCurrencySymbol($storeId);
-//        $formattedPrice = $this->getFormattedPrice($regularPrice, $specialPrice, $currencySymbol, $priceMin, $priceMax);
 
         $data = [
             "price" => $regularPrice,
@@ -217,27 +218,24 @@ class ProductHelper
             "currency_symbol" => $this->getCurrencySymbol($storeId),
             "special_from_date" => $specialFromDate ? strtotime($specialFromDate) : false,
             "special_to_date" => $specialToDate ? strtotime($specialToDate) : false,
-            "discount" => $this->getDiscountPercentage($regularPrice, $specialPrice),
-            "min_price" => $priceMin,
-            "max_price" => $priceMax,
-            "price_type" => $product->getPriceType(),
-            "price_view" => $product->getPriceView()
+            "discount" => $this->getDiscountPercentage($regularPrice, $specialPrice)
         ];
 
-//        $productType = $product->getTypeId();
-//
-//        if ($productType === "simple" || $productType === "configurable" || $productType === "downloadable") {
-//            $data['price'] = $formattedPrice['regular_price'];
-//
-//            if ($specialPrice && $specialPrice !== $regularPrice) {
-//                $data['price'] = $formattedPrice['special_price'];
-//                $data['original_price'] = $formattedPrice['regular_price'];
-//            }
-//        } else {
-//            if ($product->getPriceType() == 0)
-//                $data['price'] = $formattedPrice['price_range'];
-//            else $data['price'] = $formattedPrice['special_price'];
-//        }
+        switch ($product->getTypeId()) {
+            case "grouped":
+                if (!$regularPrice) $data["price"] = $priceMin;
+                $data["special_price"] = $priceMin;
+                $data["min_price"] = $priceMin;
+                $data["max_price"] = $priceMax;
+                break;
+            case "bundle":
+                if (!$product->getPriceType()) $data["special_price"] = $priceMin;
+                $data["min_price"] = $priceMin;
+                $data["max_price"] = $priceMax;
+                $data["price_type"] = $product->getPriceType();
+                $data["price_view"] = $product->getPriceView();
+                break;
+        }
 
         return $data;
     }
@@ -270,36 +268,42 @@ class ProductHelper
         return $data;
     }
 
-    public function getAssociatedProducts($product, $storeId)
+    public function getAssociatedProductAttributes($product, $storeId, $indexOutOfStockVariations = false)
     {
-        $associatedProducts = [];
+        $productAttributes = [];
 
-        $options = $product->getTypeInstance()->getConfigurableOptions($product);
+        $attributeCodes = array_map(function ($product) {
+            return $product["attribute_code"];
+        }, $product->getTypeInstance()->getConfigurableAttributesAsArray($product));
 
-        foreach ($options as $option) {
-            foreach ($option as $simple) {
-                $product = $this->productRepository->get($simple['sku'], $storeId);
-                $stockStatus = $this->stockRepository->getStockItem($product->getId())->getIsInStock();
-                if ($stockStatus && $product->getStatus()) {
-                    if (!array_key_exists($simple['attribute_code'], $associatedProducts)
-                        || !in_array($simple['option_title'], $associatedProducts[$simple['attribute_code']]))
-                        $associatedProducts[$simple['attribute_code']][] = $this->getFormattedString($simple['option_title']);
-                }
+        $associatedProducts = $product->getTypeInstance()->getUsedProducts($product);
+
+        $stockStatus = true;
+        foreach ($associatedProducts as $associatedProduct) {
+            if (!$indexOutOfStockVariations)
+                $stockStatus = $this->stockRepository->getStockItem($associatedProduct->getId())->getIsInStock();
+
+            foreach ($attributeCodes as $attributeCode) {
+                $inputType = $product->getResource()->getAttribute($attributeCode)->getFrontendInput();
+                $attributeName = $attributeCode . "_" . $inputType;
+                $value = $this->getFormattedString($associatedProduct->setStoreId($storeId)->getAttributeText($attributeCode));
+
+                if ((!array_key_exists($attributeName, $productAttributes) || !in_array($value, $productAttributes[$attributeName]))
+                    && $stockStatus && $associatedProduct->getStatus() !== 2)
+                    $productAttributes[$attributeName][] = $value;
             }
         }
-
         //todo: get images of child products that have color associated with them
 
-        return $associatedProducts;
+        return $productAttributes;
     }
 
-    public function getSKUs($product)
+    public function getChildSKUs($product)
     {
         $sku = [];
 
         switch ($product->getTypeId()) {
             case 'configurable':
-                $sku[] = $product->getSKU();
                 $variationProduct = $product->getTypeInstance()->getUsedProducts($product);
                 foreach ($variationProduct as $child) {
                     if ($child->getStatus())
@@ -307,7 +311,6 @@ class ProductHelper
                 }
                 break;
             case 'grouped':
-                $sku[] = $product->getSKU();
                 $groupedProducts = $product->getTypeInstance(true)->getAssociatedProducts($product);
                 foreach ($groupedProducts as $child) {
                     if ($child->getStatus())
@@ -319,7 +322,7 @@ class ProductHelper
             case 'virtual':
             case 'simple':
             default:
-                $sku = $product->getSKU();
+                $sku = [];
         }
 
         return $sku;
@@ -365,7 +368,8 @@ class ProductHelper
         return 0;
     }
 
-    public function getGroupedProductIdFromSimpleProduct($productId) {
+    public function getGroupedProductIdFromSimpleProduct($productId)
+    {
         $groupedProduct = $this->groupedModel->getParentIdsByChild($productId);
         if ($groupedProduct) return $groupedProduct[0];
         return 0;
