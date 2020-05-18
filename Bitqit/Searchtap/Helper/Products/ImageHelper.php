@@ -4,20 +4,28 @@ namespace Bitqit\Searchtap\Helper\Products;
 
 use \Magento\Backend\Block\Template\Context as Context;
 use \Magento\Catalog\Helper\Image as ImageFactory;
+use \Bitqit\Searchtap\Helper\Products\ProductHelper;
+use \Bitqit\Searchtap\Helper\SearchtapHelper;
 
 class ImageHelper
 {
     const THUMBNAIL_SIZE = 75;
 
     private $imageFactory;
+    private $productHelper;
+    private $searchtapHelper;
 
     public function __construct(
         Context $context,
         ImageFactory $productImageHelper,
+        ProductHelper $productHelper,
+        SearchtapHelper $searchtapHelper,
         array $data = []
     )
     {
         $this->imageFactory = $productImageHelper;
+        $this->productHelper = $productHelper;
+        $this->searchtapHelper = $searchtapHelper;
     }
 
     public function getImages($config, $product)
@@ -53,7 +61,7 @@ class ImageHelper
         return $images;
     }
 
-    public function getImageType ($type)
+    public function getImageType($type)
     {
         if ($type === "base_image") return "image";
         else if ($type === "thumbnail_image") return "thumbnail";
@@ -74,5 +82,23 @@ class ImageHelper
         }
 
         return $imageUrl;
+    }
+
+    public function forceResizeImage($storeId, $height, $width, $count, $page, $token = null)
+    {
+
+        $this->searchtapHelper->startEmulation($storeId);
+        $productCollection = $this->productHelper->getProductCollection($storeId, $count, $page);
+        try {
+            foreach ($productCollection as $product) {
+                $this->getResizedImageUrl($product, 'base_image', $width, $height);
+                $this->getResizedImageUrl($product, 'small_image', $width, $height);
+                $this->getResizedImageUrl($product, 'thumbnail_image', $width, $height);
+            }
+            return $this->searchtapHelper->okResult("Image Created",$productCollection->getSize());
+
+        } catch (Exception $e) {
+            return $e;
+        }
     }
 }
