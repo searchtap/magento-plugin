@@ -1,6 +1,6 @@
 <?php
 
-namespace Bitqit\Searchtap\Controller\Image;
+namespace Bitqit\Searchtap\Controller\Images;
 
 class Resize extends \Magento\Framework\App\Action\Action
 {
@@ -25,11 +25,12 @@ class Resize extends \Magento\Framework\App\Action\Action
         $width = $this->getRequest()->getParam('width', 300);
         $page = $this->getRequest()->getParam('page', 1);
         $count = $this->getRequest()->getParam('count', 100);
-     //   $token = $this->getRequest()->getParam('token');
+        $token = $this->getRequest()->getParam('token');
 
-        $response = $this->imageHelper->forceResizeImage($storeId,$height,$width,$count,$page);
+        $response = $this->imageHelper->processImages($token, $storeId, $height, $width, $count, $page);
+
         $this->getResponse()->setHeader('content-type', 'application/json');
-      //  $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
+        $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
         $this->getResponse()->setBody($response);
     }
 }

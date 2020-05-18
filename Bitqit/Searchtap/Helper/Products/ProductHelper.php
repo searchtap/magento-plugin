@@ -178,8 +178,8 @@ class ProductHelper
         $data['_categories'] = $categoriesData["_categories"];
         $data["categories_path"] = $categoriesData["categories_path"];
 
-        //Product Image Information
-        $images = $this->imageHelper->getImages($imageConfig, $product);
+        //Product Images Information
+//        $images = $this->imageHelper->getImages($imageConfig, $product);
 
         //Additional Attributes Information
         $additionalAttributes = $this->attributeHelper->getProductAdditionalAttributes($product);

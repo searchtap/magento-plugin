@@ -6,6 +6,7 @@ use \Magento\Backend\Block\Template\Context as Context;
 use \Magento\Catalog\Helper\Image as ImageFactory;
 use \Bitqit\Searchtap\Helper\Products\ProductHelper;
 use \Bitqit\Searchtap\Helper\SearchtapHelper;
+use \Bitqit\Searchtap\Helper\Data;
 
 class ImageHelper
 {
@@ -14,18 +15,21 @@ class ImageHelper
     private $imageFactory;
     private $productHelper;
     private $searchtapHelper;
+    private $dataHelper;
 
     public function __construct(
         Context $context,
         ImageFactory $productImageHelper,
         ProductHelper $productHelper,
         SearchtapHelper $searchtapHelper,
+        Data $dataHelper,
         array $data = []
     )
     {
         $this->imageFactory = $productImageHelper;
         $this->productHelper = $productHelper;
         $this->searchtapHelper = $searchtapHelper;
+        $this->dataHelper = $dataHelper;
     }
 
     public function getImages($config, $product)
@@ -77,27 +81,45 @@ class ImageHelper
                 ->resize($width, $height)
                 ->getUrl();
 
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $imageUrl = $this->imageFactory->getDefaultPlaceholderUrl($this->getImageType($imageType));
         }
 
         return $imageUrl;
     }
 
-    public function forceResizeImage($storeId, $height, $width, $count, $page, $token = null)
+    public function processImages($token, $storeId, $height, $width, $count, $page)
     {
-
-        $this->searchtapHelper->startEmulation($storeId);
-        $productCollection = $this->productHelper->getProductCollection($storeId, $count, $page);
         try {
+            if (!$this->dataHelper->checkCredentials()) {
+                return $this->searchtapHelper->error("Invalid credentials");
+            }
+
+            if (!$this->dataHelper->checkPrivateKey($token)) {
+                return $this->searchtapHelper->error("Invalid token");
+            }
+
+            if (!$this->dataHelper->isStoreAvailable($storeId)) {
+                return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
+            }
+
+            // Start Frontend Simulation
+            $this->searchtapHelper->startEmulation($storeId);
+
+            $productCollection = $this->productHelper->getProductCollection($storeId, $count, $page);
+
             foreach ($productCollection as $product) {
                 $this->getResizedImageUrl($product, 'base_image', $width, $height);
                 $this->getResizedImageUrl($product, 'small_image', $width, $height);
                 $this->getResizedImageUrl($product, 'thumbnail_image', $width, $height);
             }
-            return $this->searchtapHelper->okResult("Image Created",$productCollection->getSize());
 
-        } catch (Exception $e) {
+            // Stop Simulation
+            $this->searchtapHelper->stopEmulation();
+
+            return $this->searchtapHelper->okResult("Images Created", $productCollection->getSize());
+
+        } catch (\Exception $e) {
             return $e;
         }
     }
