@@ -53,7 +53,7 @@ class ImageHelper
         return $images;
     }
 
-    public function getImageType ($type)
+    public function getImageType($type)
     {
         if ($type === "base_image") return "image";
         else if ($type === "thumbnail_image") return "thumbnail";
@@ -69,7 +69,7 @@ class ImageHelper
                 ->resize($width, $height)
                 ->getUrl();
 
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $imageUrl = $this->imageFactory->getDefaultPlaceholderUrl($this->getImageType($imageType));
         }
 
