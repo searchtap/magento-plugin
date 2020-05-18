@@ -7,7 +7,6 @@ use Bitqit\Searchtap\Helper\SearchtapHelper as SearchtapHelper;
 use Bitqit\Searchtap\Helper\Data as DataHelper;
 use Bitqit\Searchtap\Helper\Logger as Logger;
 use Magento\Catalog\Model\ResourceModel\Product\Attribute\CollectionFactory as ProductAttributeCollectionFactory;
-use \Magento\Swatches\Helper\Data as SwatchHelper;
 
 class AttributeHelper
 {
@@ -16,7 +15,6 @@ class AttributeHelper
     private $imageHelper;
     private $logger;
     private $dataHelper;
-    private $swatchHelper;
 
     const INPUT_TYPE = [
         'select',
@@ -29,8 +27,7 @@ class AttributeHelper
         SearchtapHelper $searchtapHelper,
         ImageHelper $imageHelper,
         Logger $logger,
-        DataHelper $dataHelper,
-        SwatchHelper $swatchHelper
+        DataHelper $dataHelper
     )
     {
         $this->productAttributeCollectionFactory = $productAttributeCollectionFactory;
@@ -38,7 +35,6 @@ class AttributeHelper
         $this->imageHelper = $imageHelper;
         $this->logger = $logger;
         $this->dataHelper = $dataHelper;
-        $this->swatchHelper = $swatchHelper;
     }
 
     public function getFilterableAttributesCollection($token, $attributeCodes = null)
@@ -147,11 +143,6 @@ class AttributeHelper
         $data['is_searchable'] = (int)$attribute->getIsSearchable();
         $data['position'] = (int)$attribute->getPosition();
         $data['last_pushed_to_searchtap'] = $this->searchtapHelper->getCurrentDate();
-
-        if ($this->swatchHelper->isVisualSwatch($attribute))
-            $data["swatch"] = "visual";
-        else if ($this->swatchHelper->isTextSwatch($attribute))
-            $data["swatch"] = "text";
         return $data;
     }
 
