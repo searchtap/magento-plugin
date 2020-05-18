@@ -6,42 +6,45 @@ use Magento\Framework\Event\Observer;
 use Bitqit\Searchtap\Helper\Logger as Logger;
 use Bitqit\Searchtap\Helper\Products\AttributeHelper as AttributeHelper;
 use Bitqit\Searchtap\Model\QueueFactory as QueueFactory;
+use Bitqit\Searchtap\Helper\Data as DataHelper;
 
 class Attributes implements \Magento\Framework\Event\ObserverInterface
 {
     private $logger;
     private $attributeHelper;
     private $queueFactory;
+    private $dataHelper;
 
     public function __construct(
         Logger $logger,
         AttributeHelper $attributeHelper,
-        QueueFactory $queueFactory
+        QueueFactory $queueFactory,
+        DataHelper $dataHelper
     )
     {
         $this->logger = $logger;
         $this->attributeHelper = $attributeHelper;
         $this->queueFactory = $queueFactory;
+        $this->dataHelper = $dataHelper;
     }
 
     public function execute(Observer $observer)
     {
         $attribute = $observer->getAttribute();
-        $eventName = $observer->getEvent()->getName();
-        switch($eventName){
+        switch ($observer->getEvent()->getName()) {
             case "catalog_entity_attribute_save_after":
                 $this->catalogEntityAttributeSaveAfter($attribute);
                 break;
             case "catalog_entity_attribute_delete_after":
                 $this->catalogEntityAttributeDeleteAfter($attribute);
-                 break;
+                break;
         }
     }
 
     public function catalogEntityAttributeSaveAfter($attribute)
     {
         try {
-
+            $stores = $this->dataHelper->getEnabledStores();
             $oldAttributeData = $attribute->getOrigData();
             $isOldAttributeFilterable = $oldAttributeData['is_filterable'];
 
@@ -52,13 +55,14 @@ class Attributes implements \Magento\Framework\Event\ObserverInterface
                 $action = "delete";
             }
 
-            $this->queueFactory->create()->addToQueue(
-                $attribute->getId(),
-                $action,
-                "pending",
-                "attribute",
-                0
-            );
+            foreach ($stores as $store)
+                $this->queueFactory->create()->addToQueue(
+                    $attribute->getId(),
+                    $action,
+                    "pending",
+                    "attribute",
+                    $store->getId()
+                );
         } catch (error $e) {
             $this->logger->error($e);
         }
@@ -67,15 +71,18 @@ class Attributes implements \Magento\Framework\Event\ObserverInterface
     public function catalogEntityAttributeDeleteAfter($attribute)
     {
         try {
-            //Delete the attribute only if it can be reindex
+            //Refactor the attribute only if it can be reindex
             if ($this->attributeHelper->canAttributeBeReindex($attribute)) {
-                $this->queueFactory->create()->addToQueue(
-                    $attribute->getId(),
-                    "delete",
-                    "pending",
-                    "attribute",
-                    0
-                );
+                $stores = $this->dataHelper->getEnabledStores();
+                foreach ($stores as $store) {
+                    $this->queueFactory->create()->addToQueue(
+                        $attribute->getId(),
+                        "delete",
+                        "pending",
+                        "attribute",
+                        $store->getId()
+                    );
+                }
             }
         } catch (error $e) {
             $this->logger->error($e);

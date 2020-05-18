@@ -39,7 +39,7 @@ class CategoryHelper
         $this->dataHelper = $dataHelper;
     }
 
-    public function getCategoriesJSON($token, $storeId, $categoryIds = null)
+    public function getCategoriesJSON($token, $storeId, $page, $count, $categoryIds)
     {
         if (!$this->dataHelper->checkCredentials()) {
             return $this->searchtapHelper->error("Invalid credentials");
@@ -56,7 +56,7 @@ class CategoryHelper
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
 
-        $collection = $this->getCategoryCollection($storeId, $categoryIds);
+        $collection = $this->getCategoryCollection($storeId, $page, $count, $categoryIds);
 
         $data = [];
 
@@ -70,7 +70,7 @@ class CategoryHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return $this->searchtapHelper->okResult($data, count($data));
+        return $this->searchtapHelper->okResult($data, $collection->getSize());
     }
 
     public function getRequiredAttributes()
@@ -89,7 +89,7 @@ class CategoryHelper
         ];
     }
 
-    public function getCategoryCollection($storeId, $categoryIds = null)
+    public function getCategoryCollection($storeId, $page, $count, $categoryIds=null)
     {
         try {
             $requiredAttributes = $this->getRequiredAttributes();
@@ -102,6 +102,8 @@ class CategoryHelper
             $collection->addAttributeToFilter('is_active', ['eq' => true]);
             $collection->addAttributeToFilter('level', ['gt' => 1]);
             $collection->addAttributeToFilter('path', ['like' => "1/$rootCategoryId/%"]);
+            $collection->setPageSize($page);
+            $collection->setCurPage($count);
 
             if ($categoryIds)
                 $collection->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
@@ -195,8 +197,8 @@ class CategoryHelper
         $data['name'] = $this->getFormattedString($category->getName());
         $data['url'] = $category->getUrl();
         $data['product_count'] = $this->getProductCount($category, $storeId);
-        $data['is_active'] = (bool)$category->getIsActive();
-        $data['include_in_menu'] = (bool)$category->getIncludeInMenu();
+        $data['is_active'] = (int)$category->getIsActive();
+        $data['include_in_menu'] = (int)$category->getIncludeInMenu();
         $data['description'] = $this->getFormattedString($category->getDescription());
         $data['meta_title'] = $this->getFormattedString($category->getMetaTitle());
         $data['meta_description'] = $this->getFormattedString($category->getMetaDescription());
@@ -205,7 +207,7 @@ class CategoryHelper
         $data['parent_id'] = (int)$category->getParentId();
         $data['path'] = $this->getCategoryPath($category, $storeId);
         $data['created_at'] = strtotime($category->getCreatedAt());
-        $data['isLastLevel'] = $category->hasChildren() ? false : true;
+        $data['isLastLevel'] = $category->hasChildren() ? 0 : 1;
         $data['last_pushed_to_searchtap'] = $this->searchtapHelper->getCurrentDate();
 
         return $data;
@@ -251,5 +253,37 @@ class CategoryHelper
         $categoriesData["_categories"] = array_unique($categoriesData["_categories"]);
 
         return $categoriesData;
+    }
+
+    public function getReindexableCategoryIds($storeId, $count, $page, $token)
+    {
+        if (!$this->dataHelper->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
+        if (!$this->dataHelper->checkPrivateKey($token)) {
+            return $this->searchtapHelper->error("Invalid token");
+        }
+
+        if (!$this->dataHelper->isStoreAvailable($storeId)) {
+            return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
+        }
+
+        //Start Frontend Emulation
+        $this->searchtapHelper->startEmulation($storeId);
+        $categoryCollection = $this->getCategoryCollection($storeId, $page, $count);
+        $data = [];
+
+        foreach ($categoryCollection as $category) {
+            if (!$this->isCategoryPathActive($category, $storeId))
+                continue;
+
+            $data[] = $category->getId();
+        }
+
+        //Stop Emulation
+        $this->searchtapHelper->stopEmulation();
+
+        return $this->searchtapHelper->okResult($data, $categoryCollection->getSize());
     }
 }

@@ -37,31 +37,35 @@ class AttributeHelper
         $this->dataHelper = $dataHelper;
     }
 
-    public function getFilterableAttributesCollection($token)
+    public function getFilterableAttributesCollection($token, $attributeCodes = null)
     {
-        if (!$this->dataHelper->checkCredentials()) {
-            return $this->searchtapHelper->error("Invalid credentials");
-        }
-
-        if (!$this->dataHelper->checkPrivateKey($token)) {
-            return $this->searchtapHelper->error("Invalid token");
-        }
-
-        $data = [];
         try {
+            if (!$this->dataHelper->checkCredentials()) {
+                return $this->searchtapHelper->error("Invalid credentials");
+            }
+
+            if (!$this->dataHelper->checkPrivateKey($token)) {
+                return $this->searchtapHelper->error("Invalid token");
+            }
+
+            $data = [];
             $collection = $this->productAttributeCollectionFactory->create()
                 ->addFieldToFilter('frontend_input', array('in' => self::INPUT_TYPE))
                 ->addFieldToFilter('is_filterable', true);
 
+            if ($attributeCodes)
+                $collection->addFieldToFilter('attribute_code', ['in' => $attributeCodes]);
+
             foreach ($collection as $attribute) {
                 $data[] = $this->getObject($attribute);
             }
+
+            return $this->searchtapHelper->okResult($data, count($data));
+
         } catch (error $e) {
             $this->logger->error($e);
             return $this->searchtapHelper->error($e);
         }
-
-        return $this->searchtapHelper->okResult($data, count($data));
     }
 
     public function getProductUserDefinedAttributeCodes()
@@ -81,39 +85,43 @@ class AttributeHelper
     public function getProductAdditionalAttributes($product)
     {
         $data = [];
+        $attributeIds = [];
+
         try {
             $attributeCodes = $this->getProductUserDefinedAttributeCodes();
             foreach ($attributeCodes as $attribute) {
                 if (!$product->getData($attribute))
                     continue;
-                switch ($product->getResource()->getAttribute($attribute)->getFrontendInput()) {
+                $inputType = $product->getResource()->getAttribute($attribute)->getFrontendInput();
+                $attributeName = $attribute . "_" . $inputType;
+                switch ($inputType) {
                     case "multiselect":
                         $value = $product->getResource()->getAttribute($attribute)->getFrontend()->getValue($product);
-                        if ($value) $data[$attribute] = $this->searchtapHelper->getFormattedArray(explode(",", $value));
+                        if ($value) $data[$attributeName] = $this->searchtapHelper->getFormattedArray(explode(",", $value));
                         break;
                     case "select":
                         $value = $product->getResource()->getAttribute($attribute)->getFrontend()->getValue($product);
-                        if ($value) $data[$attribute] = $this->searchtapHelper->getFormattedString($value);
+                        if ($value) $data[$attributeName] = $this->searchtapHelper->getFormattedString($value);
                         break;
                     case "price":
                         $value = $product->getData($attribute);
-                        $data[$attribute] = $this->searchtapHelper->getFormattedPrice($value);
+                        $data[$attributeName] = $this->searchtapHelper->getFormattedPrice($value);
                         break;
                     case "media_image":
                         //todo: This logic should be in ImageHelper
                         $image = $this->imageHelper->init($product, 'category_page_list', ['type' => $attribute]);
-                        $data[$attribute] = $image->getUrl();
+                        $data[$attributeName] = $image->getUrl();
                         break;
                     case "boolean":
-                        $data[$attribute] = (bool)$product->getData($attribute);
+                        $data[$attributeName] = (bool)$product->getData($attribute);
                         break;
                     case "text":
                     case "textarea":
-                        $data[$attribute] = $this->searchtapHelper->getFormattedString($product->getData());
+                        $data[$attributeName] = $this->searchtapHelper->getFormattedString($product->getData());
                         break;
                     default:
                         $value = $product->getData($attribute);
-                        if ($value) $data[$attribute] = $value;
+                        if ($value) $data[$attributeName] = $value;
                 }
             }
 
@@ -130,9 +138,10 @@ class AttributeHelper
         $data['id'] = $attribute->getId();
         $data['attribute_code'] = $attribute->getAttributeCode();
         $data['attribute_label'] = $attribute->getFrontendLabel();
-        $data['type'] = $attribute->getData('frontend_input');
-        $data['is_filterable'] = $attribute->getIsFilterable();
-        $data['is_searchable'] = $attribute->getIsSearchable();
+        $data['type'] = $attribute->getFrontendInput();
+        $data['is_filterable'] = (int)$attribute->getIsFilterable();
+        $data['is_searchable'] = (int)$attribute->getIsSearchable();
+        $data['position'] = (int)$attribute->getPosition();
         $data['last_pushed_to_searchtap'] = $this->searchtapHelper->getCurrentDate();
         return $data;
     }

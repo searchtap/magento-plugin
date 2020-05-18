@@ -91,7 +91,7 @@ class SearchtapHelper
 
     public function getBaseApiUrl()
     {
-        return "https://magento-portal.searchtap.net/api/v1";
-//        return "http://localhost:3000/api/v1";
+//        return "https://magento-portal.searchtap.net/client";
+        return "http://localhost:3000/client";
     }
 }
