@@ -2,7 +2,7 @@
 
 namespace Bitqit\Searchtap\Controller\Images;
 
-class Resize extends \Magento\Framework\App\Action\Action
+class Recreate extends \Magento\Framework\App\Action\Action
 {
     private $productHelper;
     private $searchtapHelper;
