@@ -4,16 +4,16 @@ namespace Bitqit\Searchtap\Controller\Images;
 
 class Resize extends \Magento\Framework\App\Action\Action
 {
-    private $imageHelper;
+    private $productHelper;
     private $searchtapHelper;
 
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Bitqit\Searchtap\Helper\Products\ImageHelper $imageHelper,
+        \Bitqit\Searchtap\Helper\Products\ProductHelper $productHelper,
         \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper
     )
     {
-        $this->imageHelper = $imageHelper;
+        $this->productHelper = $productHelper;
         $this->searchtapHelper = $searchtapHelper;
         parent::__construct($context);
     }
@@ -27,10 +27,10 @@ class Resize extends \Magento\Framework\App\Action\Action
         $count = $this->getRequest()->getParam('count', 100);
         $token = $this->getRequest()->getParam('token');
 
-        $response = $this->imageHelper->processImages($token, $storeId, $height, $width, $count, $page);
+        $response = $this->productHelper->processImages($token, $storeId, $height, $width, $count, $page);
 
         $this->getResponse()->setHeader('content-type', 'application/json');
         $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
-        $this->getResponse()->setBody($response);
+        $this->getResponse()->setBody($response["output"]);
     }
 }

@@ -100,7 +100,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         $this->_cleanCache();
 
-        return $this->searchtapHelper->okResult("ok");
+        return $this->searchtapHelper->okResult("OK");
     }
 
     private function _cleanCache()
