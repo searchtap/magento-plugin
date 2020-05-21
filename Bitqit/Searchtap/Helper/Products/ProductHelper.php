@@ -17,7 +17,7 @@ use \Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableModel;
 use Magento\Bundle\Model\Product\Type as BundleModel;
 use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedModel;
-use Bitqit\Searchtap\Helper\Logger as Logger;
+//use Bitqit\Searchtap\Helper\Logger as Logger;
 
 class ProductHelper
 {
@@ -36,7 +36,7 @@ class ProductHelper
     private $configurableModel;
     private $bundleModel;
     private $groupedModel;
-    private $logger;
+//    private $logger;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -53,8 +53,8 @@ class ProductHelper
         Data $dataHelper,
         ConfigurableModel $configurableModel,
         BundleModel $bundleModel,
-        GroupedModel $groupedModel,
-        Logger $logger
+        GroupedModel $groupedModel
+//        Logger $logger
     )
     {
         $this->imageHelper = $imageHelper;
@@ -72,7 +72,7 @@ class ProductHelper
         $this->configurableModel = $configurableModel;
         $this->bundleModel = $bundleModel;
         $this->groupedModel = $groupedModel;
-        $this->logger = $logger;
+//        $this->logger = $logger;
     }
 
     public function getProductCollection($storeId, $count, $page, $productIds = null)
@@ -178,7 +178,7 @@ class ProductHelper
         $data['_categories'] = $categoriesData["_categories"];
         $data["categories_path"] = $categoriesData["categories_path"];
 
-        //Product Image Information
+        //Product Images Information
         $images = $this->imageHelper->getImages($imageConfig, $product);
 
         //Additional Attributes Information
@@ -373,5 +373,39 @@ class ProductHelper
         $groupedProduct = $this->groupedModel->getParentIdsByChild($productId);
         if ($groupedProduct) return $groupedProduct[0];
         return 0;
+    }
+
+    public function processImages($token, $storeId, $height, $width, $count, $page)
+    {
+        try {
+            if (!$this->dataHelper->checkCredentials()) {
+                return $this->searchtapHelper->error("Invalid credentials");
+            }
+
+            if (!$this->dataHelper->checkPrivateKey($token)) {
+                return $this->searchtapHelper->error("Invalid token");
+            }
+
+            if (!$this->dataHelper->isStoreAvailable($storeId)) {
+                return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
+            }
+
+            // Start Frontend Simulation
+            $this->searchtapHelper->startEmulation($storeId);
+
+            $productCollection = $this->getProductCollection($storeId, $count, $page);
+
+            foreach ($productCollection as $product) {
+                $this->imageHelper->getResizedImageUrl($product, 'product_base_image', $width, $height);
+                $this->imageHelper->getResizedImageUrl($product, 'product_small_image', $width, $height);
+                $this->imageHelper->getResizedImageUrl($product, 'product_thumbnail_image', $width, $height);
+            }
+
+            // Stop Simulation
+            $this->searchtapHelper->stopEmulation();
+            return $this->searchtapHelper->okResult("OK");
+        } catch (\Exception $e) {
+            return $e;
+        }
     }
 }

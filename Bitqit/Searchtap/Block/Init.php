@@ -18,6 +18,7 @@ class Init extends \Magento\Framework\View\Element\Template
 
     public function getConfiguration()
     {
+        var_dump($this->storeId);
         return $this->configHelper->getJsConfiguration($this->storeId);
     }
 
