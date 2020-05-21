@@ -395,7 +395,7 @@ class ProductHelper
 
             $productCollection = $this->getProductCollection($storeId, $count, $page);
 
-            foreach ($productCollection as $product) {
+             foreach ($productCollection as $product) {
                 $this->imageHelper->getResizedImageUrl($product, 'product_base_image', $width, $height);
                 $this->imageHelper->getResizedImageUrl($product, 'product_small_image', $width, $height);
                 $this->imageHelper->getResizedImageUrl($product, 'product_thumbnail_image', $width, $height);
@@ -403,6 +403,7 @@ class ProductHelper
 
             // Stop Simulation
             $this->searchtapHelper->stopEmulation();
+
             return $this->searchtapHelper->okResult("OK");
         } catch (\Exception $e) {
             return $e;
