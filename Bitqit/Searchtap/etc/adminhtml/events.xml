@@ -43,6 +43,8 @@
     <event name="catalog_entity_attribute_delete_after">
         <observer name="st_entity_attribute_delete_after" instance="Bitqit\Searchtap\Observer\Attributes" />
     </event>
-
-
+    <!-- Cache Clean -->
+    <event name="clean_catalog_images_cache_after">
+        <observer name="flush_varnish_pagecache" instance="Bitqit\Searchtap\Observer\FlushAllCache"/>
+    </event>
 </config>

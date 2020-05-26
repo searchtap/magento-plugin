@@ -185,7 +185,7 @@ class Products implements \Magento\Framework\Event\ObserverInterface
             if ($groupedProductId)
                 $this->queueFactory->create()->addToQueue($groupedProductId, 'add', 'pending', 'product', $storeId);
 
-        } catch (Exception $e) {
+        } catch (error $e) {
             $this->logger->error($e);
         }
     }

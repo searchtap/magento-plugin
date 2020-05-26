@@ -67,6 +67,10 @@ class ImageHelper
             $imageUrl = $this->imageFactory
                 ->init($product, $imageType)
                 ->resize($width, $height)
+                ->constrainOnly(TRUE)
+                ->keepAspectRatio(TRUE)
+                ->keepTransparency(TRUE)
+                ->keepFrame(FALSE)
                 ->getUrl();
 
         } catch (\Exception $e) {
