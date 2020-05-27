@@ -58,29 +58,23 @@ class ApiToken extends Generic implements TabInterface
         /** @var \Magento\Framework\Data\Form $form */
         $form = $this->_formFactory->create(['data' => ['id' => 'edit_form', 'action' => $this->getData('action'), 'method' => 'post']]);
 
-        $searchtapDashboard = $form->addFieldset(
-            'st-dashboard',
-            ['legend' => __('SearchTap Dashboard')]
-        );
+        $token = $this->_dataHelper->getCredentials();
 
-        if ($model && $model->getId()) {
-            $searchtapDashboard->addField(
-                'id',
-                'hidden',
-                ['name' => 'id']
+        if (!$token) {
+            $searchtapDashboard = $form->addFieldset(
+                'st-dashboard',
+                ['legend' => __('SearchTap Dashboard')]
             );
-        }
+            $searchtapDashboard->addField('note', 'note', array(
+                'label' => __('SearchTap Account'),
+                'text' => '<img src=\'https://d33wubrfki0l68.cloudfront.net/f8230a812b6bff599763387cf815e960bf1625e2/c8b3c/img/logo-dark.png\' alt="SearchTap" width="125" />' . '<br>',
+            ));
 
-        $searchtapDashboard->addField('note', 'note', array(
-            'label' => __('SearchTap Account'),
-            'text' => '<img src=\'https://d33wubrfki0l68.cloudfront.net/f8230a812b6bff599763387cf815e960bf1625e2/c8b3c/img/logo-dark.png\' alt="SearchTap" width="125" />' . '<br>',
-        ));
-
-        $searchtapDashboard->addField('link', 'link', array(
-            'after_element_html' => '<a href="https://magento-portal.searchtap.net/signup/" target="_blank" class="action-default primary" style="background-color: #e85d22;color: white;font-weight: 500;padding-bottom: 0.6875em; padding-top: 0.6875em;">
+            $searchtapDashboard->addField('link', 'link', array(
+                'after_element_html' => '<a href="https://magento-portal.searchtap.net/signup/" target="_blank" class="action-default primary" style="background-color: #e85d22;color: white;font-weight: 500;padding-bottom: 0.6875em; padding-top: 0.6875em;">
              Signup for a SearchTap Account</a>',
-        ));
-
+            ));
+        }
         /*
          * API Token
          */
@@ -89,7 +83,6 @@ class ApiToken extends Generic implements TabInterface
             ['legend' => __('API Token')]
         );
 
-        $token = $this->_dataHelper->getCredentials();
         $apiToken->addField('api_token', 'textarea', array(
             'label' => 'Token',
             'class' => 'required-entry',

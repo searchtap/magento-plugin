@@ -204,11 +204,9 @@ class ProductHelper
     {
         $regularPrice = $this->searchtapHelper->getFormattedPrice($product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue());
         $specialPrice = $this->searchtapHelper->getFormattedPrice($product->getFinalPrice());
-
         $priceObject = $product->getPriceInfo()->getPrice('final_price');
         $priceMin = $priceObject->getMinimalPrice()->getValue();
         $priceMax = $priceObject->getMaximalPrice()->getValue();
-
         $specialFromDate = $product->getSpecialFromDate();
         $specialToDate = $product->getSpecialToDate();
 
@@ -396,9 +394,9 @@ class ProductHelper
             $productCollection = $this->getProductCollection($storeId, $count, $page);
 
             foreach ($productCollection as $product) {
-                $this->imageHelper->getResizedImageUrl($product, 'base_image', $width, $height);
-                $this->imageHelper->getResizedImageUrl($product, 'small_image', $width, $height);
-                $this->imageHelper->getResizedImageUrl($product, 'thumbnail_image', $width, $height);
+                $this->imageHelper->getResizedImageUrl($product, 'product_base_image', $width, $height);
+                $this->imageHelper->getResizedImageUrl($product, 'product_small_image', $width, $height);
+                $this->imageHelper->getResizedImageUrl($product, 'product_thumbnail_image', $width, $height);
             }
 
             // Stop Simulation
