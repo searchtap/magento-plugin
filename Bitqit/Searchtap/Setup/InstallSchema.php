@@ -8,9 +8,25 @@ use Magento\Framework\Setup\SchemaSetupInterface;
 
 class InstallSchema implements InstallSchemaInterface
 {
+
+    protected $_pageFactory;
+    
+    public function __construct(
+        \Magento\Cms\Model\PageFactory $pageFactory
+    ) {
+        $this->_pageFactory = $pageFactory;
+    }
     public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
         $setup->startSetup();
+
+        $page = $this->_pageFactory->create();
+        $page->setTitle('Search')
+            ->setIdentifier('st-search')
+            ->setIsActive(true)
+            ->setPageLayout('1column')
+            ->setStores(array(0))
+            ->save();
 
         $queuetableName = $setup->getTable('searchtap_queue');
         $configTableName = $setup->getTable('searchtap_config');
@@ -113,3 +129,4 @@ class InstallSchema implements InstallSchemaInterface
         $setup->endSetup();
     }
 }
+
