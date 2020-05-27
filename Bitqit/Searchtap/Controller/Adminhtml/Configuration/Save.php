@@ -19,7 +19,6 @@ class Save extends Configuration
             $apiToken = $formData["api_token"];
             $dataCenters = [];
 
-
             //Formatting the data center values in the required format
             foreach ($formData as $key => $value) {
                 if (strpos($key, "store_") !== false)
@@ -33,11 +32,11 @@ class Save extends Configuration
             //Save updated data
             $this->_configurationFactory->create()->setConfiguration($apiToken, $dataCenters);
 
-            if (in_array("Save API Token", $formData)) {
-                $this->messageManager->addSuccess(__('Settings have been saved successfully'));
-            } else {
-                $this->messageManager->addSuccess(__('Setting Saved, Please Go to Searchtap Dashboard <a href="https://magento-portal.searchtap.net" target="_blank">Link</a>'));
-            }
+            if (in_array("Save API Token", $formData))
+                $this->messageManager->addSuccess(__('Api token has been saved successfully'));
+            else
+                $this->messageManager->addSuccess(__('Data centers have been saved successfully. <a href="https://magento-portal.searchtap.net" target="_blank">Please go to SearchTap Dashboard.</a>'));
+
             $this->_getSession()->setFormData($formData);
 
             $this->_redirect('*/*/edit');

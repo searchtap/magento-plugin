@@ -11,7 +11,7 @@ namespace Bitqit\Searchtap\Observer;
 use Magento\Framework\Event\Observer;
 use \Magento\Framework\Message\ManagerInterface;
 
-class FlushAllCache implements \Magento\Framework\Event\ObserverInterface
+class FlushImageCache implements \Magento\Framework\Event\ObserverInterface
 {
 
     protected $messageManager;
@@ -28,6 +28,6 @@ class FlushAllCache implements \Magento\Framework\Event\ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        $this->messageManager->addWarning(__('Please Run Searchtap Full Indexer <a href="https://magento-portal.searchtap.net" target="_blank">Link</a>'));
+        $this->messageManager->addWarning(__('The images on search page are breaking, please run product sync from SearchTap Dashboard. <a href="https://magento-portal.searchtap.net" target="_blank">Click here.</a>'));
     }
 }

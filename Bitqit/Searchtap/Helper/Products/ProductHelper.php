@@ -105,17 +105,17 @@ class ProductHelper
 
     public function getProductsJSON($token, $storeId, $count, $page, $imageConfig, $indexOutOfStockVariations, $productIds)
     {
-//        if (!$this->dataHelper->checkCredentials()) {
-//            return $this->searchtapHelper->error("Invalid credentials");
-//        }
-//
-//        if (!$this->dataHelper->checkPrivateKey($token)) {
-//            return $this->searchtapHelper->error("Invalid token");
-//        }
-//
-//        if (!$this->dataHelper->isStoreAvailable($storeId)) {
-//            return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
-//        }
+        if (!$this->dataHelper->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
+        if (!$this->dataHelper->checkPrivateKey($token)) {
+            return $this->searchtapHelper->error("Invalid token");
+        }
+
+        if (!$this->dataHelper->isStoreAvailable($storeId)) {
+            return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
+        }
 
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
@@ -394,30 +394,17 @@ class ProductHelper
             $productCollection = $this->getProductCollection($storeId, $count, $page);
 
             foreach ($productCollection as $product) {
-<<<<<<< HEAD
-                $this->imageHelper->getResizedImageUrl($product, 'base_image', $width, $height);
-                $this->imageHelper->getResizedImageUrl($product, 'small_image', $width, $height);
-                $this->imageHelper->getResizedImageUrl($product, 'thumbnail_image', $width, $height);
-=======
                 $this->imageHelper->getResizedImageUrl($product, 'product_base_image', $width, $height);
                 $this->imageHelper->getResizedImageUrl($product, 'product_small_image', $width, $height);
                 $this->imageHelper->getResizedImageUrl($product, 'product_thumbnail_image', $width, $height);
->>>>>>> self_serve_changes
             }
 
             // Stop Simulation
             $this->searchtapHelper->stopEmulation();
-<<<<<<< HEAD
 
-=======
->>>>>>> self_serve_changes
             return $this->searchtapHelper->okResult("OK");
         } catch (\Exception $e) {
             return $e;
         }
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> self_serve_changes
