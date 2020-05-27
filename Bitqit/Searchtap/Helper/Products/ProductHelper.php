@@ -105,17 +105,17 @@ class ProductHelper
 
     public function getProductsJSON($token, $storeId, $count, $page, $imageConfig, $indexOutOfStockVariations, $productIds)
     {
-//        if (!$this->dataHelper->checkCredentials()) {
-//            return $this->searchtapHelper->error("Invalid credentials");
-//        }
-//
-//        if (!$this->dataHelper->checkPrivateKey($token)) {
-//            return $this->searchtapHelper->error("Invalid token");
-//        }
-//
-//        if (!$this->dataHelper->isStoreAvailable($storeId)) {
-//            return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
-//        }
+        if (!$this->dataHelper->checkCredentials()) {
+            return $this->searchtapHelper->error("Invalid credentials");
+        }
+
+        if (!$this->dataHelper->checkPrivateKey($token)) {
+            return $this->searchtapHelper->error("Invalid token");
+        }
+
+        if (!$this->dataHelper->isStoreAvailable($storeId)) {
+            return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
+        }
 
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
@@ -401,6 +401,7 @@ class ProductHelper
 
             // Stop Simulation
             $this->searchtapHelper->stopEmulation();
+
             return $this->searchtapHelper->okResult("OK");
         } catch (\Exception $e) {
             return $e;

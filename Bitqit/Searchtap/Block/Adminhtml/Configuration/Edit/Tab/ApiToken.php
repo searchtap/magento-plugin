@@ -58,7 +58,9 @@ class ApiToken extends Generic implements TabInterface
         /** @var \Magento\Framework\Data\Form $form */
         $form = $this->_formFactory->create(['data' => ['id' => 'edit_form', 'action' => $this->getData('action'), 'method' => 'post']]);
 
-        if (!$this->_dataHelper->getCredentials()) {
+        $token = $this->_dataHelper->getCredentials();
+
+        if (!$token) {
             $searchtapDashboard = $form->addFieldset(
                 'st-dashboard',
                 ['legend' => __('SearchTap Dashboard')]
@@ -81,7 +83,6 @@ class ApiToken extends Generic implements TabInterface
             ['legend' => __('API Token')]
         );
 
-        $token = $this->_dataHelper->getCredentials();
         $apiToken->addField('api_token', 'textarea', array(
             'label' => 'Token',
             'class' => 'required-entry',
