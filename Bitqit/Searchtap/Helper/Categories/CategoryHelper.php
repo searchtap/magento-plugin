@@ -89,7 +89,7 @@ class CategoryHelper
         ];
     }
 
-    public function getCategoryCollection($storeId, $page, $count, $categoryIds=null)
+    public function getCategoryCollection($storeId, $page, $count, $categoryIds = null)
     {
         try {
             $requiredAttributes = $this->getRequiredAttributes();
@@ -229,21 +229,29 @@ class CategoryHelper
                 if (!$productCategory || !$this->canCategoryBeReindex($productCategory, $storeId))
                     continue;
 
-                $categoriesData["_categories"][] = $this->getFormattedString($productCategory->getName());
-                $categoriesData["categories_path"][] = $this->getCategoryPath($productCategory, $storeId);
+                $categoryParentRootId = $productCategory->getData('parent_id');
+                $storeCategoryRootId = $this->storeManager->getStore()->getRootCategoryId();
 
-                $pathIds = $productCategory->getPathIds();
+                if ($categoryParentRootId === $storeCategoryRootId) {
+                    $categoriesData["_categories"][] = $this->getFormattedString($productCategory->getName());
 
-                foreach ($pathIds as $pathId) {
-                    $category = $this->categoryRepository->get($pathId, $storeId);
-                    if ($category && (int)$category->getLevel() > 1) {
-                        $level = $category->getLevel() - 1; //level starts from 2 but we need to level to be started from 1
-                        $categoryName = $this->getFormattedString($category->getName());
 
-                        //Check if category already exists or not
-                        if (!array_key_exists("category_level_" . $level, $categoriesData["category_level"])
-                            || !in_array($categoryName, $categoriesData["category_level"]["category_level_" . $level])) {
-                            $categoriesData["category_level"]["category_level_" . $level][] = $this->getFormattedString($category->getName());
+                    $categoriesData["categories_path"][] = $this->getCategoryPath($productCategory, $storeId);
+
+                    $pathIds = $productCategory->getPathIds();
+
+                    foreach ($pathIds as $pathId) {
+                        $category = $this->categoryRepository->get($pathId, $storeId);
+
+                        if ($category && (int)$category->getLevel() > 1) {
+                            $level = $category->getLevel() - 1; //level starts from 2 but we need to level to be started from 1
+                            $categoryName = $this->getFormattedString($category->getName());
+
+                            //Check if category already exists or not
+                            if (!array_key_exists("category_level_" . $level, $categoriesData["category_level"])
+                                || !in_array($categoryName, $categoriesData["category_level"]["category_level_" . $level])) {
+                                $categoriesData["category_level"]["category_level_" . $level][] = $this->getFormattedString($category->getName());
+                            }
                         }
                     }
                 }
@@ -251,7 +259,6 @@ class CategoryHelper
         }
 
         $categoriesData["_categories"] = array_unique($categoriesData["_categories"]);
-
         return $categoriesData;
     }
 
@@ -267,7 +274,7 @@ class CategoryHelper
 
         if (!$this->dataHelper->isStoreAvailable($storeId)) {
             return $this->searchtapHelper->error("store not found for ID " . $storeId, 404);
-        }
+       }
 
         //Start Frontend Emulation
         $this->searchtapHelper->startEmulation($storeId);
