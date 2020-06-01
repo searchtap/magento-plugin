@@ -16,6 +16,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const JS_CONFIG = 'searchtap_credentials/credentials/st_config';
     const SCRIPT_URL = 'searchtap_credentials/credentials/st_script_url';
     const CSS_URL = 'searchtap_credentials/credentials/st_css_url';
+    const AUTOCOMPLETE_CUSTOM_CSS = 'searchtap_credentials/credentials/st_autocomplete_custom_css';
+    const SEARCH_PAGE_CUSTOM_CSS = 'searchtap_credentials/credentials/st_search_page_custom_css';
 
     private $configHelper;
     private $storeManager;
@@ -96,6 +98,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 $item->storeId);
             $this->configInterface->save(self::SCRIPT_URL, $item->scriptUrl, "stores", $item->storeId);
             $this->configInterface->save(self::CSS_URL, $item->cssUrl, "stores", $item->storeId);
+            $this->configInterface->save(self::AUTOCOMPLETE_CUSTOM_CSS, $item->autocompleteCustomCss, "stores", $item->storeId);
+            $this->configInterface->save(self::SEARCH_PAGE_CUSTOM_CSS, $item->searchPageCustomCss, "stores", $item->storeId);
         }
 
         $this->_cleanCache();

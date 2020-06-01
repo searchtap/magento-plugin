@@ -112,7 +112,6 @@ class AttributeHelper
                         $data[$attributeName] = $this->searchtapHelper->getFormattedPrice($value);
                         break;
                     case "media_image":
-                        //todo: This logic should be in ImageHelper
                         $image = $this->imageHelper->init($product, 'category_page_list', ['type' => $attribute]);
                         $data[$attributeName] = $image->getUrl();
                         break;
@@ -130,7 +129,7 @@ class AttributeHelper
             }
 
             return $data;
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
             return [];
         }

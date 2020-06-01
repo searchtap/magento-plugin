@@ -14,6 +14,8 @@ class ConfigHelper
     const JS_CONFIG = 'searchtap_credentials/credentials/st_config';
     const SCRIPT_URL = 'searchtap_credentials/credentials/st_script_url';
     const CSS_URL = 'searchtap_credentials/credentials/st_css_url';
+    const AUTOCOMPLETE_CUSTOM_CSS = 'searchtap_credentials/credentials/st_autocomplete_custom_css';
+    const SEARCH_PAGE_CUSTOM_CSS = 'searchtap_credentials/credentials/st_search_page_custom_css';
 
     private $configInterface;
     private $storeManager;
@@ -57,6 +59,16 @@ class ConfigHelper
     public function getCredentials()
     {
         return $this->configurationFactory->create()->getToken();
+    }
+
+    public function getAutocompleteCustomCss($storeId)
+    {
+        return $this->configInterface->getValue(self::AUTOCOMPLETE_CUSTOM_CSS, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
+    }
+
+    public function getSearchPageCustomCss($storeId)
+    {
+        return $this->configInterface->getValue(self::SEARCH_PAGE_CUSTOM_CSS, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
     }
 
 }

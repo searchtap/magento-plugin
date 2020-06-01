@@ -28,4 +28,12 @@ class Init extends \Magento\Framework\View\Element\Template
     public function getCssUrl() {
         return $this->configHelper->getCssUrl($this->storeId);
     }
+
+    public function getAutocompleteCustomCss() {
+        return $this->configHelper->getAutocompleteCustomCss($this->storeId);
+    }
+
+    public function getSearchPageCustomCss() {
+        return $this->configHelper->getSearchPageCustomCss($this->storeId);
+    }
 }

@@ -2,9 +2,17 @@
 /* Autocomplete container */
 $scriptUrl = $block->getScriptUrl();
 $cssUrl = $block->getCssUrl();
+$autocompleteCustomCss = $block->getAutocompleteCustomCss();
+$searchPageCustomCss = $block->getSearchPageCustomCss();
+
 ?>
 
 <div id="st-autocomplete-container"></div>
 
 <script type="text/javascript" src="<?php echo $scriptUrl ?>"></script>
 <link href="<?php echo $cssUrl?>" rel="stylesheet" type="text/css" media="all">
+
+<style>
+    <?php echo $autocompleteCustomCss; ?>
+    <?php echo $searchPageCustomCss; ?>
+</style>
