@@ -8,13 +8,13 @@
         "AFL-3.0"
     ],
     "require": {
-        "php": "~7.0.0|~7.1.0",
+        "php": ">=7.0.0",
         "magento/framework": "~100.0.4"
     },
     "autoload": {
         "files": [ "registration.php" ],
         "psr-4": {
-            "Bitqit\\Searchtap\\": ""
+            "Bitqit\\Searchtap\\": "Bitqit/Searchtap"
         }
     }
 }
