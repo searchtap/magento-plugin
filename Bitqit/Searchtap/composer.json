@@ -13,7 +13,7 @@
     },
     "autoload": {
         "files": [ "registration.php" ],
-        "psr-4": {
+        "psr-0": {
             "Bitqit\\Searchtap\\": ""
         }
     }
