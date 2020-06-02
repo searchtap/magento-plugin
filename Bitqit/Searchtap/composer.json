@@ -1,5 +1,5 @@
 {
-    "name": "bitqit/searchtap",
+    "name": "searchtap/magento-plugin",
     "description": "Searchtap Search Integration",
     "type": "magento2-module",
     "version": "1.0.0",
@@ -14,7 +14,7 @@
     "autoload": {
         "files": [ "registration.php" ],
         "psr-4": {
-            "Bitqit\\Searchtap\\": "magento-plugin"
+            "Bitqit\\Searchtap\\": ""
         }
     }
 }
