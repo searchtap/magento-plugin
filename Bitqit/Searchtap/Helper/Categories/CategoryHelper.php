@@ -229,10 +229,11 @@ class CategoryHelper
                 if (!$productCategory || !$this->canCategoryBeReindex($productCategory, $storeId))
                     continue;
 
-                $categoryParentRootId = $productCategory->getData('parent_id');
+                $categoryParentRootId = $productCategory->getData('path_ids');
+
                 $storeCategoryRootId = $this->storeManager->getStore()->getRootCategoryId();
 
-                if ($categoryParentRootId === $storeCategoryRootId) {
+                if ($categoryParentRootId[1] === $storeCategoryRootId) {
                     $categoriesData["_categories"][] = $this->getFormattedString($productCategory->getName());
 
 
