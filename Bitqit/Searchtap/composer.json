@@ -1,5 +1,5 @@
 {
-    "name": "bitqit/searchtap-search",
+    "name": "bitqit/searchtap",
     "description": "Searchtap Search Integration",
     "type": "magento2-module",
     "version": "1.0.0",
@@ -8,7 +8,7 @@
         "AFL-3.0"
     ],
     "require": {
-        "php": "~5.5.0|~5.6.0|~7.0.0|~7.1.0",
+        "php": "~7.0.0|~7.1.0",
         "magento/framework": "~100.0.4"
     },
     "autoload": {
