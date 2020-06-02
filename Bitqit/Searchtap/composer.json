@@ -14,7 +14,7 @@
     "autoload": {
         "files": [ "registration.php" ],
         "psr-4": {
-            "Bitqit\\Searchtap\\": "Bitqit/Searchtap"
+            "Bitqit\\Searchtap\\": "magento-plugin/Bitqit/Searchtap/"
         }
     }
 }
