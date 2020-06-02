@@ -89,7 +89,7 @@ class CategoryHelper
         ];
     }
 
-    public function getCategoryCollection($storeId, $page, $count, $categoryIds=null)
+    public function getCategoryCollection($storeId, $page, $count, $categoryIds = null)
     {
         try {
             $requiredAttributes = $this->getRequiredAttributes();
@@ -229,6 +229,10 @@ class CategoryHelper
                 if (!$productCategory || !$this->canCategoryBeReindex($productCategory, $storeId))
                     continue;
 
+                $categoryParentRootId = $productCategory->getData('path_ids');
+                $storeCategoryRootId = $this->storeManager->getStore()->getRootCategoryId();
+                if ($categoryParentRootId[1] !== $storeCategoryRootId) continue;
+
                 $categoriesData["_categories"][] = $this->getFormattedString($productCategory->getName());
                 $categoriesData["categories_path"][] = $this->getCategoryPath($productCategory, $storeId);
 
@@ -236,6 +240,7 @@ class CategoryHelper
 
                 foreach ($pathIds as $pathId) {
                     $category = $this->categoryRepository->get($pathId, $storeId);
+
                     if ($category && (int)$category->getLevel() > 1) {
                         $level = $category->getLevel() - 1; //level starts from 2 but we need to level to be started from 1
                         $categoryName = $this->getFormattedString($category->getName());
@@ -251,7 +256,6 @@ class CategoryHelper
         }
 
         $categoriesData["_categories"] = array_unique($categoriesData["_categories"]);
-
         return $categoriesData;
     }
 

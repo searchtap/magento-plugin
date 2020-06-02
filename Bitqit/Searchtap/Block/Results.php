@@ -5,7 +5,6 @@ use \Magento\Framework\View\Element\Template\Context;
 
 class Results extends \Magento\Framework\View\Element\Template
 {
-    private $configHelper;
     public function __construct(Context $context) {
         parent::__construct($context);
     }
@@ -24,5 +23,4 @@ class Results extends \Magento\Framework\View\Element\Template
         ]);
         parent::_prepareLayout();
     }
-
 }

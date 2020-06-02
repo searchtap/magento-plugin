@@ -7,6 +7,8 @@
                 <field id="st_config" type="text" />
                 <field id="st_script_url" type="text" />
                 <field id="st_css_url" type="text" />
+                <field id="st_autocomplete_custom_css" type="text" />
+                <field id="st_search_page_custom_css" type="text" />
             </group>
         </section>
     </system>
