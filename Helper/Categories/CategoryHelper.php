@@ -60,7 +60,9 @@ class CategoryHelper
 
         $data = [];
 
+        $count = 0;
         foreach ($collection as $category) {
+            $count++;
             if (!$this->isCategoryPathActive($category, $storeId))
                 continue;
 
@@ -70,7 +72,7 @@ class CategoryHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return $this->searchtapHelper->okResult($data, $collection->getSize());
+        return $this->searchtapHelper->okResult($data, $count);
     }
 
     public function getRequiredAttributes()
