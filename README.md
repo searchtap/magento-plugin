@@ -29,6 +29,6 @@ To Install Manually Follow the below steps:
 **Command To Run**
 
 For Full Indexing:
-```$ php bin/magento searchtap:indexer --s {store_id} '''
+- ```$ php bin/magento searchtap:indexer --s {store_id}```
 
 
