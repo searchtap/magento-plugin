@@ -20,10 +20,10 @@ To Install through [Composer] run the following commands:
 
 To Install Manually Follow the below steps:
 
--```$ Take pull from [Git](https://github.com/searchtap/magento-plugin)```
--```$ Unzip and upload Bitqit folder inside **code** ```
--```$ Run bin/magento module:enable Bitqit_Searchtap```
--```$ bin/magento setup:upgrade && bin/magento setup:static-content:deploy```
+- ```$ Take pull from [Git](https://github.com/searchtap/magento-plugin)```
+- ```$ Unzip and upload Bitqit folder inside [code] ```
+- ```$ Run bin/magento module:enable Bitqit_Searchtap```
+- ```$ bin/magento setup:upgrade && bin/magento setup:static-content:deploy```
 
 
 
