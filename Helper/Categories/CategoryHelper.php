@@ -60,7 +60,9 @@ class CategoryHelper
 
         $data = [];
 
+        $count = 0;
         foreach ($collection as $category) {
+            $count++;
             if (!$this->isCategoryPathActive($category, $storeId))
                 continue;
 
@@ -70,7 +72,7 @@ class CategoryHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return $this->searchtapHelper->okResult($data, $collection->getSize());
+        return $this->searchtapHelper->okResult($data, $count);
     }
 
     public function getRequiredAttributes()
@@ -102,8 +104,8 @@ class CategoryHelper
             $collection->addAttributeToFilter('is_active', ['eq' => true]);
             $collection->addAttributeToFilter('level', ['gt' => 1]);
             $collection->addAttributeToFilter('path', ['like' => "1/$rootCategoryId/%"]);
-            $collection->setPageSize($count);
-            $collection->setCurPage($page);
+            $collection->setPageSize($page);
+            $collection->setCurPage($count);
 
             if ($categoryIds)
                 $collection->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
