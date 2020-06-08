@@ -12,6 +12,7 @@ class Api
 {
     const STORE_API = '/my-stores';
     const DATACENTER_API = '/data-centers';
+    const NOTIFY_UNINSTALL='/uninstall';
 
     private $searchtapHelper;
     private $logger;
