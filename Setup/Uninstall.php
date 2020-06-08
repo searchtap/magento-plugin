@@ -17,5 +17,7 @@ class Uninstall implements UninstallInterface
         $connection->dropTable('searchtap_config');
         
         $installer->endSetup();
+        
+        echo "Table Deleted successfully !!";
     }
 }
