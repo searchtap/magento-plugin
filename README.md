@@ -26,9 +26,4 @@ To Install Manually Follow the below steps:
 - ```$ bin/magento setup:upgrade && bin/magento setup:static-content:deploy```
 
 
-**Command To Run**
-
-For Full Indexing:
-- ```$ php bin/magento searchtap:indexer --s {store_id}```
-
 

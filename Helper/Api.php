@@ -147,4 +147,3 @@ class Api
             $this->logger->error($e);
         }
     }
-}
