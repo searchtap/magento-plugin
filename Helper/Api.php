@@ -12,7 +12,8 @@ class Api
 {
     const STORE_API = '/my-stores';
     const DATACENTER_API = '/data-centers';
-  
+    const NOTIFY_UNINSTALL='/uninstall';
+
     private $searchtapHelper;
     private $logger;
     private $dataHelper;
@@ -122,5 +123,27 @@ class Api
             $this->logger->error($e);
             return [];
         }
-    }   
-}
+    }
+
+    public function notifyUninstall(){
+        try {
+            $credentials = $this->dataHelper->getCredentials();
+            if (!$credentials) return;
+
+            $token = $credentials->uniqueId . "," . $credentials->privateKey;
+
+            $url = $this->getApiBaseUrl() . self::NOTIFY_UNINSTALL;
+
+            $curlObject = $this->_getCurlObject($url, "DELETE", $token);
+            $curl = curl_init();
+            curl_setopt_array($curl, $curlObject);
+            curl_exec($curl);
+            $responseHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $this->logger->info('Un-installation reuqest has been sent to SearchTap with status code : ' . $responseHttpCode);
+            $curlError = curl_error($curl);
+            if ($curlError) $this->logger->error($curlError);
+            curl_close($curl);
+        } catch (\Exception $e) {
+            $this->logger->error($e);
+        }
+    }
