@@ -25,6 +25,5 @@ class Uninstall implements UninstallInterface
         $connection->dropTable('searchtap_config');
         $installer->endSetup();
         $result = $this->_apiHelper->notifyUninstall();
-        echo "Result Value: " . $result;
     }
 }
