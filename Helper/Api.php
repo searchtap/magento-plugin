@@ -128,7 +128,7 @@ class Api
     public function notifyUninstall(){
         try {
             $credentials = $this->dataHelper->getCredentials();
-            if (!$credentials) return [];
+            if (!$credentials) return;
 
             $token = $credentials->uniqueId . "," . $credentials->privateKey;
 
@@ -137,19 +137,14 @@ class Api
             $curlObject = $this->_getCurlObject($url, "DELETE", $token);
             $curl = curl_init();
             curl_setopt_array($curl, $curlObject);
-            $results = curl_exec($curl);
+            curl_exec($curl);
             $responseHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            $this->logger->info('Un-installation reuqest has been sent to SearchTap with status code : ' . $responseHttpCode);
             $curlError = curl_error($curl);
-
-            if ($curlError)
-                $this->logger->error($curlError);
-
+            if ($curlError) $this->logger->error($curlError);
             curl_close($curl);
-
-            return json_decode($results, true)["data"];
         } catch (\Exception $e) {
             $this->logger->error($e);
-            return [];
         }
     }
 }

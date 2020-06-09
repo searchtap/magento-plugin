@@ -11,22 +11,22 @@ class Uninstall implements UninstallInterface
 {
     protected $_apiHelper;
 
-    public function __construct(Api $Api)
+    public function __construct(Api $apiHelper)
     {
-        $this->_apiHelper = $Api;
+        $this->_apiHelper = $apiHelper;
     }
 
     public function uninstall(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
+        // Send store delete request to SearchTap
+        $this->_apiHelper->notifyUninstall();
+
+        // Drop SearchTap config tables
         $installer = $setup;
         $installer->startSetup();
         $connection = $installer->getConnection();
         $connection->dropTable('searchtap_queue');
         $connection->dropTable('searchtap_config');
         $installer->endSetup();
-        $result=$this->_apiHelper->notifyUninstall();
-        if($result==='OK'){
-            echo "Request send for delete stores to searchtap..";
-        }
     }
 }
