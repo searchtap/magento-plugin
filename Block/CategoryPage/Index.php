@@ -24,9 +24,4 @@ class Index extends \Magento\Framework\View\Element\Template
         $category = $objectManager->get('Magento\Framework\Registry')->registry('current_category');
         return $category->getId();
     }
-
-    public function getCurrentCategory()
-    {
-        return $this->_registry->registry('current_category');
-    }
 }

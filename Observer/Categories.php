@@ -48,10 +48,6 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
 
     public function catalogCategorySaveBefore($category)
     {
-        $writer = new \Zend\Log\Writer\Stream(BP . '/var/searchtap.log');
-        $this->logger = new \Zend\Log\Logger();
-        $this->logger->addWriter($writer);
-        $this->logger->info("praveen");
         try {
             $this->associatedProductIds = $category->getProductCollection()->getColumnValues('entity_id');
         } catch (error $e) {
