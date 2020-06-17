@@ -71,7 +71,7 @@ class ApiToken extends Generic implements TabInterface
             ));
 
             $searchtapDashboard->addField('link', 'link', array(
-                'after_element_html' => '<a href="https://magento-portal.searchtap.net/signup/" target="_blank" class="action-default primary" style="background-color: #e85d22;color: white;font-weight: 500;padding-bottom: 0.6875em; padding-top: 0.6875em;">
+                'after_element_html' => '<a href="https://magento-portal.searchtap.net/signup" target="_blank" class="action-default primary" style="background-color: #e85d22;color: white;font-weight: 500;padding-bottom: 0.6875em; padding-top: 0.6875em;">
              Signup for a SearchTap Account</a>',
             ));
         }
