@@ -1,8 +1,7 @@
 {
     "name": "searchtap/magento-plugin",
     "description": "Searchtap Search Integration",
-    "type": "magento2-module",
-    "minimum-stability": "dev",	
+    "type": "magento2-module",	
     "version": "1.0.0",
     "license": [
         "OSL-3.0",
@@ -10,6 +9,7 @@
     ],
      "require": {
         "php": "~7.0|~7.1|~7.2|~7.3",
+        "minimum-stability": "dev",
         "magento/framework": "@stable",
         "magento/module-store": "@stable",
 		"magento/module-catalog": "@stable",
