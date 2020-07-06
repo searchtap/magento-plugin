@@ -50,7 +50,7 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
     {
         try {
             $this->associatedProductIds = $category->getProductCollection()->getColumnValues('entity_id');
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
         }
     }
@@ -79,7 +79,7 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
             }
 
             unset($this->associatedProductIds);
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
         }
     }
@@ -99,7 +99,7 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
 
                 $this->queueFactory->create()->addToQueue($category->getId(), "delete", 'pending', 'category', $storeId);
             }
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
         }
     }

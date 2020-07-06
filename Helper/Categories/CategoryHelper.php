@@ -60,9 +60,7 @@ class CategoryHelper
 
         $data = [];
 
-        $count = 0;
         foreach ($collection as $category) {
-            $count++;
             if (!$this->isCategoryPathActive($category, $storeId))
                 continue;
 
@@ -72,7 +70,7 @@ class CategoryHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return $this->searchtapHelper->okResult($data, $count);
+        return $this->searchtapHelper->okResult($data, $collection->getSize());
     }
 
     public function getRequiredAttributes()
@@ -111,7 +109,7 @@ class CategoryHelper
                 $collection->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
 
             return $collection;
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
             return [];
         }
@@ -136,7 +134,7 @@ class CategoryHelper
                 }
             }
             return true;
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
             return false;
         }
@@ -184,7 +182,7 @@ class CategoryHelper
                 if ($product->getVisibility() != 1)
                     $productIds[] = $product->getId();
             }
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
         }
 

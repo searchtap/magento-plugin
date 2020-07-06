@@ -66,7 +66,7 @@ class AttributeHelper
 
             return $this->searchtapHelper->okResult($data, count($data));
 
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
             return $this->searchtapHelper->error($e);
         }
@@ -80,7 +80,7 @@ class AttributeHelper
                 ->addFieldToFilter('is_user_defined', true);
             foreach ($collection as $attribute)
                 $data[] = $attribute->getAttributeCode();
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
         }
         return $data;
