@@ -75,6 +75,7 @@ class Categories implements \Magento\Framework\Event\ObserverInterface
 
             unset($this->associatedProductIds);
         } catch (error $e) {
+
             $this->logger->error($e);
         }
     }
