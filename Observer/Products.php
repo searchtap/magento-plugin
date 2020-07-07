@@ -63,50 +63,65 @@ class Products implements \Magento\Framework\Event\ObserverInterface
 
     public function catalogProductImportBunchSaveAfter($observer)
     {
-        $data = $observer->getEvent()->getData('bunch');
-        $stores = $this->dataHelper->getEnabledStores();
-        foreach ($stores as $store) {
-            foreach ($data as $product) {
-                $productId = $this->product->getIdBySku($product['sku']);
-                $this->queueFactory->create()->addToQueue($productId, 'add', 'pending', 'product', $store->getId());
+        try {
+            $data = $observer->getEvent()->getData('bunch');
+            $stores = $this->dataHelper->getEnabledStores();
+            foreach ($stores as $store) {
+                foreach ($data as $product) {
+                    $productId = $this->product->getIdBySku($product['sku']);
+                    $this->queueFactory->create()->addToQueue($productId, 'add', 'pending', 'product', $store->getId());
+                }
             }
+        } catch (\Exception $e) {
+            $this->logger->error($e);
         }
-
     }
 
     public function catalogProductImportBunchDeleteCommitBefore($observer)
     {
-        $idsToDelete = $observer->getEvent()->getData('ids_to_delete');
-        $stores = $this->dataHelper->getEnabledStores();
-        foreach ($stores as $store) {
-            foreach ($idsToDelete as $productId)
-                $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $store->getId());
+        try {
+            $idsToDelete = $observer->getEvent()->getData('ids_to_delete');
+            $stores = $this->dataHelper->getEnabledStores();
+            foreach ($stores as $store) {
+                foreach ($idsToDelete as $productId)
+                    $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $store->getId());
+            }
+        } catch (\Exception $e) {
+            $this->logger->error($e);
         }
     }
 
     public function catalogProductAttributeUpdateBefore($observer)
     {
-        $productIds = $observer->getEvent()->getProductIds();
-        $stores = $this->dataHelper->getEnabledStores();
-        foreach ($stores as $store) {
-            $products = $this->productHelper->getProductByIds($productIds, $store->getId());
-            $actualProductIds = [];
-            foreach ($products as $product) {
-                $actualProductIds[] = $product->getId();
-                $action = "add";
-                // Check if product can be re-indexed
-                if ($product->getStatus() != 1 || $product->getVisibility() == 1)
-                    $action = "delete";
+        try {
+            $productIds = $observer->getEvent()->getProductIds();
+            $updatedAttributes = $observer->getAttributesData();
+            $stores = $this->dataHelper->getEnabledStores();
+            foreach ($stores as $store) {
+                $products = $this->productHelper->getProductByIds($productIds, $store->getId());
+                $actualProductIds = [];
+                foreach ($products as $product) {
+                    $actualProductIds[] = $product->getId();
+                    $action = "add";
+                    // Check if product can be re-indexed
+                    if ((isset($updatedAttributes['status']) && $updatedAttributes['status'] != 1)
+                        || (!isset($updatedAttributes['status']) && $product->getStatus() != 1)
+                        || (isset($updatedAttributes['visibility']) && $updatedAttributes['visibility'] == 1)
+                        || (!isset($updatedAttributes['visibility']) && $product->getVisibility() == 1))
+                        $action = "delete";
 
-                if ($product->getTypeId() === "simple")
-                    $this->addActionForParentProducts($product->getId(), $store->getId());
+                    if ($product->getTypeId() === "simple")
+                        $this->addActionForParentProducts($product->getId(), $store->getId());
 
-                $this->queueFactory->create()->addToQueue($product->getId(), $action, 'pending', 'product', $store->getId());
+                    $this->queueFactory->create()->addToQueue($product->getId(), $action, 'pending', 'product', $store->getId());
+                }
+
+                $idsToDelete = array_diff($productIds, $actualProductIds);
+                foreach ($idsToDelete as $productId)
+                    $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $store->getId());
             }
-
-            $idsToDelete = array_diff($productIds, $actualProductIds);
-            foreach ($idsToDelete as $productId)
-                $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $store->getId());
+        } catch (\Exception $e) {
+            $this->logger->error($e);
         }
     }
 
@@ -134,7 +149,7 @@ class Products implements \Magento\Framework\Event\ObserverInterface
                 $this->queueFactory->create()->addToQueue($product->getId(), $action, 'pending', 'product', $storeId);
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
         }
     }
@@ -147,13 +162,13 @@ class Products implements \Magento\Framework\Event\ObserverInterface
             $productId = $product->getId();
 
             foreach ($storeIds as $storeId) {
-                if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Simple::TYPE_CODE)
+                if ($product->getTypeId() === "simple")
                     $this->addActionForParentProducts($productId, $storeId);
 
                 $this->queueFactory->create()->addToQueue($productId, 'delete', 'pending', 'product', $storeId);
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
         }
     }
@@ -185,7 +200,7 @@ class Products implements \Magento\Framework\Event\ObserverInterface
             if ($groupedProductId)
                 $this->queueFactory->create()->addToQueue($groupedProductId, 'add', 'pending', 'product', $storeId);
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
         }
     }

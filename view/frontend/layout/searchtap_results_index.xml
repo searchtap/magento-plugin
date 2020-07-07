@@ -3,4 +3,7 @@
     <referenceContainer name="content">
         <block class="Bitqit\Searchtap\Block\Results" name="st_search_template" template="Bitqit_Searchtap::results.phtml" />
     </referenceContainer>
+    <body>
+        <referenceBlock name="page.main.title" remove="true" />
+    </body>
 </page>

@@ -17,7 +17,7 @@ use \Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableModel;
 use Magento\Bundle\Model\Product\Type as BundleModel;
 use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedModel;
-//use Bitqit\Searchtap\Helper\Logger as Logger;
+use Bitqit\Searchtap\Helper\Logger as Logger;
 
 class ProductHelper
 {
@@ -36,7 +36,7 @@ class ProductHelper
     private $configurableModel;
     private $bundleModel;
     private $groupedModel;
-//    private $logger;
+    private $logger;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -53,8 +53,8 @@ class ProductHelper
         Data $dataHelper,
         ConfigurableModel $configurableModel,
         BundleModel $bundleModel,
-        GroupedModel $groupedModel
-//        Logger $logger
+        GroupedModel $groupedModel,
+        Logger $logger
     )
     {
         $this->imageHelper = $imageHelper;
@@ -72,7 +72,7 @@ class ProductHelper
         $this->configurableModel = $configurableModel;
         $this->bundleModel = $bundleModel;
         $this->groupedModel = $groupedModel;
-//        $this->logger = $logger;
+        $this->logger = $logger;
     }
 
     public function getProductCollection($storeId, $count, $page, $productIds = null)
@@ -278,7 +278,7 @@ class ProductHelper
 
         $stockStatus = true;
         foreach ($associatedProducts as $associatedProduct) {
-            if (!$indexOutOfStockVariations)
+            if (!(boolean)json_decode($indexOutOfStockVariations))
                 $stockStatus = $this->stockRepository->getStockItem($associatedProduct->getId())->getIsInStock();
 
             foreach ($attributeCodes as $attributeCode) {
@@ -402,7 +402,7 @@ class ProductHelper
             // Stop Simulation
             $this->searchtapHelper->stopEmulation();
 
-            return $this->searchtapHelper->okResult("OK");
+            return $this->searchtapHelper->okResult("Created", $productCollection->getSize());
         } catch (\Exception $e) {
             return $e;
         }

@@ -63,7 +63,7 @@ class Attributes implements \Magento\Framework\Event\ObserverInterface
                     "attribute",
                     $store->getId()
                 );
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
         }
     }
@@ -84,7 +84,7 @@ class Attributes implements \Magento\Framework\Event\ObserverInterface
                     );
                 }
             }
-        } catch (error $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
         }
     }
