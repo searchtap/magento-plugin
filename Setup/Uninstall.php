@@ -20,7 +20,6 @@ class Uninstall implements UninstallInterface
     {
         // Send store delete request to SearchTap
         $this->_apiHelper->notifyUninstall();
-
         // Drop SearchTap config tables
         $installer = $setup;
         $installer->startSetup();

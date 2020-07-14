@@ -87,6 +87,7 @@ class ProductHelper
 //        $collection->addFinalPrice();
         $collection->setPageSize($count);
         $collection->setCurPage($page);
+        $collection->load();
 
         if ($productIds)
             $collection->addAttributeToFilter('entity_id', ['in' => $productIds]);
@@ -394,11 +395,8 @@ class ProductHelper
             $productCollection = $this->getProductCollection($storeId, $count, $page);
 
             foreach ($productCollection as $product) {
-                $this->imageHelper->getResizedImageUrl($product, 'product_base_image', $width, $height);
-                $this->imageHelper->getResizedImageUrl($product, 'product_small_image', $width, $height);
-                $this->imageHelper->getResizedImageUrl($product, 'product_thumbnail_image', $width, $height);
+               $this->imageHelper->getResizedImageUrl($product, 'product_base_image', $width, $height);
             }
-
             // Stop Simulation
             $this->searchtapHelper->stopEmulation();
 

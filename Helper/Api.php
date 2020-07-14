@@ -130,22 +130,24 @@ class Api
         try {
             $credentials = $this->dataHelper->getCredentials();
             if (!$credentials) return;
-
             $token = $credentials->uniqueId . "," . $credentials->privateKey;
-
             $url = $this->getApiBaseUrl() . self::NOTIFY_UNINSTALL;
-
             $curlObject = $this->_getCurlObject($url, "DELETE", $token);
+
             $curl = curl_init();
             curl_setopt_array($curl, $curlObject);
             curl_exec($curl);
             $responseHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            $this->logger->info('Un-installation reuqest has been sent to SearchTap with status code : ' . $responseHttpCode);
-            $curlError = curl_error($curl);
-            if ($curlError) $this->logger->error($curlError);
+//          $this->logger->info('Un-installation reuqest has been sent to SearchTap with status code : ' . $responseHttpCode);
+//          $curlError = curl_error($curl);
+//            if ($curlError) {
+//                $this->logger->error($curlError);
+//            }
             curl_close($curl);
+            return $responseHttpCode;
         } catch (\Exception $e) {
             $this->logger->error($e);
+            return [];
         }
     }
 }
