@@ -140,7 +140,7 @@ class Api
             curl_setopt_array($curl, $curlObject);
             curl_exec($curl);
             $responseHttpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            $this->logger->info('Un-installation reuqest has been sent to SearchTap with status code : ' . $responseHttpCode);
+            $this->logger->add('Un-installation request has been sent to SearchTap with status code : ' . $responseHttpCode);
             $curlError = curl_error($curl);
             if ($curlError) $this->logger->error($curlError);
             curl_close($curl);
