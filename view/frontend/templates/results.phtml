@@ -1,50 +1,14 @@
-<?php /* Search Results Template */?>
-
-<div id="st-loading-skeleton">
-
-    <div class="st-row">
-        <div class="st-column">
-            <div class="ph-item">
-                <div class="ph-row">
-                    <div class="ph-col-12 big"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="st-row">
-        <div class="st-column-25">
-            <div class="ph-item">
-                <div class="ph-col-12">
-                    <div class="ph-row">
-                        <div class="ph-col-8"></div>
-                        <div class="ph-col-6"></div>
-                        <div class="ph-col-6 empty"></div>
-                        <div class="ph-col-6"></div>
-                        <div class="ph-col-6 empty"></div>
-                        <div class="ph-col-6"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="st-column-75">
-            <div class="ph-item">
-                <div class="ph-col-4">
-                    <div class="ph-picture"></div>
-                    <div class="ph-row">
-                        <div class="ph-col-10"></div>
-                        <div class="ph-col-8"></div>
-                        <div class="ph-col-8"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<style>
-    @import "https://cdn.jsdelivr.net/npm/placeholder-loading/dist/css/placeholder-loading.min.css";
-</style>
+<?php
+/* Search Results Template */
+$referenceNodeSelector = $block->getReferenceNodeSelector();
+?>
 
 <div id="st-search-container"></div>
+
+<script>
+    <?php if ($referenceNodeSelector): ?>
+    var mainElement = document.querySelector("#maincontent");
+    var referenceElement = document.querySelector("<?php echo $referenceNodeSelector; ?>");
+    referenceElement.insertAdjacentElement("afterend", mainElement);
+    <?php endif; ?>
+</script>
