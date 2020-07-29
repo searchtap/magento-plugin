@@ -16,9 +16,27 @@ class SearchtapHelper
 
     public function getFormattedString($value)
     {
-        if (is_array($value))
-            return array_map('trim', array_map("htmlspecialchars_decode", $value));
-        else return trim(htmlspecialchars_decode(strip_tags($value)));
+       $val=[];
+       if (is_array($value)) {
+            $res = array_map("gettype", $value);
+            for ($i = 0; $i < sizeof($res); $i++) {
+              if(array_key_exists($i, $res)){
+                switch ($res[$i]) {
+                    case "string":
+                        $val[] = trim(htmlspecialchars_decode(strip_tags($value[$i])));
+                        break;
+                    case "integer":
+                    case "boolean":
+                    case "double":
+                        $val[] = trim($value[$i]);
+                        break;
+                }
+              }
+            }
+            return $val;
+        } else {
+            return trim(htmlspecialchars_decode(strip_tags($value)));
+        }
     }
 
     public function getFormattedPrice($price)
