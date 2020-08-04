@@ -28,6 +28,6 @@ class FlushImageCache implements \Magento\Framework\Event\ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        $this->messageManager->addWarning(__('The images on search page will not load as the urls will be non-existence, please run product sync from SearchTap Dashboard. <a href="https://magento-portal.searchtap.net" target="_blank">Click here.</a>'));
+        $this->messageManager->addWarning(__('The images on search page will not load as the urls will be non-existence, please run product sync from SearchTap Dashboard. <a href="https://magento.searchtap.io" target="_blank">Click here.</a>'));
     }
 }

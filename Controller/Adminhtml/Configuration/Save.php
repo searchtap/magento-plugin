@@ -35,7 +35,7 @@ class Save extends Configuration
             if (in_array("Save API Token", $formData))
                 $this->messageManager->addSuccess(__('Api token has been saved successfully'));
             else
-                $this->messageManager->addSuccess(__('Data centers have been saved successfully. <a href="https://magento-portal.searchtap.net" target="_blank">Please go to SearchTap Dashboard.</a>'));
+                $this->messageManager->addSuccess(__('Data centers have been saved successfully. <a href="https://magento.searchtap.io" target="_blank">Please go to SearchTap Dashboard.</a>'));
 
             $this->_getSession()->setFormData($formData);
 

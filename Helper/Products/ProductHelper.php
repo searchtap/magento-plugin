@@ -82,9 +82,7 @@ class ProductHelper
         $collection->addAttributeToSelect('*');
         $collection->addAttributeToFilter('status', ['eq' => 1]);
         $collection->addAttributeToFilter('visibility', ['neq' => 1]);
-        $collection->setFlag('has_stock_status_filter', false);
-//        $collection->addMinimalPrice();
-//        $collection->addFinalPrice();
+        $collection->setFlag('has_stock_status_filter', true);
         $collection->setPageSize($count);
         $collection->setCurPage($page);
 
