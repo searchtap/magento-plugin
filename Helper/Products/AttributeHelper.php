@@ -94,9 +94,9 @@ class AttributeHelper
         try {
             $attributeCodes = $this->getProductUserDefinedAttributeCodes();
             foreach ($attributeCodes as $attribute) {
-                if (!$product->getData($attribute))
-                    continue;
                 $inputType = $product->getResource()->getAttribute($attribute)->getFrontendInput();
+                if ($inputType === "select" && !$product->getAttributeText($attribute)) continue;
+                else if (!$product->getData($attribute)) continue;
                 $attributeName = $attribute . "_" . $inputType;
                 switch ($inputType) {
                     case "multiselect":
@@ -104,7 +104,7 @@ class AttributeHelper
                         if ($value) $data[$attributeName] = $this->searchtapHelper->getFormattedArray(explode(",", $value));
                         break;
                     case "select":
-                        $value = $product->getResource()->getAttribute($attribute)->getFrontend()->getValue($product);
+                        $value = $product->getAttributeText($attribute);
                         if ($value) $data[$attributeName] = $this->searchtapHelper->getFormattedString($value);
                         break;
                     case "price":
@@ -120,7 +120,7 @@ class AttributeHelper
                         break;
                     case "text":
                     case "textarea":
-                        $data[$attributeName] = $this->searchtapHelper->getFormattedString($product->getData());
+                        $data[$attributeName] = $this->searchtapHelper->getFormattedString($product->getData($attribute));
                         break;
                     default:
                         $value = $product->getData($attribute);

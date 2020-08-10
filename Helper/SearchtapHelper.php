@@ -28,10 +28,11 @@ class SearchtapHelper
 
     public function getFormattedArray($value)
     {
+        $formattedValue = [];
         foreach ($value as $val) {
-            $formatedValue[] = trim(htmlspecialchars_decode(strip_tags($val)));
+            $formattedValue[] = trim(htmlspecialchars_decode(strip_tags($val)));
         }
-        return $formatedValue;
+        return $formattedValue;
     }
 
     public function startEmulation($storeId)
