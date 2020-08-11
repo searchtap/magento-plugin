@@ -92,7 +92,9 @@ class Settings extends Generic implements TabInterface
                 'disabled' => $isDisabled,
                 'value' => $selectedValue,
                 'values' => $dataCenters,
+                'after_element_html' => '<p style="margin: 0 0 .5em; -webkit-text-stroke-width: thin; color: #0c0c0c; font-family: serif;"> ( Store ID: '.$storeId.' ) </p>',
                 'tabindex' => 1
+
             ));
         }
 
