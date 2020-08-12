@@ -18,13 +18,15 @@ class Save extends Configuration
             $formData = $this->getRequest()->getParams();
             $apiToken = $formData["api_token"];
             $dataCenters = [];
-
+      
             //Formatting the data center values in the required format
             foreach ($formData as $key => $value) {
-                if (strpos($key, "store_") !== false)
+                if (strpos($key, "store_") !== false){
+                    if($value)
                     $dataCenters[str_replace("store_", "", $key)] = $value;
-            }
+                }
 
+            }
             //Send request to sync stores
             if ($dataCenters && count($dataCenters) > 0)
                 $this->_apiHelper->requestToSyncStores($dataCenters);
@@ -34,8 +36,14 @@ class Save extends Configuration
 
             if (in_array("Save API Token", $formData))
                 $this->messageManager->addSuccess(__('Api token has been saved successfully'));
-            else
-                $this->messageManager->addSuccess(__('Data centers have been saved successfully. <a href="https://magento.searchtap.io" target="_blank">Please go to SearchTap Dashboard.</a>'));
+            else {
+                if(!empty($dataCenters)) {
+                    $this->messageManager->addSuccess(__('Data centers have been saved successfully. <a href="https://magento-portal.searchtap.net" target="_blank">Please go to SearchTap Dashboard.</a>'));
+                }
+                else{
+                    $this->messageManager->addError(__('Please select data center !!'));
+                }
+            }
 
             $this->_getSession()->setFormData($formData);
 
