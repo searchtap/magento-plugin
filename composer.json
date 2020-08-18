@@ -2,6 +2,7 @@
   "name": "searchtap/magento-plugin",
   "description": "Search autocomplete and search results",
   "type": "magento2-module",
+  "prefer-stable": true,
   "version": "1.0.0",
   "license": [
     "OSL-3.0",
