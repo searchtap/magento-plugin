@@ -36,4 +36,17 @@ class Init extends \Magento\Framework\View\Element\Template
     public function getSearchPageCustomCss() {
         return $this->configHelper->getSearchPageCustomCss($this->storeId);
     }
+
+    public function getCurrentCurrencyCode()
+    {
+        return $this->_storeManager->getStore()->getCurrentCurrencyCode();
+    }
+
+    public function getCurrentCurrencyRate($currencyCode) {
+        return $this->_storeManager->getStore()->getBaseCurrency()->getRate($currencyCode);
+    }
+
+    public function getCurrentCurrencySymbol() {
+
+    }
 }
