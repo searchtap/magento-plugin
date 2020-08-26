@@ -22,7 +22,14 @@ class Save extends Configuration
             //Formatting the data center values in the required format
             foreach ($formData as $key => $value) {
                 if (strpos($key, "store_") !== false)
-                    $dataCenters[str_replace("store_", "", $key)] = $value;
+                    if ($value) $dataCenters[str_replace("store_", "", $key)] = $value;
+            }
+
+            if (in_array("Save and Sync Stores", $formData) && empty($dataCenters)) {
+                $this->messageManager->addError(__('Please select data center !!'));
+                $this->_getSession()->setFormData($formData);
+                $this->_redirect('*/*/edit');
+                return;
             }
 
             //Send request to sync stores
