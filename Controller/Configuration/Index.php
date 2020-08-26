@@ -28,6 +28,7 @@ if ($version < 2.3) {
 
         public function execute()
         {
+            try{
             $data = $this->getRequest()->getContent();
             $token = $this->getRequest()->getHeader("authorization");
 
@@ -36,6 +37,9 @@ if ($version < 2.3) {
             $this->getResponse()->setHeader('content-type', 'application/json');
             $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
             $this->getResponse()->setBody($response["output"]);
+            } catch (\Exception $e) {
+                $this->logger->critical($e->getMessage());
+            }
         }
     }
 }
@@ -58,6 +62,7 @@ else {
 
         public function execute()
         {
+            try{
             $data = $this->getRequest()->getContent();
             $token = $this->getRequest()->getHeader("authorization");
 
@@ -66,6 +71,9 @@ else {
             $this->getResponse()->setHeader('content-type', 'application/json');
             $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
             $this->getResponse()->setBody($response["output"]);
+            } catch (\Exception $e) {
+                $this->logger->error($e->getMessage());
+            }
         }
     }
 }

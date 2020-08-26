@@ -20,6 +20,7 @@ class Ids extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
+        try{
         $storeId = $this->getRequest()->getParam('store', 1);
         $page = $this->getRequest()->getParam('page', 1);
         $count = $this->getRequest()->getParam('count', 100);
@@ -29,5 +30,8 @@ class Ids extends \Magento\Framework\App\Action\Action
         $this->getResponse()->setHeader('content-type', 'application/json');
         $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
         $this->getResponse()->setBody($response["output"]);
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+        }
     }
 }

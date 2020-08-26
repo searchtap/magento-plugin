@@ -20,17 +20,21 @@ class Recreate extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
-        $storeId = $this->getRequest()->getParam('store', 1);
-        $height = $this->getRequest()->getParam('height', 300);
-        $width = $this->getRequest()->getParam('width', 300);
-        $page = $this->getRequest()->getParam('page', 1);
-        $count = $this->getRequest()->getParam('count', 100);
-        $token = $this->getRequest()->getParam('token');
+        try {
+            $storeId = $this->getRequest()->getParam('store', 1);
+            $height = $this->getRequest()->getParam('height', 300);
+            $width = $this->getRequest()->getParam('width', 300);
+            $page = $this->getRequest()->getParam('page', 1);
+            $count = $this->getRequest()->getParam('count', 100);
+            $token = $this->getRequest()->getParam('token');
 
-        $response = $this->productHelper->processImages($token, $storeId, $height, $width, $count, $page);
+            $response = $this->productHelper->processImages($token, $storeId, $height, $width, $count, $page);
 
-        $this->getResponse()->setHeader('content-type', 'application/json');
-        $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
-        $this->getResponse()->setBody($response["output"]);
+            $this->getResponse()->setHeader('content-type', 'application/json');
+            $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
+            $this->getResponse()->setBody($response["output"]);
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+        }
     }
 }

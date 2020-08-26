@@ -22,8 +22,11 @@ class Save extends Configuration
             //Formatting the data center values in the required format
             foreach ($formData as $key => $value) {
                 if (strpos($key, "store_") !== false)
+                   if($value)
                     $dataCenters[str_replace("store_", "", $key)] = $value;
             }
+            
+             
 
             //Send request to sync stores
             if ($dataCenters && count($dataCenters) > 0)

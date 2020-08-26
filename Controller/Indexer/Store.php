@@ -20,12 +20,16 @@ class Store extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
-        $token = $this->getRequest()->getParam("token");
+        try {
+            $token = $this->getRequest()->getParam("token");
 
-        $response = $this->dataHelper->getStoresData($token);
+            $response = $this->dataHelper->getStoresData($token);
 
-        $this->getResponse()->setHeader('content-type', 'application/json');
-        $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
-        $this->getResponse()->setBody($response["output"]);
+            $this->getResponse()->setHeader('content-type', 'application/json');
+            $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
+            $this->getResponse()->setBody($response["output"]);
+        } catch (\Exception $e) {
+            $this->logger->error($e->getMessage());
+        }
     }
 }

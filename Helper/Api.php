@@ -120,7 +120,7 @@ class Api
 
             return json_decode($results, true)["data"];
         } catch (\Exception $e) {
-            $this->logger->error($e);
+            $this->logger->error($e->getMessage());
             return [];
         }
     }
@@ -145,7 +145,7 @@ class Api
             if ($curlError) $this->logger->error($curlError);
             curl_close($curl);
         } catch (\Exception $e) {
-            $this->logger->error($e);
+            $this->logger->error($e->getMessage());
         }
     }
 }
