@@ -38,7 +38,7 @@ if ($version < 2.3) {
             $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
             $this->getResponse()->setBody($response["output"]);
             } catch (\Exception $e) {
-                $this->logger->critical($e->getMessage());
+                $this->logger->error($e->getMessage());
             }
         }
     }
