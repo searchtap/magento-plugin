@@ -29,8 +29,8 @@ class Save extends Configuration
                 $this->messageManager->addError(__('Please select data center !!'));
                 $this->_getSession()->setFormData($formData);
                 $this->_redirect('*/*/edit');
-                return;
             }
+
 
             //Send request to sync stores
             if ($dataCenters && count($dataCenters) > 0)

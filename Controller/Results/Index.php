@@ -5,7 +5,8 @@ namespace Bitqit\Searchtap\Controller\Results;
 use \Magento\Framework\App\Action\Context;
 use \Magento\Framework\View\Result\PageFactory;
 
-class Index extends \Magento\Framework\App\Action\Action {
+class Index extends \Magento\Framework\App\Action\Action
+{
     protected $pageFactory;
 
     public function __construct(Context $context, PageFactory $pageFactory)
@@ -14,7 +15,8 @@ class Index extends \Magento\Framework\App\Action\Action {
         parent::__construct($context);
     }
 
-    public function execute() {
+    public function execute()
+    {
         $page = $this->pageFactory->create();
         $page->getConfig()->getTitle()->set("Search Results");
         return $page;
