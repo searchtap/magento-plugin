@@ -28,22 +28,21 @@ if ($version < 2.3) {
 
         public function execute()
         {
-            try{
-            $data = $this->getRequest()->getContent();
-            $token = $this->getRequest()->getHeader("authorization");
+            try {
+                $data = $this->getRequest()->getContent();
+                $token = $this->getRequest()->getHeader("authorization");
 
-            $response = $this->dataHelper->setJSConfiguration($token, json_decode($data));
+                $response = $this->dataHelper->setJSConfiguration($token, json_decode($data));
 
-            $this->getResponse()->setHeader('content-type', 'application/json');
-            $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
-            $this->getResponse()->setBody($response["output"]);
+                $this->getResponse()->setHeader('content-type', 'application/json');
+                $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
+                $this->getResponse()->setBody($response["output"]);
             } catch (\Exception $e) {
                 $this->logger->error($e->getMessage());
             }
         }
     }
-}
-else {
+} else {
     class Index extends \Magento\Framework\App\Action\Action implements \Magento\Framework\App\Action\HttpPostActionInterface
     {
         private $dataHelper;
@@ -62,15 +61,15 @@ else {
 
         public function execute()
         {
-            try{
-            $data = $this->getRequest()->getContent();
-            $token = $this->getRequest()->getHeader("authorization");
+            try {
+                $data = $this->getRequest()->getContent();
+                $token = $this->getRequest()->getHeader("authorization");
 
-            $response = $this->dataHelper->setJSConfiguration($token, json_decode($data));
+                $response = $this->dataHelper->setJSConfiguration($token, json_decode($data));
 
-            $this->getResponse()->setHeader('content-type', 'application/json');
-            $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
-            $this->getResponse()->setBody($response["output"]);
+                $this->getResponse()->setHeader('content-type', 'application/json');
+                $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
+                $this->getResponse()->setBody($response["output"]);
             } catch (\Exception $e) {
                 $this->logger->error($e->getMessage());
             }
