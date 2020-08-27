@@ -5,7 +5,6 @@ namespace Bitqit\Searchtap\Helper;
 use \Bitqit\Searchtap\Helper\SearchtapHelper;
 use \Bitqit\Searchtap\Helper\Logger;
 use \Bitqit\Searchtap\Helper\Data;
-use mysql_xdevapi\Exception;
 use Bitqit\Searchtap\Model\ConfigurationFactory;
 
 class Api
@@ -65,7 +64,7 @@ class Api
     {
         try {
             $url = $this->getApiBaseUrl() . self::STORE_API;
-            $stores = $this->dataHelper->getStores();
+            $stores = $this->dataHelper->getEnabledStores();
 
             $data = [];
             foreach ($stores as $store) {

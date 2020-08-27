@@ -25,6 +25,12 @@ class Save extends Configuration
                     if ($value) $dataCenters[str_replace("store_", "", $key)] = $value;
             }
 
+            if (in_array("Save and Sync Stores", $formData) && empty($dataCenters)) {
+                $this->messageManager->addError(__('Please select data center !!'));
+                $this->_getSession()->setFormData($formData);
+                $this->_redirect('*/*/edit');
+            }
+
 
             //Send request to sync stores
             if ($dataCenters && count($dataCenters) > 0)

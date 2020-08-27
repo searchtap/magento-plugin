@@ -79,6 +79,7 @@ class ProductHelper
     {
         $collection = $this->productCollectionFactory->create();
         $collection->setStore($storeId);
+        $collection->addStoreFilter($storeId);
         $collection->addAttributeToSelect('*');
         $collection->addAttributeToFilter('status', ['eq' => 1]);
         $collection->addAttributeToFilter('visibility', ['neq' => 1]);
