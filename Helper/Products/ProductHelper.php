@@ -165,7 +165,7 @@ class ProductHelper
         $data['short_description'] = $this->getFormattedString($product->getShortDescription());
 
         //Product Stock Information
-        $data["in_stock"] = $this->getStockData($product);
+        $data["in_stock"] = (int)$this->getStockData($product);
 
         //Product Price Information
         $data['price'] = $this->getPrices($product, $storeId);
