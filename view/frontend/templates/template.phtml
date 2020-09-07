@@ -4,7 +4,22 @@ $scriptUrl = $block->getScriptUrl();
 $cssUrl = $block->getCssUrl();
 $autocompleteCustomCss = $block->getAutocompleteCustomCss();
 $searchPageCustomCss = $block->getSearchPageCustomCss();
+
+//Current store's currency data
+$currencyCode = $block->getCurrentCurrencyCode();
+$currencyRate = $block->getCurrentCurrencyRate($currencyCode);
+$baseCurrencyCode = $block->getBaseCurrencyCode();
+$currencySymbol = $block->getCurrentCurrencySymbol($currencyCode);
 ?>
+
+<script>
+    window.st_currency = {
+        currencyCode: "<?php echo $currencyCode; ?>",
+        currencyRate: <?php echo $currencyRate; ?>,
+        currencySymbol: "<?php echo $currencySymbol; ?>",
+        baseCurrencyCode: "<?php echo $baseCurrencyCode; ?>"
+    };
+</script>
 
 <div id="st-autocomplete-container"></div>
 
