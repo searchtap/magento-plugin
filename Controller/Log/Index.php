@@ -8,15 +8,10 @@ class Index extends \Magento\Framework\App\Action\Action
     private $logFileName = "./var/log/searchtap.log";
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Bitqit\Searchtap\Helper\Products\ProductHelper $productHelper,
-        \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper,
-        \Bitqit\Searchtap\Helper\Logger $logger
+        \Bitqit\Searchtap\Helper\SearchtapHelper $searchtapHelper
     )
     {
-        $this->productHelper = $productHelper;
         $this->searchtapHelper = $searchtapHelper;
-        $this->logger = $logger;
-
         parent::__construct($context);
     }
     public function execute()
