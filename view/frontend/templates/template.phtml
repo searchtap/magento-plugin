@@ -13,7 +13,7 @@ $currencySymbol = $block->getCurrentCurrencySymbol($currencyCode);
 ?>
 
 <script>
-    var st_currency = {
+    window.st_currency = {
         currencyCode: "<?php echo $currencyCode; ?>",
         currencyRate: <?php echo $currencyRate; ?>,
         currencySymbol: "<?php echo $currencySymbol; ?>",
