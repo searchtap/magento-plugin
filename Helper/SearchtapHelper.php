@@ -59,15 +59,14 @@ class SearchtapHelper
 
     public function okResult($data, $count = 0, $statusCode = 200)
     {
-        $data = [
-            "data" => $data
-        ];
+        $results = [];
+        $results["data"] = $data;
 
         if ($count)
-            $data["count"] = $count;
+            $results["count"] = $count;
 
         return [
-            "output" => json_encode($data),
+            "output" => json_encode($results),
             "statusCode" => $statusCode
         ];
     }
