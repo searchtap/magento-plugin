@@ -79,8 +79,8 @@ class ProductHelper
         $this->bundleModel = $bundleModel;
         $this->groupedModel = $groupedModel;
         $this->logger = $logger;
-        $this->customProductHelper=$customProductHelper;
-        $this->moduleManager=$moduleManager;
+        $this->customProductHelper = $customProductHelper;
+        $this->moduleManager = $moduleManager;
     }
 
     public function getProductCollection($storeId, $count, $page, $productIds = null)
@@ -204,18 +204,16 @@ class ProductHelper
             $additionalAttributes
         );
 
-        if($this->moduleManager->isEnabled("Bitqit_Helper")){
-            try{
-                $data=$this->customProductHelper->DataMassaging($data,$product,$storeId);
+        // Execute custom data massaging script
+        if ($this->moduleManager->isEnabled("Bitqit_Helper")) {
+            try {
+                $data = $this->customProductHelper->DataMassaging($data, $product, $storeId);
                 return $data;
-            }catch(Exception $e){
+            } catch (Exception $e) {
                 $this->logger->info($e->getMessage());
             }
         }
-        else{
-            return $data;
-        }
-
+        return $data;
     }
 
     public function getPrices($product, $storeId)
