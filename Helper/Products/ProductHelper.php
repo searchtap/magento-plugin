@@ -18,6 +18,8 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableM
 use Magento\Bundle\Model\Product\Type as BundleModel;
 use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedModel;
 use Bitqit\Searchtap\Helper\Logger as Logger;
+use Bitqit\Helper\Helper\CustomProductHelper;
+use \Magento\Framework\Module\Manager;
 
 class ProductHelper
 {
@@ -37,6 +39,8 @@ class ProductHelper
     private $bundleModel;
     private $groupedModel;
     private $logger;
+    private $customProductHelper;
+    private $moduleManager;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -54,7 +58,9 @@ class ProductHelper
         ConfigurableModel $configurableModel,
         BundleModel $bundleModel,
         GroupedModel $groupedModel,
-        Logger $logger
+        Logger $logger,
+        CustomProductHelper $customProductHelper,
+        Manager $moduleManager
     )
     {
         $this->imageHelper = $imageHelper;
@@ -73,6 +79,8 @@ class ProductHelper
         $this->bundleModel = $bundleModel;
         $this->groupedModel = $groupedModel;
         $this->logger = $logger;
+        $this->customProductHelper=$customProductHelper;
+        $this->moduleManager=$moduleManager;
     }
 
     public function getProductCollection($storeId, $count, $page, $productIds = null)
@@ -196,7 +204,18 @@ class ProductHelper
             $additionalAttributes
         );
 
-        return $data;
+        if($this->moduleManager->isEnabled("Bitqit_Helper")){
+            try{
+                $data=$this->customProductHelper->DataMassaging($data,$product,$storeId);
+                return $data;
+            }catch(Exception $e){
+                $this->logger->info($e->getMessage());
+            }
+        }
+        else{
+            return $data;
+        }
+
     }
 
     public function getPrices($product, $storeId)
