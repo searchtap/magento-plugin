@@ -18,7 +18,6 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable as ConfigurableM
 use Magento\Bundle\Model\Product\Type as BundleModel;
 use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedModel;
 use Bitqit\Searchtap\Helper\Logger as Logger;
-use Bitqit\Helper\Helper\CustomProductHelper;
 use \Magento\Framework\Module\Manager;
 
 class ProductHelper
@@ -39,7 +38,6 @@ class ProductHelper
     private $bundleModel;
     private $groupedModel;
     private $logger;
-    private $customProductHelper;
     private $moduleManager;
 
     public function __construct(
@@ -59,7 +57,6 @@ class ProductHelper
         BundleModel $bundleModel,
         GroupedModel $groupedModel,
         Logger $logger,
-        CustomProductHelper $customProductHelper,
         Manager $moduleManager
     )
     {
@@ -79,7 +76,6 @@ class ProductHelper
         $this->bundleModel = $bundleModel;
         $this->groupedModel = $groupedModel;
         $this->logger = $logger;
-        $this->customProductHelper = $customProductHelper;
         $this->moduleManager = $moduleManager;
     }
 
@@ -207,7 +203,9 @@ class ProductHelper
         // Execute custom data massaging script
         if ($this->moduleManager->isEnabled("Bitqit_Helper")) {
             try {
-                $data = $this->customProductHelper->DataMassaging($data, $product, $storeId);
+                $object_manager = \Magento\Framework\App\ObjectManager::getInstance();
+                $customProductHelper = $object_manager->get('\Bitqit\Helper\Helper\CustomProductHelper');
+                $data = $customProductHelper->DataMassaging($data, $product, $storeId);
                 return $data;
             } catch (Exception $e) {
                 $this->logger->info($e->getMessage());

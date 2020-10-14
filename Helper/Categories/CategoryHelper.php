@@ -255,7 +255,7 @@ class CategoryHelper
             }
         }
 
-        $categoriesData["_categories"] = array_unique($categoriesData["_categories"]);
+        $categoriesData["_categories"] = array_values(array_unique($categoriesData["_categories"]));
         return $categoriesData;
     }
 
