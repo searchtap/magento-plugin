@@ -22,8 +22,7 @@
     "magento/module-store": "@stable",
     "magento/module-catalog": "@stable",
     "magento/module-backend": "@stable",
-    "magento/module-eav": "@stable",
-    "magento/framework": "@stable"
+    "magento/module-eav": "@stable"
   },
   "repositories": [
     {
