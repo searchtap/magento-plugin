@@ -83,7 +83,7 @@ class Settings extends Generic implements TabInterface
 
         foreach ($stores as $store) {
             $storeId = $store->getId();
-            $selectedValue = $dbDataCenters[$storeId];
+            $selectedValue = $dbDataCenters ? $dbDataCenters[$storeId] : $dataCenters[0];
             $dataCenterFieldSet->addField('select' . $storeId, 'select', array(
                 'label' => $store->getName(),
                 'class' => 'required-entry',
