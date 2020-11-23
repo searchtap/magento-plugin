@@ -225,7 +225,12 @@ class CategoryHelper
 
         if (!empty($categoryIds)) {
             foreach ($categoryIds as $categoryId) {
+                try{
                 $productCategory = $this->categoryRepository->get($categoryId, $storeId);
+                }catch(\Exception $e){
+                 $this->logger->error($e->getMessage());
+                }
+
                 if (!$productCategory || !$this->canCategoryBeReindex($productCategory, $storeId))
                     continue;
 
@@ -256,6 +261,7 @@ class CategoryHelper
         }
 
         $categoriesData["_categories"] = array_values(array_unique($categoriesData["_categories"]));
+        $categoriesData["categories_path"]= array_values(array_unique($categoriesData["categories_path"]));
         return $categoriesData;
     }
 
