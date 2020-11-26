@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+<body>
     <referenceBlock name="head.additional">
         <block class="Bitqit\Searchtap\Block\Init" name="st_custom_css" template="Bitqit_Searchtap::init.phtml" />
     </referenceBlock>
     <referenceContainer name="before.body.end">
         <block class="Bitqit\Searchtap\Block\Init" name="searchtap_template" template="Bitqit_Searchtap::template.phtml" />
     </referenceContainer>
+</body>
 </page>
