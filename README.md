@@ -1,29 +1,21 @@
-# Searchtap magento-2-plugin
+# Searchtap magento-2.x-plugin
 
 **Official Website** https://www.searchtap.io/
 
-**Demo:**
-For a quick [demo](https://www.searchtap.io/request-demo/) 
-
-API Documentation
---------------
-
-Check out the [Searchtap API documentation](https://docs.searchtap.io/api/).
-
 **Installation Steps:**
 
-To Install through [Composer] run the following commands:
+To install plugin via [Composer], please follow the steps:
 
 - ```$ composer require searchtap/magento-plugin```
-- ```$ bin/magento module:enable Bitqit_Searchtap```
-- ```$ bin/magento setup:upgrade && bin/magento setup:static-content:deploy```
+- ```$ php bin/magento module:enable Bitqit_Searchtap```
+- ```$ php bin/magento setup:upgrade && php bin/magento setup:static-content:deploy```
 
-To Install Manually Follow the below steps:
+To install the plugin via [FTP], please follow the steps:
 
-- ```$ Take pull from [Git](https://github.com/searchtap/magento-plugin)```
-- ```$ Unzip and upload Bitqit folder inside [code] ```
-- ```$ Run bin/magento module:enable Bitqit_Searchtap```
-- ```$ bin/magento setup:upgrade && bin/magento setup:static-content:deploy```
+- ```$ Take pull from https://github.com/searchtap/magento-plugin```
+- ```$ Unzip and upload Bitqit folder inside [app/code] ```
+- ```$ Run the command in magento's root directory: php bin/magento module:enable Bitqit_Searchtap```
+- ```$ Run the command in magento's root directory: php bin/magento setup:upgrade && php bin/magento setup:static-content:deploy```
 
 
 
