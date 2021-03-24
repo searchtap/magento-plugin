@@ -5,21 +5,28 @@ namespace Bitqit\Searchtap\Helper\Products;
 use Bitqit\Searchtap\Helper\Logger;
 use \Magento\Backend\Block\Template\Context as Context;
 use \Magento\Catalog\Helper\Image as ImageFactory;
+use Magento\Catalog\Api\ProductMediaAttributeManagementInterface;
+use  \Bitqit\Searchtap\Helper\SearchtapHelper;
 
 class ImageHelper
 {
     private $imageFactory;
     private $logger;
-
+    private $mediaAttribute;
+    private $searchtapHelper;
     public function __construct(
         Context $context,
         ImageFactory $productImageHelper,
         Logger $logger,
+        ProductMediaAttributeManagementInterface $mediaAttribute,
+        SearchtapHelper $searchtapHelper,
         array $data = []
     )
     {
         $this->imageFactory = $productImageHelper;
         $this->logger = $logger;
+        $this->mediaAttribute=$mediaAttribute;
+        $this->searchtapHelper=$searchtapHelper;
     }
 
     public function getImages($config, $product)
@@ -72,5 +79,14 @@ class ImageHelper
         }
 
         return $imageUrl;
+    }
+
+    public function getImageRole(){
+        $attributeSet = 'default'; // Name of attibute set
+        $mediaAttributeList = $this->mediaAttribute->getList($attributeSet);
+        foreach ($mediaAttributeList as $attributeId => $value) {
+            $role[]=$value->getData('attribute_code');
+        }
+       return $this->searchtapHelper->okResult($role);
     }
 }
