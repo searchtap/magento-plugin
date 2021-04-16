@@ -4,7 +4,6 @@
   "type": "magento2-module",
   "prefer-stable": true,
   "minimum-stability": "dev",
-  "version": "1.0.9",
   "license": [
     "OSL-3.0",
     "AFL-3.0"
@@ -18,11 +17,7 @@
     }
   ],
   "require": {
-    "magento/framework": "@stable",
-    "magento/module-store": "@stable",
-    "magento/module-catalog": "@stable",
-    "magento/module-backend": "@stable",
-    "magento/module-eav": "@stable"
+    "magento/framework": "~102.0|~103.0"
   },
   "repositories": [
     {
