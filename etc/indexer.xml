@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
-    <indexer id="searchtap_queue" view_id="searchtap_queue" class="Bitqit\Searchtap\Model\Indexer\SearchtapQueue">
-        <title translate="true">Searchtap Queue</title>
-        <description translate="true">Index queue data</description>
-    </indexer>
-</config>
