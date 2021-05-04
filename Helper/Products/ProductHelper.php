@@ -19,6 +19,8 @@ use Magento\Bundle\Model\Product\Type as BundleModel;
 use Magento\GroupedProduct\Model\Product\Type\Grouped as GroupedModel;
 use Bitqit\Searchtap\Helper\Logger as Logger;
 use \Magento\Framework\Module\Manager;
+use \Magento\Swatches\Helper\Data as SwatchHelper;
+use \Magento\Eav\Model\Config as EavConfig;
 
 class ProductHelper
 {
@@ -39,6 +41,8 @@ class ProductHelper
     private $groupedModel;
     private $logger;
     private $moduleManager;
+    private $swatchHelper;
+    private $eavConfig;
 
     public function __construct(
         ConfigHelper $configHelper,
@@ -57,7 +61,9 @@ class ProductHelper
         BundleModel $bundleModel,
         GroupedModel $groupedModel,
         Logger $logger,
-        Manager $moduleManager
+        Manager $moduleManager,
+        SwatchHelper $swatchHelper,
+        EavConfig $eavConfig
     )
     {
         $this->imageHelper = $imageHelper;
@@ -77,6 +83,8 @@ class ProductHelper
         $this->groupedModel = $groupedModel;
         $this->logger = $logger;
         $this->moduleManager = $moduleManager;
+        $this->swatchHelper = $swatchHelper;
+        $this->eavConfig = $eavConfig;
     }
 
     public function getProductCollection($storeId, $count, $page, $productIds = null)
@@ -305,9 +313,39 @@ class ProductHelper
                     $productAttributes[$attributeName][] = $value;
             }
         }
+
+        foreach ($attributeCodes as $attributeCode) {
+            $attribute = $this->eavConfig->getAttribute('catalog_product', $attributeCode);
+            if ($this->swatchHelper->isTextSwatch($attribute)) {
+                $attributeName = $attributeCode . '_' . $product->getResource()->getAttribute($attributeCode)->getFrontendInput();
+                if (isset($productAttributes[$attributeName])) {
+                    sort($productAttributes[$attributeName]);
+                    $this->_getSortedSizes($productAttributes[$attributeName]);
+                }
+            }
+        }
+
         //todo: get images of child products that have color associated with them
 
         return $productAttributes;
+    }
+
+    private function _getSortedSizes(&$values)
+    {
+        $sortOrder = ['FS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '2X', 'XXXL', '3XL', '3X', 'XXXXL', '4XL', '4X', '5XL', '5X'];
+        $temp = [];
+
+        foreach ($sortOrder as $order) {
+            if (in_array($order, $values))
+                $temp[] = $order;
+        }
+
+        foreach ($values as $value) {
+            if (!in_array($value, $temp))
+                $temp[] = $value;
+        }
+
+        $values = $temp;
     }
 
     public function getChildSKUs($product)

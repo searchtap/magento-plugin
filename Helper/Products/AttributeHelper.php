@@ -89,7 +89,6 @@ class AttributeHelper
     public function getProductAdditionalAttributes($product)
     {
         $data = [];
-        $attributeIds = [];
 
         try {
             $attributeCodes = $this->getProductUserDefinedAttributeCodes();
