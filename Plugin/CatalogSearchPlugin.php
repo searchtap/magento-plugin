@@ -19,7 +19,7 @@ class CatalogSearchPlugin
     {
         $config = $this->configHelper->getJsConfiguration($this->storeManager->getStore()->getId());
         if (json_decode($config)->searchPage->isSearchUIEnabled)
-            return "javascript:void(0)";
+            return "";
 
         return $result;
     }
