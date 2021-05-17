@@ -1,0 +1,38 @@
+{
+  "name": "searchtap/magento-plugin",
+  "description": "Search autocomplete and search results",
+  "type": "magento2-module",
+  "prefer-stable": true,
+  "minimum-stability": "dev",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "authors": [
+    {
+      "name": "SearchTap",
+      "email": "hello@searchtap.io",
+      "homepage": "https://www.searchtap.io/",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "magento/framework": "~102.0|~103.0"
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://repo.magento.com/"
+    }
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Bitqit\\Searchtap\\": ""
+    }
+  }
+}
+
+
