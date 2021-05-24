@@ -175,6 +175,9 @@ class ProductHelper
         $data['child_skus'] = $this->getChildSKUs($product);
         $data['description'] = $this->getFormattedString($product->getDescription());
         $data['short_description'] = $this->getFormattedString($product->getShortDescription());
+        $data['meta_title'] = $this->getFormattedString($product->getMetaTitle());
+        $data['meta_keywords'] = $this->getFormattedString($product->getMetaKeyword());
+        $data['meta_description'] = $this->getFormattedString($product->getMetaDescription());
 
         //Product Stock Information
         $data["in_stock"] = (int)$this->getStockData($product);
