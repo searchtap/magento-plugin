@@ -100,6 +100,7 @@ class ProductHelper
         $collection->setPageSize($count);
         $collection->setCurPage($page);
 
+
         if ($productIds)
             $collection->addAttributeToFilter('entity_id', ['in' => $productIds]);
 
