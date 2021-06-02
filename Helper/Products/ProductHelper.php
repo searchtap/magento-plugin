@@ -96,8 +96,10 @@ class ProductHelper
         $collection->addAttributeToFilter('status', ['eq' => 1]);
         $collection->addAttributeToFilter('visibility', ['neq' => 1]);
         $collection->setFlag('has_stock_status_filter', true);
+        $collection->addAttributeToSort('entity_id', 'ASC');
         $collection->setPageSize($count);
         $collection->setCurPage($page);
+
 
         if ($productIds)
             $collection->addAttributeToFilter('entity_id', ['in' => $productIds]);
@@ -175,9 +177,14 @@ class ProductHelper
         $data['child_skus'] = $this->getChildSKUs($product);
         $data['description'] = $this->getFormattedString($product->getDescription());
         $data['short_description'] = $this->getFormattedString($product->getShortDescription());
-        $data['meta_title'] = $this->getFormattedString($product->getMetaTitle());
-        $data['meta_keywords'] = $this->getFormattedString($product->getMetaKeyword());
-        $data['meta_description'] = $this->getFormattedString($product->getMetaDescription());
+
+        $metaTitle = $product->getMetaTitle();
+        $metaKeywords = $product->getMetaKeyword();
+        $metaDescription = $product->getMetaDescription();
+
+        if (isset($metaTitle)) $data['meta_title'] = $this->getFormattedString($metaTitle);
+        if (isset($metaKeywords)) $data['meta_keywords'] = $this->getFormattedString($metaKeywords);
+        if (isset($metaDescription)) $data['meta_description'] = $this->getFormattedString($metaDescription);
 
         //Product Stock Information
         $data["in_stock"] = (int)$this->getStockData($product);

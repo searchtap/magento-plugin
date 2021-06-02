@@ -60,7 +60,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $dbPrivateKey = ($this->getCredentials())->privateKey;
 
         if (!empty($privateKey)) {
-            if ($privateKey === $dbPrivateKey)
+            if (strtolower($privateKey) === strtolower($dbPrivateKey))
                 return true;
         }
 
