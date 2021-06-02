@@ -63,13 +63,16 @@ class SearchtapHelper
         return date('Y-m-d H:i:s');
     }
 
-    public function okResult($data, $count = 0, $statusCode = 200)
+    public function okResult($data, $count = 0, $additionalInfo = null, $statusCode = 200)
     {
         $results = [];
         $results["data"] = $data;
 
         if ($count)
             $results["count"] = $count;
+
+        if ($additionalInfo)
+            $results['additional_info'] = $additionalInfo;
 
         return [
             "output" => json_encode($results),
@@ -98,6 +101,6 @@ class SearchtapHelper
 
     public function getBaseApiUrl()
     {
-       return "https://magento.searchtap.io/client";
+       return "https://magento-portal.searchtap.net/client";
     }
 }

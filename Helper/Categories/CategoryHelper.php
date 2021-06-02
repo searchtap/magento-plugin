@@ -59,10 +59,13 @@ class CategoryHelper
         $collection = $this->getCategoryCollection($storeId, $page, $count, $categoryIds);
 
         $data = [];
+        $idsToBeSkipped = [];
 
         foreach ($collection as $category) {
-            if (!$this->isCategoryPathActive($category, $storeId))
+            if (!$this->isCategoryPathActive($category, $storeId)) {
+                $idsToBeSkipped[] = $category->getId();
                 continue;
+            }
 
             $data[] = $this->getObject($category, $storeId);
         }
@@ -70,7 +73,7 @@ class CategoryHelper
         //Stop Emulation
         $this->searchtapHelper->stopEmulation();
 
-        return $this->searchtapHelper->okResult($data, $collection->getSize());
+        return $this->searchtapHelper->okResult($data, $collection->getSize(), ["skipped_ids" => $idsToBeSkipped]);
     }
 
     public function getRequiredAttributes()
@@ -102,6 +105,7 @@ class CategoryHelper
             $collection->addAttributeToFilter('is_active', ['eq' => true]);
             $collection->addAttributeToFilter('level', ['gt' => 1]);
             $collection->addAttributeToFilter('path', ['like' => "1/$rootCategoryId/%"]);
+            $collection->addAttributeToSort('entity_id', 'ASC');
             $collection->setPageSize($count);
             $collection->setCurPage($page);
 
