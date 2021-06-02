@@ -31,7 +31,7 @@ class Attributes extends \Magento\Framework\App\Action\Action
             $this->getResponse()->setBody($response["output"]);
 
         } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
+            $this->getResponse()->setBody($e->getMessage());
         }
     }
 }

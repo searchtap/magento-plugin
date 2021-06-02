@@ -35,7 +35,7 @@ class Index extends \Magento\Framework\App\Action\Action
             $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[200]);
             $this->getResponse()->setBody($logs);
         } catch (\Exception $e) {
-             var_dump($e->getMessage());
+            $this->getResponse()->setBody($e->getMessage());
         }
     }
 }

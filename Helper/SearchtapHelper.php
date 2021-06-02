@@ -7,6 +7,12 @@ class SearchtapHelper
     private $emulator;
     private $storeEmulation;
 
+    public static $statusCodeBadRequest = \Magento\Framework\App\Response\Http::STATUS_CODE_400;
+    public static $statusCodeNotFound = \Magento\Framework\App\Response\Http::STATUS_CODE_403;
+    public static $statusCodeInternalError = \Magento\Framework\App\Response\Http::STATUS_CODE_500;
+    public static $statusCodeOk = \Magento\Framework\App\Response\Http::STATUS_CODE_200;
+    public static $statusCodeForbidden = \Magento\Framework\App\Response\Http::STATUS_CODE_403;
+
     public function __construct(
         \Magento\Store\Model\App\Emulation $emulator
     )
@@ -82,10 +88,11 @@ class SearchtapHelper
     public function getStatusCodeList()
     {
         return [
-            404 => \Magento\Framework\App\Response\Http::STATUS_CODE_404,
-            200 => \Magento\Framework\App\Response\Http::STATUS_CODE_200,
-            400 => \Magento\Framework\App\Response\Http::STATUS_CODE_400,
-            403 => \Magento\Framework\App\Response\Http::STATUS_CODE_403,
+            404 => $this::$statusCodeNotFound,
+            200 => $this::$statusCodeOk,
+            400 => $this::$statusCodeBadRequest,
+            500 => $this::$statusCodeInternalError,
+            403 => $this::$statusCodeForbidden
         ];
     }
 

@@ -19,12 +19,21 @@ $currencySymbol = $block->getCurrentCurrencySymbol($currencyCode);
         currencySymbol: "<?php echo $currencySymbol; ?>",
         baseCurrencyCode: "<?php echo $baseCurrencyCode; ?>"
     };
+
+    window.st_update_minicart = function () {
+        require(['Magento_Customer/js/customer-data'],
+            function (customerData) {
+                var sections = ['cart'];
+                customerData.invalidate(sections);
+                customerData.reload(sections, true);
+            });
+    }
 </script>
 
 <div id="st-autocomplete-container"></div>
 
 <script type="text/javascript" src="<?php echo $scriptUrl ?>"></script>
-<link href="<?php echo $cssUrl?>" rel="stylesheet" type="text/css" media="all">
+<link href="<?php echo $cssUrl ?>" rel="stylesheet" type="text/css" media="all">
 
 <style>
     <?php echo $autocompleteCustomCss; ?>

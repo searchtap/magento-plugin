@@ -20,23 +20,23 @@ class Index extends \Magento\Framework\App\Action\Action
 
     public function execute()
     {
-        try{
-        $storeId = $this->getRequest()->getParam('store', 1);
-        $page = $this->getRequest()->getParam('page', 1);
-        $count = $this->getRequest()->getParam('count', 100);
-        $categoryIds = $this->getRequest()->getParam('ids');
-        $token = $this->getRequest()->getParam('token');
+        try {
+            $storeId = $this->getRequest()->getParam('store', 1);
+            $page = $this->getRequest()->getParam('page', 1);
+            $count = $this->getRequest()->getParam('count', 100);
+            $categoryIds = $this->getRequest()->getParam('ids');
+            $token = $this->getRequest()->getParam('token');
 
-        if ($categoryIds)
-            $categoryIds = explode(',', $categoryIds);
+            if ($categoryIds)
+                $categoryIds = explode(',', $categoryIds);
 
-        $response = $this->categoryHelper->getCategoriesJSON($token, $storeId, $page, $count, $categoryIds);
+            $response = $this->categoryHelper->getCategoriesJSON($token, $storeId, $page, $count, $categoryIds);
 
-        $this->getResponse()->setHeader('content-type', 'application/json');
-        $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
-        $this->getResponse()->setBody($response["output"]);
+            $this->getResponse()->setHeader('content-type', 'application/json');
+            $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
+            $this->getResponse()->setBody($response["output"]);
         } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
+            $this->getResponse()->setBody($e->getMessage());
         }
     }
 }

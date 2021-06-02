@@ -38,7 +38,8 @@ if ($version < 2.3) {
                 $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
                 $this->getResponse()->setBody($response["output"]);
             } catch (\Exception $e) {
-                $this->logger->error($e->getMessage());
+                $this->getResponse()->setStatusCode($this->searchtapHelper::$statusCodeInternalError);
+                $this->getResponse()->setBody($e->getMessage());
             }
         }
     }
@@ -71,7 +72,7 @@ if ($version < 2.3) {
                 $this->getResponse()->setStatusCode($this->searchtapHelper->getStatusCodeList()[$response["statusCode"]]);
                 $this->getResponse()->setBody($response["output"]);
             } catch (\Exception $e) {
-                $this->logger->error($e->getMessage());
+                $this->getResponse()->setBody($e->getMessage());
             }
         }
     }
