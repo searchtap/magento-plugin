@@ -109,7 +109,6 @@ class CategoryHelper
             $collection->setPageSize($count);
             $collection->setCurPage($page);
 
-
             if ($categoryIds)
                 $collection->addAttributeToFilter('entity_id', ['in' => $categoryIds]);
 
