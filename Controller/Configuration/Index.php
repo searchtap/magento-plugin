@@ -30,7 +30,7 @@ if ($version < 2.3) {
         {
             try {
                 $data = $this->getRequest()->getContent();
-                $token = $this->getRequest()->getHeader("authorization");
+                $token = $this->getRequest()->getHeader("x-st-token");
 
                 $response = $this->dataHelper->setJSConfiguration($token, json_decode($data));
 
@@ -64,7 +64,7 @@ if ($version < 2.3) {
         {
             try {
                 $data = $this->getRequest()->getContent();
-                $token = $this->getRequest()->getHeader("authorization");
+                $token = $this->getRequest()->getHeader("x-st-token");
 
                 $response = $this->dataHelper->setJSConfiguration($token, json_decode($data));
 
