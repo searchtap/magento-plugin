@@ -18,6 +18,8 @@ class CatalogSearchPlugin
     public function afterGetResultUrl($subject, $result)
     {
         $config = $this->configHelper->getJsConfiguration($this->storeManager->getStore()->getId());
+        if (!isset($config)) return $result;
+
         if (json_decode($config)->searchPage->isSearchUIEnabled)
             return "javascript:void(0)";
 

@@ -5,21 +5,25 @@ namespace Bitqit\Searchtap\Helper\Products;
 use Bitqit\Searchtap\Helper\Logger;
 use \Magento\Backend\Block\Template\Context as Context;
 use \Magento\Catalog\Helper\Image as ImageFactory;
+use \Magento\Store\Model\StoreManagerInterface;
 
 class ImageHelper
 {
     private $imageFactory;
     private $logger;
+    private $store;
 
     public function __construct(
         Context $context,
         ImageFactory $productImageHelper,
         Logger $logger,
+        StoreManagerInterface $store,
         array $data = []
     )
     {
         $this->imageFactory = $productImageHelper;
         $this->logger = $logger;
+        $this->store = $store;
     }
 
     public function getImages($config, $product)
@@ -39,8 +43,38 @@ class ImageHelper
                 $images["on_hover_image"] = $this->getResizedImageUrl($product, "product_" . $onHoverImageType, $width, $height);
             }
         } else {
-            $images["image_url"] = $product->getData($this->getImageType($imageType));
-            if ($onHoverImageStatus) $images["on_hover_image"] = $product->getData($this->getImageType($onHoverImageType));
+            $imageBaseUrl = $this->store->getStore()->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA) . 'catalog/product';
+            switch ($imageType) {
+                case "base_image":
+                    $images["image_url"] = $imageBaseUrl . $product->getImage();
+                    break;
+                case "thumbnail_image":
+                    $images["image_url"] = $imageBaseUrl . $product->getThumbnail();
+                    break;
+                case "small_image":
+                    $images["image_url"] = $imageBaseUrl . $product->getSmallImage();
+                    break;
+                default:
+                    $images["image_url"] = $imageBaseUrl . $product->getImage();
+            }
+
+            /*
+             * on-hover image
+             */
+            if ($onHoverImageStatus)
+                switch ($onHoverImageType) {
+                    case "base_image":
+                        $images["on_hover_image"] = $imageBaseUrl . $product->getImage();
+                        break;
+                    case "thumbnail_image":
+                        $images["on_hover_image"] = $imageBaseUrl . $product->getThumbnail();
+                        break;
+                    case "small_image":
+                        $images["on_hover_image"] = $imageBaseUrl . $product->getSmallImage();
+                        break;
+                    default:
+                        $images["on_hover_image"] = $imageBaseUrl . $product->getImage();
+                }
         }
 
         return $images;
