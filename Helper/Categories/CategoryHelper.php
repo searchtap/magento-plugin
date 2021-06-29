@@ -233,6 +233,7 @@ class CategoryHelper
                 $productCategory = $this->categoryRepository->get($categoryId, $storeId);
                 }catch(\Exception $e){
                  $this->logger->error($e->getMessage());
+                 continue;
                 }
 
                 if (!$productCategory || !$this->canCategoryBeReindex($productCategory, $storeId))
