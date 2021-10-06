@@ -174,9 +174,12 @@ class ProductHelper
         $data['type'] = $product->getTypeId();
         $data['created_at'] = strtotime($product->getCreatedAt());
         $data['sku'] = $product->getSKU();
-        $data['child_skus'] = $this->getChildSKUs($product);
         $data['description'] = $this->getFormattedString($product->getDescription());
         $data['short_description'] = $this->getFormattedString($product->getShortDescription());
+
+        $childInfo = $this->getChildSKUsAndName($product);
+        $data['child_skus'] = $childInfo["child_skus"];
+        $data['child_names'] = $childInfo["child_names"];
 
         $metaTitle = $product->getMetaTitle();
         $metaKeywords = $product->getMetaKeyword();
@@ -242,10 +245,13 @@ class ProductHelper
         $specialFromDate = $product->getSpecialFromDate();
         $specialToDate = $product->getSpecialToDate();
 
+        $baseCurrencyCode = $this->storeManager->getStore($storeId)->getBaseCurrency()->getCode();
+        $currencySymbol =  $this->getCurrencySymbol($baseCurrencyCode);
+
         $data = [
             "price" => $regularPrice,
             "special_price" => $specialPrice,
-            "currency_symbol" => $this->getCurrencySymbol($storeId),
+            "currency_symbol" => $currencySymbol,
             "special_from_date" => $specialFromDate ? strtotime($specialFromDate) : false,
             "special_to_date" => $specialToDate ? strtotime($specialToDate) : false,
             "discount" => $this->getDiscountPercentage($regularPrice, $specialPrice)
@@ -279,11 +285,9 @@ class ProductHelper
         return 0;
     }
 
-    public function getCurrencySymbol($storeId)
+    public function getCurrencySymbol($currencyCode)
     {
-        $currencyCode = $this->storeManager->getStore($storeId)->getCurrentCurrencyCode();
         $currency = $this->currencyFactory->load($currencyCode);
-
         return $currency->getCurrencySymbol();
     }
 
@@ -358,23 +362,28 @@ class ProductHelper
         $values = $temp;
     }
 
-    public function getChildSKUs($product)
+    public function getChildSKUsAndName($product)
     {
-        $sku = [];
+        $skus = [];
+        $names = [];
 
         switch ($product->getTypeId()) {
             case 'configurable':
                 $variationProduct = $product->getTypeInstance()->getUsedProducts($product);
                 foreach ($variationProduct as $child) {
-                    if ($child->getStatus())
-                        $sku[] = $child->getSku();
+                    if ($child->getStatus()) {
+                        $skus[] = $child->getSku();
+                        $names[] = $this->getFormattedString($child->getName());
+                    }
                 }
                 break;
             case 'grouped':
                 $groupedProducts = $product->getTypeInstance(true)->getAssociatedProducts($product);
                 foreach ($groupedProducts as $child) {
-                    if ($child->getStatus())
-                        $sku[] = $child->getSku();
+                    if ($child->getStatus()) {
+                        $skus[] = $child->getSku();
+                        $names[] = $this->getFormattedString($child->getName());
+                    }
                 }
                 break;
             case 'downloadable':
@@ -382,10 +391,14 @@ class ProductHelper
             case 'virtual':
             case 'simple':
             default:
-                $sku = [];
+                $skus = [];
+                $names = [];
         }
 
-        return $sku;
+        return [
+            "child_skus" => $skus,
+            "child_names" => $names
+        ];
     }
 
     public function getReindexableProductIds($storeId, $count, $page, $token)
