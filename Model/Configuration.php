@@ -5,13 +5,11 @@ namespace Bitqit\Searchtap\Model;
 use Magento\Framework\Model\AbstractModel;
 use \Bitqit\Searchtap\Model\ConfigurationFactory;
 
-class Configuration extends AbstractModel implements \Magento\Framework\DataObject\IdentityInterface
+class Configuration extends AbstractModel
 {
     /**
      * Define resource model
      */
-    const CACHE_TAG = 'searchtap_config';
-
     const TOKEN = "api_token";
     const DATACENTERS = "data_centers";
 
@@ -34,11 +32,6 @@ class Configuration extends AbstractModel implements \Magento\Framework\DataObje
     protected function _construct()
     {
         $this->_init('Bitqit\Searchtap\Model\ResourceModel\Configuration');
-    }
-
-    public function getIdentities()
-    {
-        return [self::CACHE_TAG . '_' . $this->getId()];
     }
 
     public function getToken()
