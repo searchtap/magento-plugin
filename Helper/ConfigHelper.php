@@ -16,6 +16,7 @@ class ConfigHelper
     const CSS_URL = 'searchtap_credentials/credentials/st_css_url';
     const AUTOCOMPLETE_CUSTOM_CSS = 'searchtap_credentials/credentials/st_autocomplete_custom_css';
     const SEARCH_PAGE_CUSTOM_CSS = 'searchtap_credentials/credentials/st_search_page_custom_css';
+    const PRODUCT_REVIEW_STATUS = 'catalog/review/active';
 
     private $configInterface;
     private $storeManager;
@@ -23,10 +24,10 @@ class ConfigHelper
     private $configurationFactory;
 
     public function __construct(
-        ScopeConfigInterface $configInterface,
+        ScopeConfigInterface  $configInterface,
         StoreManagerInterface $storeManager,
-        SearchtapHelper $searchtapHelper,
-        ConfigurationFactory $configurationFactory
+        SearchtapHelper       $searchtapHelper,
+        ConfigurationFactory  $configurationFactory
     )
     {
         $this->configInterface = $configInterface;
@@ -40,6 +41,11 @@ class ConfigHelper
 //        $credentials = $this->configInterface->getValue(self::PRIVATE_TOKEN);
 //        return json_decode($credentials);
 //    }
+
+    public function isProductReviewEnabled($storeId)
+    {
+        return (int)$this->configInterface->getValue(self::PRODUCT_REVIEW_STATUS, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
+    }
 
     public function getJsConfiguration($storeId)
     {
