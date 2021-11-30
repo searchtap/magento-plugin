@@ -21,6 +21,7 @@ use Bitqit\Searchtap\Helper\Logger as Logger;
 use \Magento\Framework\Module\Manager;
 use \Magento\Swatches\Helper\Data as SwatchHelper;
 use \Magento\Eav\Model\Config as EavConfig;
+use \Magento\Review\Model\ReviewFactory as ReviewFactory;
 
 class ProductHelper
 {
@@ -43,27 +44,29 @@ class ProductHelper
     private $moduleManager;
     private $swatchHelper;
     private $eavConfig;
+    private $reviewFactory;
 
     public function __construct(
-        ConfigHelper $configHelper,
-        SearchtapHelper $searchtapHelper,
-        CollectionFactory $productFactory,
-        ImageHelper $imageHelper,
-        CategoryHelper $categoryHelper,
-        ProductRepository $productRepository,
-        Image $productImageHelper,
-        StoreManagerInterface $storeManager,
-        Currency $currencyFactory,
-        AttributeHelper $attributeHelper,
+        ConfigHelper           $configHelper,
+        SearchtapHelper        $searchtapHelper,
+        CollectionFactory      $productFactory,
+        ImageHelper            $imageHelper,
+        CategoryHelper         $categoryHelper,
+        ProductRepository      $productRepository,
+        Image                  $productImageHelper,
+        StoreManagerInterface  $storeManager,
+        Currency               $currencyFactory,
+        AttributeHelper        $attributeHelper,
         StockRegistryInterface $stockRepository,
-        Data $dataHelper,
-        ConfigurableModel $configurableModel,
-        BundleModel $bundleModel,
-        GroupedModel $groupedModel,
-        Logger $logger,
-        Manager $moduleManager,
-        SwatchHelper $swatchHelper,
-        EavConfig $eavConfig
+        Data                   $dataHelper,
+        ConfigurableModel      $configurableModel,
+        BundleModel            $bundleModel,
+        GroupedModel           $groupedModel,
+        Logger                 $logger,
+        Manager                $moduleManager,
+        SwatchHelper           $swatchHelper,
+        EavConfig              $eavConfig,
+        ReviewFactory          $reviewFactory
     )
     {
         $this->imageHelper = $imageHelper;
@@ -85,6 +88,7 @@ class ProductHelper
         $this->moduleManager = $moduleManager;
         $this->swatchHelper = $swatchHelper;
         $this->eavConfig = $eavConfig;
+        $this->reviewFactory = $reviewFactory;
     }
 
     public function getProductCollection($storeId, $count, $page, $productIds = null)
@@ -221,6 +225,15 @@ class ProductHelper
             $additionalAttributes
         );
 
+        /***
+         * Get product reviews
+         */
+        if ($this->configHelper->isProductReviewEnabled($storeId)) {
+            $reviews = $this->getProductReviews($product, $storeId);
+            $data['reviews_average'] = $reviews['reviews_average'];
+            $data['reviews_count'] = $reviews['reviews_count'];
+        }
+
         // Execute custom data massaging script
         if ($this->moduleManager->isEnabled("Bitqit_Helper")) {
             try {
@@ -235,6 +248,17 @@ class ProductHelper
         return $data;
     }
 
+    public function getProductReviews($product, $storeId)
+    {
+        $this->reviewFactory->create()->getEntitySummary($product, $storeId);
+        $ratingSummary = $product->getRatingSummary()->getRatingSummary();
+        $reviewCount = $product->getRatingSummary()->getReviewsCount();
+        return [
+            "reviews_average" => (int)$ratingSummary,
+            "reviews_count" => (int)$reviewCount
+        ];
+    }
+
     public function getPrices($product, $storeId)
     {
         $regularPrice = $this->searchtapHelper->getFormattedPrice($product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue());
@@ -246,7 +270,7 @@ class ProductHelper
         $specialToDate = $product->getSpecialToDate();
 
         $baseCurrencyCode = $this->storeManager->getStore($storeId)->getBaseCurrency()->getCode();
-        $currencySymbol =  $this->getCurrencySymbol($baseCurrencyCode);
+        $currencySymbol = $this->getCurrencySymbol($baseCurrencyCode);
 
         $data = [
             "price" => $regularPrice,
