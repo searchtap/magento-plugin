@@ -7,12 +7,7 @@ use \Magento\Framework\Model\AbstractModel;
 use phpDocumentor\Reflection\Types\This;
 
 class Queue extends \Magento\Framework\Model\AbstractModel
-    implements \Magento\Framework\DataObject\IdentityInterface
 {
-    const CACHE_TAG = 'searchtap_queue';
-
-    protected $_cacheTag = 'searchtap_queue';
-
     protected $_eventPrefix = 'searchtap_queue';
 
     const ENTITY_ID = 'entity_id';
@@ -48,11 +43,6 @@ class Queue extends \Magento\Framework\Model\AbstractModel
     protected function _construct()
     {
         $this->_init('Bitqit\Searchtap\Model\ResourceModel\Queue');
-    }
-
-    public function getIdentities()
-    {
-        return [self::CACHE_TAG . '_' . $this->getId()];
     }
 
     public function setEntityId($entityId)
