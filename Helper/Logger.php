@@ -9,8 +9,18 @@ class Logger
 
     public function __construct()
     {
-        $writer = new \Zend\Log\Writer\Stream(BP . $this->logFileName);
-        $this->logger = new \Zend\Log\Logger();
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
+        $version = $productMetadata->getVersion();
+
+        if ($version < 2.4) {
+            $writer = new \Zend\Log\Writer\Stream(BP . $this->logFileName);
+            $this->logger = new \Zend\Log\Logger();
+        }
+        else {
+            $writer = new \Zend_Log_Writer_Stream(BP . $this->logFileName);
+            $this->logger = new \Zend_Log();
+        }
         $this->logger->addWriter($writer);
     }
 
