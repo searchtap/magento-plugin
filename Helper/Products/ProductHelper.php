@@ -153,7 +153,8 @@ class ProductHelper
 
     public function getFormattedString($string)
     {
-        return $this->searchtapHelper->getFormattedString(str_replace("\r\n", "", $string));
+        if ($string) return $this->searchtapHelper->getFormattedString(str_replace("\r\n", "", $string));
+        return $string;
     }
 
     protected function getStockData($product)

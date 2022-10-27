@@ -22,9 +22,10 @@ class SearchtapHelper
 
     public function getFormattedString($value)
     {
+        if (!$value) return $value;
         if (is_array($value))
             return array_map('trim', array_map("htmlspecialchars_decode", $value));
-        else return trim(htmlspecialchars_decode(strip_tags($value)));
+        return trim(htmlspecialchars_decode(strip_tags($value)));
     }
 
     public function getFormattedPrice($price)
